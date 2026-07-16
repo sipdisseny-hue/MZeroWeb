@@ -37,12 +37,18 @@ with st.sidebar:
     
     if st.session_state.get("autenticado"):
         st.success(f"Bienvenido {usuario_in}")
-        with st.expander("Cambiar mi contraseña"):
+        with st.expander("Gestionar credenciales"):
+            nuevo_user = st.text_input("Nuevo nombre de usuario:")
             nueva_pass = st.text_input("Nueva contraseña:", type="password")
-            if st.button("Actualizar contraseña"):
-                payload = {"tipo": "cambio_pass", "usuario": usuario_in, "nueva_pass": nueva_pass}
+            if st.button("Actualizar mis datos"):
+                payload = {
+                    "tipo": "cambio_credenciales", 
+                    "usuario_actual": usuario_in, 
+                    "nuevo_usuario": nuevo_user, 
+                    "nueva_pass": nueva_pass
+                }
                 requests.post("https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec", json=payload)
-                st.success("Contraseña actualizada. Vuelve a iniciar sesión.")
+                st.warning("Datos actualizados. Por favor, vuelve a iniciar sesión con tus nuevos datos.")
                 st.session_state.autenticado = False
                 st.rerun()
     else:
