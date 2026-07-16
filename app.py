@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import requests
 
-PASSWORD = "TuClaveSecreta" # Se mantiene, pero se usará la validación de la hoja
 st.set_page_config(page_title="MZero Web", layout="wide")
 
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
@@ -16,9 +15,15 @@ with st.sidebar:
     except: st.warning("Logo no encontrado.")
     st.markdown("## M-Zero Pro - Evaluación")
 
-    # Leer usuarios desde la hoja de cálculo
-    url_csv = "TU_URL_DE_CSV_PUBLICADO_DE_USUARIOS"
-    df_users = pd.read_csv(url_csv)
+    # Configuración de acceso a la hoja de Usuarios
+    ID_DE_TU_HOJA = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs" 
+    url_csv = f"https://docs.google.com/spreadsheets/d/{ID_DE_TU_HOJA}/gviz/tq?tqx=out:csv&sheet=Usuarios"
+    
+    try:
+        df_users = pd.read_csv(url_csv)
+    except Exception as e:
+        st.error("No se puede conectar a la hoja de Usuarios. Verifica que esté publicada.")
+        st.stop()
     
     usuario_in = st.text_input("Usuario:")
     pass_in = st.text_input("Contraseña:", type="password")
@@ -36,7 +41,7 @@ with st.sidebar:
             nueva_pass = st.text_input("Nueva contraseña:", type="password")
             if st.button("Actualizar contraseña"):
                 payload = {"tipo": "cambio_pass", "usuario": usuario_in, "nueva_pass": nueva_pass}
-                requests.post("TU_URL_DEL_SCRIPT", json=payload)
+                requests.post("https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec", json=payload)
                 st.success("Contraseña actualizada. Vuelve a iniciar sesión.")
                 st.session_state.autenticado = False
                 st.rerun()
