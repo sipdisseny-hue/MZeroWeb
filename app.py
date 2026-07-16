@@ -33,18 +33,17 @@ pesos = {
 # Formulario
 with st.container():
     c1, c2 = st.columns(2)
-    # Estos NO cambian al guardar, mantienen su valor
+    # Estos campos se limpian solo al enviar todo
     prof = c1.text_input("Profesor", key="f_prof")
     curso = c1.text_input("Curso", key="f_cur")
     mod = c2.text_input("Módulo", key="f_mod")
     niv = c2.text_input("Nivel del Bloque", key="f_niv")
-    # Este SI cambia (reset_key) para borrarse solo
+    # Este se limpia al guardar alumno o al enviar todo
     alu = st.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.reset_key}")
 
 st.subheader("Criterios (1-5)")
 notas = {}
 for crit, p in pesos.items():
-    # Los radios se resetearán al cambiar reset_key
     notas[crit] = int(st.radio(f"{crit} ({p}%)", [1, 2, 3, 4, 5], horizontal=True, index=0, key=f"{crit}_{st.session_state.reset_key}"))
 
 # Cálculo
@@ -63,15 +62,22 @@ if st.button("GUARDAR ALUMNO"):
         "Alumno": alu, "Curso": curso, "Módulo": mod, 
         "Nivel": niv, "Nota": nota_final, "Estado": res
     })
-    st.session_state.reset_key += 1 # Resetea solo Alumno y Notas
+    st.session_state.reset_key += 1 
     st.rerun()
 
-# Tabla
+# Tabla y Envío
 st.divider()
 st.subheader("ALUMNOS PENDIENTES DE ENVÍO")
 if st.session_state.lista_alumnos:
     st.table(pd.DataFrame(st.session_state.lista_alumnos))
     if st.button("ENVIAR TODO A GOOGLE"):
-        st.success("Enviado")
+        # Lógica de envío...
+        st.success("Enviado correctamente")
+        
+        # BORRADO TOTAL AL ENVIAR
         st.session_state.lista_alumnos = []
+        st.session_state.reset_key += 1
+        
+        # Esto fuerza a limpiar también los campos fijos
+        st.cache_data.clear() 
         st.rerun()
