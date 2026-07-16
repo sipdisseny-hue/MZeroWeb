@@ -19,7 +19,6 @@ st.title("M-Zero Pro - Evaluación")
 
 with st.container():
     c1, c2 = st.columns(2)
-    # CLAVES FIJAS: No se borran al guardar alumno, solo al enviar (gracias a reset_todo)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
     curso = c1.text_input("Curso", key=f"f_cur_{st.session_state.reset_todo}")
     modulo = c2.text_input("Módulo", key=f"f_mod_{st.session_state.reset_todo}")
@@ -36,10 +35,14 @@ criterios = [
 ]
 
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
-notas = {c: st.radio(c, [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{c}_{st.session_state.alumno_key}", index=None) for c in criterios}
 
-# NUEVO CÁLCULO: Un 3 es un 5.0. 
-# La fórmula: (puntuación - 1) * 2.5 da como resultado: 1->0, 2->2.5, 3->5.0, 4->7.5, 5->10
+# ÚNICO CAMBIO: Diseño en 4 columnas
+cols = st.columns(4)
+notas = {}
+for i, crit in enumerate(criterios):
+    with cols[i % 4]:
+        notas[crit] = st.radio(crit, [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None)
+
 if None not in notas.values() and alumno:
     nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
     res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
@@ -52,7 +55,7 @@ if st.button("GUARDAR ALUMNO"):
         registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso, "Modulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res}
         registro.update(notas)
         st.session_state.lista_alumnos.append(registro)
-        st.session_state.alumno_key += 1 # Solo borra alumno y notas
+        st.session_state.alumno_key += 1
         st.rerun()
 
 if st.session_state.lista_alumnos:
@@ -62,7 +65,7 @@ if st.session_state.lista_alumnos:
         try:
             requests.post(url, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
             st.session_state.lista_alumnos = []
-            st.session_state.reset_todo += 1 # Borra el profesor, curso, etc.
-            st.session_state.alumno_key += 1 # Borra el alumno
+            st.session_state.reset_todo += 1
+            st.session_state.alumno_key += 1
             st.rerun()
         except Exception as e: st.error(f"Error: {e}")
