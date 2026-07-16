@@ -30,19 +30,21 @@ pesos = {
     "13. Comunicación y respeto al superior": 5
 }
 
-# Formulario (usamos reset_key para que se limpie al cambiar)
+# Formulario
 with st.container():
     c1, c2 = st.columns(2)
-    prof = c1.text_input("Profesor", key=f"p_{st.session_state.reset_key}")
-    curso = c1.text_input("Curso", key=f"c_{st.session_state.reset_key}")
-    mod = c2.text_input("Módulo", key=f"m_{st.session_state.reset_key}")
-    niv = c2.text_input("Nivel del Bloque", key=f"n_{st.session_state.reset_key}")
-    alu = st.text_input("Nombre del Alumno", key=f"a_{st.session_state.reset_key}")
+    # Estos NO cambian al guardar, mantienen su valor
+    prof = c1.text_input("Profesor", key="f_prof")
+    curso = c1.text_input("Curso", key="f_cur")
+    mod = c2.text_input("Módulo", key="f_mod")
+    niv = c2.text_input("Nivel del Bloque", key="f_niv")
+    # Este SI cambia (reset_key) para borrarse solo
+    alu = st.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.reset_key}")
 
 st.subheader("Criterios (1-5)")
 notas = {}
 for crit, p in pesos.items():
-    # index=0 fuerza que empiece en el valor '1'
+    # Los radios se resetearán al cambiar reset_key
     notas[crit] = int(st.radio(f"{crit} ({p}%)", [1, 2, 3, 4, 5], horizontal=True, index=0, key=f"{crit}_{st.session_state.reset_key}"))
 
 # Cálculo
@@ -61,7 +63,7 @@ if st.button("GUARDAR ALUMNO"):
         "Alumno": alu, "Curso": curso, "Módulo": mod, 
         "Nivel": niv, "Nota": nota_final, "Estado": res
     })
-    st.session_state.reset_key += 1 # Esto dispara el reseteo
+    st.session_state.reset_key += 1 # Resetea solo Alumno y Notas
     st.rerun()
 
 # Tabla
