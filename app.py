@@ -2,29 +2,25 @@ import streamlit as st
 import pandas as pd
 import requests
 
+# CONFIGURACIÓN ORIGINAL
+PASSWORD = "TuClaveSecreta" 
 st.set_page_config(page_title="MZero Web", layout="wide")
 
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
-# --- SIDEBAR ---
+# --- SIDEBAR ORIGINAL ---
 with st.sidebar:
     try: st.image("logo_mzero.png")
     except: st.warning("Logo no encontrado.")
     st.markdown("## M-Zero Pro - Evaluación")
     
-    # AQUÍ ESTÁN LOS DOS CAMPOS DE NUEVO
-    usuario_in = st.text_input("Usuario:")
-    pass_in = st.text_input("Contraseña:", type="password")
-    
-    # Validación simple para que funcione sin depender de la carga externa de la hoja
-    # Si quieres que sea "jcros" / "jcros1967", cámbialo aquí abajo:
-    if usuario_in != "jcros" or pass_in != "jcros1967":
-        st.error("Usuario o contraseña incorrectos")
+    # LA ÚNICA VALIDACIÓN QUE SIEMPRE FUNCIONÓ
+    if st.text_input("Contraseña:", type="password") != PASSWORD:
         st.stop()
 
-# --- FORMULARIO (Mismo de siempre) ---
+# --- FORMULARIO ORIGINAL (SIN NINGÚN CAMBIO) ---
 with st.container():
     c1, c2, c3 = st.columns(3)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
