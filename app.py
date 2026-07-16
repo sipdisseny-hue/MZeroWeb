@@ -2,53 +2,22 @@ import streamlit as st
 import pandas as pd
 import requests
 
+PASSWORD = "TuClaveSecreta"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
-if 'autenticado' not in st.session_state: st.session_state.autenticado = False
 
 # --- SIDEBAR ---
 with st.sidebar:
     try: st.image("logo_mzero.png")
     except: st.warning("Logo no encontrado.")
     st.markdown("## M-Zero Pro - Evaluación")
-
-    ID_DE_TU_HOJA = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs" 
-    url_csv = f"https://docs.google.com/spreadsheets/d/{ID_DE_TU_HOJA}/gviz/tq?tqx=out:csv&sheet=Usuarios"
-    
-    try:
-        df_users = pd.read_csv(url_csv)
-    except Exception as e:
-        st.error("Error al conectar con la hoja.")
-        st.stop()
-    
-    usuario_in = st.text_input("Usuario:")
-    pass_in = st.text_input("Contraseña:", type="password")
-    
-    if st.button("Acceder"):
-        # Verificación directa de columnas
-        match = df_users[(df_users['Usuarios'] == usuario_in) & (df_users['Password'] == pass_in)]
-        if not match.empty:
-            st.session_state.autenticado = True
-        else:
-            st.error("Usuario o contraseña incorrectos")
-    
-    if st.session_state.get("autenticado"):
-        st.success(f"Bienvenido {usuario_in}")
-        with st.expander("Cambiar mi contraseña"):
-            nueva_pass = st.text_input("Nueva contraseña:", type="password")
-            if st.button("Actualizar contraseña"):
-                payload = {"tipo": "cambio_pass", "usuario": usuario_in, "nueva_pass": nueva_pass}
-                requests.post("https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec", json=payload)
-                st.success("Contraseña actualizada. Vuelve a iniciar sesión.")
-                st.session_state.autenticado = False
-                st.rerun()
-    else:
+    if st.text_input("Contraseña:", type="password") != PASSWORD:
         st.stop()
 
-# --- FORMULARIO ---
+# Formulario REORGANIZADO
 with st.container():
     c1, c2, c3 = st.columns(3)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
@@ -70,13 +39,21 @@ criterios = [
 
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 
+# DISEÑO EN 4 COLUMNAS
 cols = st.columns(4)
 notas = {}
 for i, crit in enumerate(criterios):
     with cols[i % 4]:
         with st.container(border=True):
             st.markdown(f"**{crit}**")
-            notas[crit] = st.radio("puntuacion", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
+            notas[crit] = st.radio(
+                "puntuacion", 
+                [1, 2, 3, 4, 5], 
+                horizontal=True, 
+                key=f"rad_{crit}_{st.session_state.alumno_key}", 
+                index=None,
+                label_visibility="collapsed"
+            )
 
 if None not in notas.values() and alumno:
     nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
