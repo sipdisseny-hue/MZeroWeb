@@ -5,10 +5,11 @@ import requests
 PASSWORD = "TuClaveSecreta"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
-# --- DISEÑO CSS PARA PEQUEÑECER LETRAS ---
+# --- DISEÑO CSS PARA SUBIR ELEMENTOS ---
 st.markdown("""
     <style>
     .main h3 { font-size: 16px !important; }
+    div.block-container { padding-top: 1rem !important; }
     </style>
     """, unsafe_allow_html=True)
 
