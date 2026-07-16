@@ -28,6 +28,7 @@ with st.sidebar:
     pass_in = st.text_input("Contraseña:", type="password")
     
     if st.button("Acceder"):
+        # Verificación directa de columnas
         match = df_users[(df_users['Usuarios'] == usuario_in) & (df_users['Password'] == pass_in)]
         if not match.empty:
             st.session_state.autenticado = True
@@ -47,7 +48,7 @@ with st.sidebar:
     else:
         st.stop()
 
-# --- RESTO DEL FORMULARIO ---
+# --- FORMULARIO ---
 with st.container():
     c1, c2, c3 = st.columns(3)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
