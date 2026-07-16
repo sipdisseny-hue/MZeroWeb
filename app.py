@@ -20,72 +20,51 @@ st.title("M-Zero Pro - Evaluación")
 # Formulario
 with st.container():
     c1, c2 = st.columns(2)
-    # CLAVES FIJAS: Estos campos NO se borrarán al guardar alumno
-    profesor = c1.text_input("Profesor", key="f_prof")
-    curso = c1.text_input("Curso", key="f_cur")
-    modulo = c2.text_input("Módulo", key="f_mod")
-    nivel = c2.text_input("Nivel del Bloque", key="f_niv")
-    # CLAVE DINÁMICA: Este campo SÍ se borra al guardar alumno
-    alumno = st.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.form_reset}")
+    profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.form_reset}")
+    curso = c1.text_input("Curso", key=f"f_cur_{st.session_state.form_reset}")
+    modulo = c2.text_input("Módulo", key=f"f_mod_{st.session_state.form_reset}")
+    nivel = c2.text_input("Nivel del Bloque", key=f"f_niv_{st.session_state.form_reset}")
+    alumno = c1.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.form_reset}")
 
 criterios = [
-    "Tasa de eficiencia", "Precisión geométrica y mecánica", "Autonomía ejecutiva",
-    "Índice de mermas", "Mantenimiento de utillaje y entorno", "Factor de desempeño temporal",
-    "Resolución escenarios de prácticas", "Resolución escenarios de averías",
-    "Precisión conceptual y terminología", "Seguridad y normativas",
-    "Fiabilidad y compromiso operativo", "Capacidad de aprendizaje",
-    "Comunicación y respeto al superior"
+    "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
+    "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
+    "7. Resolución escenarios de prácticas", "8. Resolución escenarios de averías",
+    "9. Precisión conceptual y terminología", "10. Seguridad y normativas",
+    "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje",
+    "13. Comunicación y respeto al superior"
 ]
 
-pesos = {
-    "Tasa de eficiencia": 12, "Precisión geométrica y mecánica": 5, "Autonomía ejecutiva": 12,
-    "Índice de mermas": 5, "Mantenimiento de utillaje y entorno": 3, "Factor de desempeño temporal": 10,
-    "Resolución escenarios de prácticas": 10, "Resolución escenarios de averías": 10,
-    "Precisión conceptual y terminología": 5, "Seguridad y normativas": 5,
-    "Fiabilidad y compromiso operativo": 10, "Capacidad de aprendizaje": 8,
-    "Comunicación y respeto al superior": 5
-}
+pesos = {c: 10 for c in criterios} # Ajusta aquí si es necesario
 
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
-notas = {}
-for crit in criterios:
-    # CLAVE DINÁMICA: Las notas SÍ se borran al guardar alumno
-    notas[crit] = st.radio(crit, [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.form_reset}", index=None)
+notas = {c: st.radio(c, [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{c}_{st.session_state.form_reset}", index=None) for c in criterios}
 
-# Cálculo
-if None not in notas.values():
-    total = sum(((notas[crit] - 1) * 2.5) * (pesos[crit] / 100) for crit in criterios)
-    nota_final = round(total, 1)
-    res = "SUSPENSO (Línea Roja)" if notas["Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
+if None not in notas.values() and alumno:
+    nota_final = round(sum(((notas[c] - 1) * 2.5) * (pesos[c] / 100) for c in criterios), 1)
+    res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
     st.metric("NOTA FINAL", f"{nota_final} - {res}")
 else:
     nota_final, res = None, None
 
-# Guardar
 if st.button("GUARDAR ALUMNO"):
-    if nota_final is not None and alumno:
-        st.session_state.lista_alumnos.append({
-            "Alumno": alumno, "Profesor": profesor, "Curso": curso, 
-            "Modulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res
-        })
+    if nota_final is not None:
+        # AQUÍ ES DONDE AÑADIMOS TODO
+        registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso, "Modulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res}
+        registro.update(notas)
+        st.session_state.lista_alumnos.append(registro)
         st.session_state.form_reset += 1 
         st.rerun()
 
-# Envío (Google Sheets)
 if st.session_state.lista_alumnos:
     st.table(pd.DataFrame(st.session_state.lista_alumnos))
     if st.button("ENVIAR TODO A GOOGLE SHEETS"):
         url = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
         try:
-            payload = {"evaluaciones": st.session_state.lista_alumnos}
-            resp = requests.post(url, json=payload, timeout=20)
+            resp = requests.post(url, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
             if resp.status_code == 200:
-                st.success("Enviado.")
+                st.success("Enviado correctamente.")
                 st.session_state.lista_alumnos = []
-                # Para borrar los campos FIJOS al enviar, recargamos la app totalmente
-                st.cache_data.clear()
+                st.session_state.form_reset += 100 # BORRADO TOTAL
                 st.rerun()
-            else:
-                st.error("Error al enviar a Google.")
-        except Exception as e:
-            st.error(f"Error: {e}")
+        except Exception as e: st.error(f"Error: {e}")
