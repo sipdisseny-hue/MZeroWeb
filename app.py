@@ -36,12 +36,21 @@ criterios = [
 
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 
-# ÚNICO CAMBIO: Diseño en 4 columnas
+# DISEÑO EN 4 COLUMNAS CON TARJETAS (BORDER)
 cols = st.columns(4)
 notas = {}
 for i, crit in enumerate(criterios):
     with cols[i % 4]:
-        notas[crit] = st.radio(crit, [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None)
+        with st.container(border=True):
+            st.markdown(f"**{crit}**")
+            notas[crit] = st.radio(
+                "puntuacion", 
+                [1, 2, 3, 4, 5], 
+                horizontal=True, 
+                key=f"rad_{crit}_{st.session_state.alumno_key}", 
+                index=None,
+                label_visibility="collapsed"
+            )
 
 if None not in notas.values() and alumno:
     nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
