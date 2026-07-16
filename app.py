@@ -17,7 +17,7 @@ with st.sidebar:
     if st.text_input("Contraseña:", type="password") != PASSWORD:
         st.stop()
 
-# --- FORMULARIO ---
+# Formulario REORGANIZADO
 with st.container():
     c1, c2, c3 = st.columns(3)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
@@ -39,6 +39,7 @@ criterios = [
 
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 
+# DISEÑO EN 4 COLUMNAS
 cols = st.columns(4)
 notas = {}
 for i, crit in enumerate(criterios):
