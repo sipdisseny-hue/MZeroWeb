@@ -2,25 +2,37 @@ import streamlit as st
 import pandas as pd
 import requests
 
-# CONFIGURACIÓN ORIGINAL
-PASSWORD = "TuClaveSecreta" 
 st.set_page_config(page_title="MZero Web", layout="wide")
 
+# --- ESTADO DE SESIÓN ---
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
+if 'autenticado' not in st.session_state: st.session_state.autenticado = False
 
-# --- SIDEBAR ORIGINAL ---
+# --- SIDEBAR: AUTENTICACIÓN ---
 with st.sidebar:
     try: st.image("logo_mzero.png")
     except: st.warning("Logo no encontrado.")
     st.markdown("## M-Zero Pro - Evaluación")
     
-    # LA ÚNICA VALIDACIÓN QUE SIEMPRE FUNCIONÓ
-    if st.text_input("Contraseña:", type="password") != PASSWORD:
-        st.stop()
+    usuario_in = st.text_input("Usuario:")
+    pass_in = st.text_input("Contraseña:", type="password")
+    
+    if st.button("Acceder"):
+        if usuario_in == "jcros" and pass_in == "jcros1967":
+            st.session_state.autenticado = True
+            st.rerun()
+        else:
+            st.error("Usuario o contraseña incorrectos")
+            st.session_state.autenticado = False
 
-# --- FORMULARIO ORIGINAL (SIN NINGÚN CAMBIO) ---
+# --- BLOQUEO DE ACCESO ---
+if not st.session_state.autenticado:
+    st.info("Por favor, introduce tu usuario y contraseña en el menú lateral.")
+    st.stop()
+
+# --- FORMULARIO DE EVALUACIÓN ---
 with st.container():
     c1, c2, c3 = st.columns(3)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
@@ -48,7 +60,14 @@ for i, crit in enumerate(criterios):
     with cols[i % 4]:
         with st.container(border=True):
             st.markdown(f"**{crit}**")
-            notas[crit] = st.radio("puntuacion", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
+            notas[crit] = st.radio(
+                "puntuacion", 
+                [1, 2, 3, 4, 5], 
+                horizontal=True, 
+                key=f"rad_{crit}_{st.session_state.alumno_key}", 
+                index=None,
+                label_visibility="collapsed"
+            )
 
 if None not in notas.values() and alumno:
     nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
@@ -75,4 +94,4 @@ if st.session_state.lista_alumnos:
             st.session_state.reset_todo += 1
             st.session_state.alumno_key += 1
             st.rerun()
-        except Exception as e: st.error(f"Error: {e}")
+        except Exception as e: st.error(f"Error de conexión: {e}")
