@@ -2,19 +2,45 @@ import streamlit as st
 import pandas as pd
 import requests
 
-PASSWORD = "TuClaveSecreta"
+PASSWORD = "TuClaveSecreta" # Se mantiene, pero se usará la validación de la hoja
 st.set_page_config(page_title="MZero Web", layout="wide")
 
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
+if 'autenticado' not in st.session_state: st.session_state.autenticado = False
 
 # --- SIDEBAR ---
 with st.sidebar:
     try: st.image("logo_mzero.png")
     except: st.warning("Logo no encontrado.")
     st.markdown("## M-Zero Pro - Evaluación")
-    if st.text_input("Contraseña:", type="password") != PASSWORD:
+
+    # Leer usuarios desde la hoja de cálculo
+    url_csv = "TU_URL_DE_CSV_PUBLICADO_DE_USUARIOS"
+    df_users = pd.read_csv(url_csv)
+    
+    usuario_in = st.text_input("Usuario:")
+    pass_in = st.text_input("Contraseña:", type="password")
+    
+    if st.button("Acceder"):
+        match = df_users[(df_users['Usuarios'] == usuario_in) & (df_users['Password'] == pass_in)]
+        if not match.empty:
+            st.session_state.autenticado = True
+        else:
+            st.error("Usuario o contraseña incorrectos")
+    
+    if st.session_state.get("autenticado"):
+        st.success(f"Bienvenido {usuario_in}")
+        with st.expander("Cambiar mi contraseña"):
+            nueva_pass = st.text_input("Nueva contraseña:", type="password")
+            if st.button("Actualizar contraseña"):
+                payload = {"tipo": "cambio_pass", "usuario": usuario_in, "nueva_pass": nueva_pass}
+                requests.post("TU_URL_DEL_SCRIPT", json=payload)
+                st.success("Contraseña actualizada. Vuelve a iniciar sesión.")
+                st.session_state.autenticado = False
+                st.rerun()
+    else:
         st.stop()
 
 # Formulario REORGANIZADO
