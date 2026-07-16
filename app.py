@@ -21,7 +21,7 @@ with st.sidebar:
     try:
         df_users = pd.read_csv(url_csv)
     except Exception as e:
-        st.error("No se puede conectar a la hoja de Usuarios. Verifica que esté publicada.")
+        st.error("Error al conectar con la hoja.")
         st.stop()
     
     usuario_in = st.text_input("Usuario:")
@@ -47,7 +47,7 @@ with st.sidebar:
     else:
         st.stop()
 
-# Formulario REORGANIZADO
+# --- RESTO DEL FORMULARIO ---
 with st.container():
     c1, c2, c3 = st.columns(3)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
@@ -69,21 +69,13 @@ criterios = [
 
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 
-# DISEÑO EN 4 COLUMNAS
 cols = st.columns(4)
 notas = {}
 for i, crit in enumerate(criterios):
     with cols[i % 4]:
         with st.container(border=True):
             st.markdown(f"**{crit}**")
-            notas[crit] = st.radio(
-                "puntuacion", 
-                [1, 2, 3, 4, 5], 
-                horizontal=True, 
-                key=f"rad_{crit}_{st.session_state.alumno_key}", 
-                index=None,
-                label_visibility="collapsed"
-            )
+            notas[crit] = st.radio("puntuacion", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
 if None not in notas.values() and alumno:
     nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
