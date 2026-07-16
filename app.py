@@ -19,19 +19,16 @@ with st.sidebar:
     url_csv = f"https://docs.google.com/spreadsheets/d/{ID_DE_TU_HOJA}/gviz/tq?tqx=out:csv&sheet=Usuarios"
     
     try:
-        # Carga forzada de columnas para evitar el error de lectura
-        df_users = pd.read_csv(url_csv, header=0)
-        df_users.columns = ['Usuarios', 'Password']
-        df_users = df_users.dropna()
+        df_users = pd.read_csv(url_csv)
     except Exception as e:
-        st.error("No se puede conectar a la hoja de Usuarios.")
+        st.error("No se puede conectar a la hoja de Usuarios. Verifica que esté publicada.")
         st.stop()
     
     usuario_in = st.text_input("Usuario:")
     pass_in = st.text_input("Contraseña:", type="password")
     
     if st.button("Acceder"):
-        match = df_users[(df_users['Usuarios'].astype(str) == usuario_in) & (df_users['Password'].astype(str) == pass_in)]
+        match = df_users[(df_users['Usuarios'] == usuario_in) & (df_users['Password'] == pass_in)]
         if not match.empty:
             st.session_state.autenticado = True
         else:
