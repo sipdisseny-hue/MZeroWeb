@@ -15,38 +15,45 @@ with st.sidebar:
     except: st.warning("Logo no encontrado.")
     st.markdown("## M-Zero Pro - Evaluación")
 
-    # BLOQUE DE AUTENTICACIÓN PERSONALIZADA
+    # CARGA BLINDADA DE USUARIOS
     ID_DE_TU_HOJA = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs"
     url_users = f"https://docs.google.com/spreadsheets/d/{ID_DE_TU_HOJA}/gviz/tq?tqx=out:csv&sheet=Usuarios"
     
     try:
         df_users = pd.read_csv(url_users)
-        usuario = st.text_input("Usuario:")
-        pass_in = st.text_input("Contraseña:", type="password")
-        
-        if st.button("Acceder"):
-            match = df_users[(df_users['Usuarios'].astype(str) == usuario) & (df_users['Password'].astype(str) == pass_in)]
-            if not match.empty:
-                st.session_state.autenticado = True
-            else:
-                st.error("Usuario o contraseña incorrectos")
-        
-        if st.session_state.get("autenticado"):
-            st.success(f"Bienvenido {usuario}")
-            nueva_p = st.text_input("Nueva contraseña:", type="password")
-            if st.button("Cambiar mi contraseña"):
-                payload = {"tipo": "cambio_pass", "user": usuario, "new_pass": nueva_p}
-                requests.post("https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec", json=payload)
-                st.success("Contraseña actualizada")
-        else:
-            # Tu contraseña maestra original
-            if st.text_input("Contraseña maestra:", type="password") != "TuClaveSecreta":
-                st.stop()
+        df_users.columns = df_users.columns.str.strip()
+        columnas = list(df_users.columns)
+        columnas[0] = 'Usuarios'
+        columnas[1] = 'Password'
+        df_users.columns = columnas
+        df_users = df_users.dropna(subset=['Usuarios', 'Password'])
     except Exception as e:
         st.error(f"Error cargando usuarios: {e}")
         st.stop()
 
-# --- TODO EL RESTO DEL CÓDIGO ORIGINAL (NO TOCADO) ---
+    # AUTENTICACIÓN
+    usuario = st.text_input("Usuario:")
+    pass_in = st.text_input("Contraseña:", type="password")
+    
+    if st.button("Acceder"):
+        match = df_users[(df_users['Usuarios'].astype(str) == usuario) & (df_users['Password'].astype(str) == pass_in)]
+        if not match.empty:
+            st.session_state.autenticado = True
+        else:
+            st.error("Usuario o contraseña incorrectos")
+    
+    if st.session_state.get("autenticado"):
+        st.success(f"Bienvenido {usuario}")
+        nueva_p = st.text_input("Nueva contraseña:", type="password")
+        if st.button("Cambiar mi contraseña"):
+            payload = {"tipo": "cambio_pass", "user": usuario, "new_pass": nueva_p}
+            requests.post("https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec", json=payload)
+            st.success("Contraseña actualizada")
+    else:
+        if st.text_input("Contraseña maestra:", type="password") != "TuClaveSecreta":
+            st.stop()
+
+# --- FORMULARIO ORIGINAL (NO TOCADO) ---
 with st.container():
     c1, c2, c3 = st.columns(3)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
