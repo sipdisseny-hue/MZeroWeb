@@ -5,19 +5,11 @@ import requests
 PASSWORD = "TuClaveSecreta"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
-# --- DISEÑO CSS ---
-st.markdown("""
-    <style>
-    .main h3 { font-size: 16px !important; }
-    div.block-container { padding-top: 1rem !important; }
-    </style>
-    """, unsafe_allow_html=True)
-
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
-# --- SIDEBAR: TÍTULO Y LOGO ---
+# --- SIDEBAR ---
 with st.sidebar:
     try: st.image("logo_mzero.png")
     except: st.warning("Logo no encontrado.")
@@ -27,12 +19,12 @@ with st.sidebar:
 
 # Formulario REORGANIZADO
 with st.container():
-    c1, c2, c3 = st.columns(3) # Tres columnas para los primeros campos
+    c1, c2, c3 = st.columns(3)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
     curso = c2.text_input("Curso", key=f"f_cur_{st.session_state.reset_todo}")
     modulo = c3.text_input("Módulo", key=f"f_mod_{st.session_state.reset_todo}")
     
-    c4, c5 = st.columns(2) # Dos columnas para los campos inferiores
+    c4, c5 = st.columns(2)
     nivel = c4.text_input("Nivel del Bloque", key=f"f_niv_{st.session_state.reset_todo}")
     alumno = c5.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.alumno_key}")
 
@@ -47,7 +39,7 @@ criterios = [
 
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 
-# DISEÑO EN 4 COLUMNAS CON TARJETAS
+# DISEÑO EN 4 COLUMNAS
 cols = st.columns(4)
 notas = {}
 for i, crit in enumerate(criterios):
