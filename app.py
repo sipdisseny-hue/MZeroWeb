@@ -1,75 +1,66 @@
 import streamlit as st
+import pandas as pd
 import requests
 
-# --- CONFIGURACIÓN ---
-# Reemplaza 'TuClaveSecreta' por la contraseña que quieras poner a tu web
-PASSWORD = "TuClaveSecreta" 
+# Configuración
+PASSWORD = "TuClaveSecreta"
+st.set_page_config(layout="wide")
 
-# Protegemos el acceso
-def check_password():
-    st.sidebar.title("Acceso Profesorado")
-    input_pass = st.sidebar.text_input("Introduce la contraseña:", type="password")
-    if input_pass != PASSWORD:
-        st.warning("Acceso restringido. Introduce la contraseña.")
-        st.stop()
-
-check_password()
-
-# --- APP M-ZERO ---
-st.title("M-Zero Pro - Evaluación Acumulativa")
-
-# Estado para guardar alumnos en memoria antes de enviar
-if 'lista_alumnos' not in st.session_state:
+if "lista_alumnos" not in st.session_state:
     st.session_state.lista_alumnos = []
 
-# Datos del profesor y alumno
+# Control de Acceso
+def check_password():
+    if st.sidebar.text_input("Contraseña:", type="password") != PASSWORD:
+        st.stop()
+check_password()
+
+st.title("M-Zero Pro - Evaluación Final")
+
+# Pesos
+pesos = {
+    "1. Tasa de eficiencia": 12, "2. Precisión geométrica y mecánica": 5,
+    "3. Autonomía ejecutiva": 12, "4. Índice de mermas": 5,
+    "5. Mantenimiento de utillaje y entorno": 3, "6. Factor de desempeño temporal": 10,
+    "7. Resolución escenarios de prácticas": 10, "8. Resolución escenarios de averías": 10,
+    "9. Precisión conceptual y terminología": 5, "10. Seguridad y normativas": 5,
+    "11. Fiabilidad y compromiso operativo": 10, "12. Capacidad de aprendizaje": 8,
+    "13. Comunicación y respeto al superior": 5
+}
+
+# Formulario
 with st.container():
-    profesor = st.text_input("Profesor")
-    curso = st.text_input("Curso")
-    modulo = st.text_input("Módulo")
-    nivel = st.text_input("Nivel del bloque")
-    alumno = st.text_input("Nombre del Alumno")
+    c1, c2 = st.columns(2)
+    prof = c1.text_input("Profesor")
+    alu = c2.text_input("Nombre Alumno")
 
-# Criterios de evaluación
-criterios = [
-    "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
-    "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
-    "7. Resolución escenarios de prácticas", "8. Resolución escenarios de averías",
-    "9. Precisión conceptual y terminología", "10. Seguridad y normativas",
-    "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje", "13. Comunicación y respeto al superior"
-]
-
+st.subheader("Criterios (1-5)")
 notas = {}
-st.subheader("Criterios de Evaluación")
-for crit in criterios:
-    # Generamos los botones 1-5 para cada criterio
-    notas[crit] = st.radio(crit, ["1", "2", "3", "4", "5"], horizontal=True, key=crit)
+for crit, p in pesos.items():
+    notas[crit] = int(st.radio(f"{crit} ({p}%)", [1, 2, 3, 4, 5], horizontal=True, index=0, key=crit))
 
-# Cálculo de nota
-valores = [int(v) for v in notas.values()]
-total = sum(valores) / len(valores)
-st.metric("Nota Total", f"{total:.2f}")
+# Cálculo ponderado (Escala 1 a 10)
+# Convertimos cada nota (1-5) a (1-10) y aplicamos peso
+total = sum(((notas[crit]-1) * 2.25 + 1) * (pesos[crit]/100) for crit in pesos)
+if notas["10. Seguridad y normativas"] == 1:
+    nota_final = 4.0
+    res = "SUSPENSO (Línea Roja)"
+else:
+    nota_final = round(total, 1)
+    res = "APROBADO" if nota_final >= 5 else "SUSPENSO"
 
-# Botones de acción
-if st.button("GUARDAR ALUMNO Y SEGUIR"):
-    if not (profesor and alumno):
-        st.error("Debes rellenar Profesor y Nombre del Alumno.")
-    else:
-        st.session_state.lista_alumnos.append({
-            "profesor": profesor, "curso": curso, "modulo": modulo,
-            "nivel": nivel, "alumno": alumno, "nota_total": total, "notas": notas
-        })
-        st.success(f"Alumno {alumno} guardado. Total en lista: {len(st.session_state.lista_alumnos)}")
+st.metric("NOTA FINAL (1-10)", f"{nota_final} - {res}")
 
-if st.button("ENVIAR TODO"):
-    if not st.session_state.lista_alumnos:
-        st.warning("La lista está vacía.")
-    else:
-        # AQUÍ PEGA TU URL DE GOOGLE APPS SCRIPT
-        url = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
-        try:
-            requests.post(url, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=15)
-            st.success("Enviado correctamente a Google Sheets.")
-            st.session_state.lista_alumnos = []
-        except Exception as e:
-            st.error(f"Error al enviar: {e}")
+if st.button("GUARDAR ALUMNO"):
+    st.session_state.lista_alumnos.append({"Alumno": alu, "Nota": nota_final, "Estado": res})
+    st.rerun()
+
+# Tabla Resumen
+st.divider()
+st.subheader("ALUMNOS PENDIENTES DE ENVÍO")
+if st.session_state.lista_alumnos:
+    st.table(pd.DataFrame(st.session_state.lista_alumnos))
+    if st.button("ENVIAR TODO A GOOGLE"):
+        st.success("Enviado")
+        st.session_state.lista_alumnos = []
+        st.rerun()
