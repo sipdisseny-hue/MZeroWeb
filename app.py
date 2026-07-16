@@ -28,11 +28,14 @@ pesos = {
     "13. Comunicación y respeto al superior": 5
 }
 
-# Formulario
+# Formulario Completo
 with st.container():
     c1, c2 = st.columns(2)
     prof = c1.text_input("Profesor")
-    alu = c2.text_input("Nombre Alumno")
+    curso = c1.text_input("Curso")
+    mod = c2.text_input("Módulo")
+    niv = c2.text_input("Nivel del Bloque")
+    alu = st.text_input("Nombre del Alumno")
 
 st.subheader("Criterios (1-5)")
 notas = {}
@@ -40,7 +43,6 @@ for crit, p in pesos.items():
     notas[crit] = int(st.radio(f"{crit} ({p}%)", [1, 2, 3, 4, 5], horizontal=True, index=0, key=crit))
 
 # Cálculo ponderado (Escala 1 a 10)
-# Convertimos cada nota (1-5) a (1-10) y aplicamos peso
 total = sum(((notas[crit]-1) * 2.25 + 1) * (pesos[crit]/100) for crit in pesos)
 if notas["10. Seguridad y normativas"] == 1:
     nota_final = 4.0
@@ -52,7 +54,10 @@ else:
 st.metric("NOTA FINAL (1-10)", f"{nota_final} - {res}")
 
 if st.button("GUARDAR ALUMNO"):
-    st.session_state.lista_alumnos.append({"Alumno": alu, "Nota": nota_final, "Estado": res})
+    st.session_state.lista_alumnos.append({
+        "Alumno": alu, "Curso": curso, "Módulo": mod, 
+        "Nivel": niv, "Nota": nota_final, "Estado": res
+    })
     st.rerun()
 
 # Tabla Resumen
