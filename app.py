@@ -19,9 +19,10 @@ with st.sidebar:
     url_csv = f"https://docs.google.com/spreadsheets/d/{ID_DE_TU_HOJA}/gviz/tq?tqx=out:csv&sheet=Usuarios"
     
     try:
-        df_users = pd.read_csv(url_csv)
+        # Bloque mejorado de carga de usuarios
+        df_users = pd.read_csv(url_csv, header=0)
         df_users.columns = df_users.columns.str.strip()
-        df_users = df_users.dropna(how='all')
+        df_users = df_users.dropna(subset=['Usuarios', 'Password'])
     except Exception as e:
         st.error(f"Error cargando usuarios: {e}")
         st.stop()
