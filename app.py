@@ -15,25 +15,30 @@ with st.sidebar:
     except: st.warning("Logo no encontrado.")
     st.markdown("## M-Zero Pro - Evaluación")
 
-    # Configuración de acceso a la hoja de Usuarios
     ID_DE_TU_HOJA = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs" 
     url_csv = f"https://docs.google.com/spreadsheets/d/{ID_DE_TU_HOJA}/gviz/tq?tqx=out:csv&sheet=Usuarios"
     
     try:
         df_users = pd.read_csv(url_csv)
+        df_users.columns = df_users.columns.str.strip()
+        df_users = df_users.dropna(how='all')
     except Exception as e:
-        st.error("No se puede conectar a la hoja de Usuarios. Verifica que esté publicada.")
+        st.error(f"Error cargando usuarios: {e}")
         st.stop()
     
     usuario_in = st.text_input("Usuario:")
     pass_in = st.text_input("Contraseña:", type="password")
     
     if st.button("Acceder"):
-        match = df_users[(df_users['Usuarios'] == usuario_in) & (df_users['Password'] == pass_in)]
-        if not match.empty:
-            st.session_state.autenticado = True
+        if 'Usuarios' in df_users.columns and 'Password' in df_users.columns:
+            match = df_users[(df_users['Usuarios'].astype(str).str.strip() == usuario_in) & 
+                             (df_users['Password'].astype(str).str.strip() == pass_in)]
+            if not match.empty:
+                st.session_state.autenticado = True
+            else:
+                st.error("Usuario o contraseña incorrectos")
         else:
-            st.error("Usuario o contraseña incorrectos")
+            st.error(f"Error: Columnas detectadas {list(df_users.columns)}. Asegúrate de tener 'Usuarios' y 'Password'.")
     
     if st.session_state.get("autenticado"):
         st.success(f"Bienvenido {usuario_in}")
@@ -48,7 +53,7 @@ with st.sidebar:
                     "nueva_pass": nueva_pass
                 }
                 requests.post("https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec", json=payload)
-                st.warning("Datos actualizados. Por favor, vuelve a iniciar sesión con tus nuevos datos.")
+                st.warning("Datos actualizados. Vuelve a iniciar sesión.")
                 st.session_state.autenticado = False
                 st.rerun()
     else:
