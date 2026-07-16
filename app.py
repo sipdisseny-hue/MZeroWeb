@@ -19,27 +19,26 @@ with st.sidebar:
     url_csv = f"https://docs.google.com/spreadsheets/d/{ID_DE_TU_HOJA}/gviz/tq?tqx=out:csv&sheet=Usuarios"
     
     try:
-        # Bloque mejorado de carga de usuarios
+        # Carga ultra-robusta
         df_users = pd.read_csv(url_csv, header=0)
-        df_users.columns = df_users.columns.str.strip()
-        df_users = df_users.dropna(subset=['Usuarios', 'Password'])
+        # Fuerza los nombres de columnas sin importar lo que lea Google
+        df_users.columns = ['Usuarios', 'Password']
+        df_users = df_users.dropna()
     except Exception as e:
-        st.error(f"Error cargando usuarios: {e}")
+        st.error("Error al cargar la hoja. Asegúrate de que esté publicada correctamente.")
         st.stop()
     
     usuario_in = st.text_input("Usuario:")
     pass_in = st.text_input("Contraseña:", type="password")
     
     if st.button("Acceder"):
-        if 'Usuarios' in df_users.columns and 'Password' in df_users.columns:
-            match = df_users[(df_users['Usuarios'].astype(str).str.strip() == usuario_in) & 
-                             (df_users['Password'].astype(str).str.strip() == pass_in)]
-            if not match.empty:
-                st.session_state.autenticado = True
-            else:
-                st.error("Usuario o contraseña incorrectos")
+        # Comparamos directamente con el DataFrame limpio
+        match = df_users[(df_users['Usuarios'].astype(str) == usuario_in) & 
+                         (df_users['Password'].astype(str) == pass_in)]
+        if not match.empty:
+            st.session_state.autenticado = True
         else:
-            st.error(f"Error: Columnas detectadas {list(df_users.columns)}. Asegúrate de tener 'Usuarios' y 'Password'.")
+            st.error("Usuario o contraseña incorrectos")
     
     if st.session_state.get("autenticado"):
         st.success(f"Bienvenido {usuario_in}")
@@ -54,7 +53,7 @@ with st.sidebar:
                     "nueva_pass": nueva_pass
                 }
                 requests.post("https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec", json=payload)
-                st.warning("Datos actualizados. Vuelve a iniciar sesión.")
+                st.warning("Datos enviados. Vuelve a iniciar sesión.")
                 st.session_state.autenticado = False
                 st.rerun()
     else:
@@ -82,7 +81,6 @@ criterios = [
 
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 
-# DISEÑO EN 4 COLUMNAS
 cols = st.columns(4)
 notas = {}
 for i, crit in enumerate(criterios):
