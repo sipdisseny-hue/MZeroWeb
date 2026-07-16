@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 
 # CONFIGURACIÓN: SOLO CAMBIA EL TEXTO ENTRE COMILLAS POR TU ID REAL
-ID_DE_SHEET = "1BxiMVs0XRA5nFMdKvBdBZjgmUqptlbsY4OgvGkUp5xe" # <-- SUSTITUYE ESTO POR TU ID
+ID_DE_SHEET = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs" # <-- SUSTITUYE ESTO POR TU ID
 st.set_page_config(page_title="MZero Web", layout="wide")
 
 # Inicialización de estado
