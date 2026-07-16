@@ -23,12 +23,13 @@ st.title("M-Zero Pro - Evaluación Ponderada")
 # Formulario
 with st.container():
     c1, c2 = st.columns(2)
-    # Usamos reset_key también aquí para que se borren al enviar todo
-    profesor = c1.text_input("Profesor", key=f"prof_{st.session_state.reset_key}")
-    curso = c1.text_input("Curso", key=f"curs_{st.session_state.reset_key}")
-    modulo = c2.text_input("Módulo", key=f"mod_{st.session_state.reset_key}")
-    nivel = c2.text_input("Nivel", key=f"niv_{st.session_state.reset_key}")
-    alumno = st.text_input("Nombre del Alumno", key=f"alu_{st.session_state.reset_key}")
+    # Llaves fijas: NO se borran al guardar alumno
+    profesor = c1.text_input("Profesor", key="f_prof")
+    curso = c1.text_input("Curso", key="f_cur")
+    modulo = c2.text_input("Módulo", key="f_mod")
+    nivel = c2.text_input("Nivel", key="f_niv")
+    # Llave dinámica: SÍ se borra al guardar alumno
+    alumno = st.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.reset_key}")
 
 pesos = {
     "1. Tasa de eficiencia": 12, "2. Precisión geométrica y mecánica": 5,
@@ -43,10 +44,10 @@ pesos = {
 st.subheader("Criterios (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 notas = {}
 for crit, p in pesos.items():
+    # Llave dinámica: SÍ se borra al guardar alumno
     notas[crit] = int(st.radio(f"{crit} ({p}%)", [1, 2, 3, 4, 5], horizontal=True, key=f"{crit}_{st.session_state.reset_key}", index=0))
 
-# --- FÓRMULA CORREGIDA ---
-# Si valor=3, (3-1) * 2 = 4 + 1 = 5. (3 es el 60% de 5, así que es 5/10)
+# --- FÓRMULA (3 = 5 puntos) ---
 def conv(val): return (val - 1) * 2 + 1 
 
 total_puntos = sum(conv(notas[crit]) * (pesos[crit] / 100) for crit in pesos)
@@ -63,15 +64,17 @@ st.metric("Nota Final (Escala 1-10)", f"{nota_final} ({resultado})")
 # Botón Guardar
 if st.button("GUARDAR ALUMNO"):
     st.session_state.lista_alumnos.append({"alumno": alumno, "curso": curso, "modulo": modulo, "nivel": nivel, "nota": nota_final, "estado": resultado})
-    st.session_state.reset_key += 1 # Borra alumno y notas, mantiene resto
+    st.session_state.reset_key += 1 # Aumenta para limpiar alumno y notas
     st.rerun()
 
 # Revisión y Envío
 st.divider()
+st.subheader("Lista de alumnos registrados")
 if st.session_state.lista_alumnos:
     st.table(pd.DataFrame(st.session_state.lista_alumnos))
     if st.button("ENVIAR TODO A GOOGLE SHEETS"):
         st.success("Enviado correctamente.")
         st.session_state.lista_alumnos = []
-        st.session_state.reset_key += 100 # Un número grande fuerza el borrado de TODO
+        # Para limpiar los campos fijos, forzamos un recargado total
+        st.cache_data.clear()
         st.rerun()
