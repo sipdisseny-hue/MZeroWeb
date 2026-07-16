@@ -8,8 +8,7 @@ st.set_page_config(page_title="MZero Web", layout="wide")
 # --- DISEÑO CSS PARA PEQUEÑECER LETRAS ---
 st.markdown("""
     <style>
-    .main h1 { font-size: 24px !important; }
-    .main h3 { font-size: 18px !important; }
+    .main h3 { font-size: 16px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -17,14 +16,15 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
-try: st.sidebar.image("logo_mzero.png")
-except: st.sidebar.warning("Logo no encontrado.")
+# --- SIDEBAR: TÍTULO Y LOGO ---
+with st.sidebar:
+    try: st.image("logo_mzero.png")
+    except: st.warning("Logo no encontrado.")
+    st.markdown("## M-Zero Pro - Evaluación")
+    if st.text_input("Contraseña:", type="password") != PASSWORD:
+        st.stop()
 
-if st.sidebar.text_input("Contraseña:", type="password") != PASSWORD:
-    st.stop()
-
-st.title("M-Zero Pro - Evaluación")
-
+# Formulario
 with st.container():
     c1, c2 = st.columns(2)
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
