@@ -5,10 +5,11 @@ import requests
 PASSWORD = "TuClaveSecreta"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
-# Inicialización de estados
+# Gestión de estado
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
-if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
+if 'form_reset' not in st.session_state: st.session_state.form_reset = 0
 
+# --- LOGO ---
 try: st.sidebar.image("logo_mzero.png")
 except: st.sidebar.warning("Logo no encontrado.")
 
@@ -20,15 +21,14 @@ st.title("M-Zero Pro - Evaluación")
 # Formulario
 with st.container():
     c1, c2 = st.columns(2)
-    # Keys FIJAS: No se borran al guardar alumno
-    profesor = c1.text_input("Profesor", key="f_prof")
-    curso = c1.text_input("Curso", key="f_cur")
-    modulo = c2.text_input("Módulo", key="f_mod")
-    nivel = c2.text_input("Nivel del Bloque", key="f_niv")
-    # Key DINÁMICA: Se borra al guardar alumno
-    alumno = st.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.alumno_key}")
+    # Estas keys dependen de form_reset, así que se vaciarán al enviar
+    profesor = c1.text_input("Profesor", key=f"prof_{st.session_state.form_reset}")
+    curso = c1.text_input("Curso", key=f"curs_{st.session_state.form_reset}")
+    modulo = c2.text_input("Módulo", key=f"mod_{st.session_state.form_reset}")
+    nivel = c2.text_input("Nivel del Bloque", key=f"niv_{st.session_state.form_reset}")
+    alumno = st.text_input("Nombre del Alumno", key=f"alu_{st.session_state.form_reset}")
 
-# Textos de criterios completos y sin pesos
+# Textos criterios completos
 criterios = [
     "Tasa de eficiencia", "Precisión geométrica y mecánica", "Autonomía ejecutiva",
     "Índice de mermas", "Mantenimiento de utillaje y entorno", "Factor de desempeño temporal",
@@ -50,8 +50,7 @@ pesos = {
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 notas = {}
 for crit in criterios:
-    notas[crit] = st.radio(crit, [1, 2, 3, 4, 5], horizontal=True, 
-                           key=f"rad_{crit}_{st.session_state.alumno_key}", index=None)
+    notas[crit] = st.radio(crit, [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.form_reset}", index=None)
 
 # Cálculo
 if None not in notas.values():
@@ -62,28 +61,34 @@ if None not in notas.values():
 else:
     nota_final, res = None, None
 
-# Botones
+# Guardar alumno
 if st.button("GUARDAR ALUMNO"):
     if nota_final is not None and alumno:
         st.session_state.lista_alumnos.append({
             "Alumno": alumno, "Profesor": profesor, "Curso": curso, 
-            "Módulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res
+            "Modulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res
         })
-        st.session_state.alumno_key += 1 # Resetea SOLO alumno y notas
+        # Al sumar 1, solo borramos el nombre del alumno y las notas (al tener diferente key base)
+        st.session_state.form_reset += 1 
         st.rerun()
     else:
-        st.error("Completa el nombre del alumno y todas las puntuaciones.")
+        st.error("Completa el nombre y todas las puntuaciones.")
 
-st.divider()
+# Envío (Google Sheets)
 if st.session_state.lista_alumnos:
     st.table(pd.DataFrame(st.session_state.lista_alumnos))
     if st.button("ENVIAR TODO A GOOGLE SHEETS"):
         url = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
         try:
-            requests.post(url, json=st.session_state.lista_alumnos, timeout=15)
-            st.success("Enviado. Ahora puedes refrescar la página para borrar los datos del profesor.")
-            # Borrado total manual: 
-            st.session_state.lista_alumnos = []
-            st.session_state.alumno_key += 100
+            # ESTRUCTURA ANTIGUA RESTAURADA: {"evaluaciones": ...}
+            payload = {"evaluaciones": st.session_state.lista_alumnos}
+            resp = requests.post(url, json=payload, timeout=20)
+            if resp.status_code == 200:
+                st.success("Enviado correctamente.")
+                st.session_state.lista_alumnos = []
+                st.session_state.form_reset += 100 # BORRADO TOTAL
+                st.rerun()
+            else:
+                st.error(f"Error {resp.status_code}: Revisa tu Google Script.")
         except Exception as e:
             st.error(f"Error al enviar: {e}")
