@@ -5,7 +5,7 @@ import requests
 PASSWORD = "TuClaveSecreta"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
-# --- DISEÑO CSS PARA SUBIR ELEMENTOS ---
+# --- DISEÑO CSS ---
 st.markdown("""
     <style>
     .main h3 { font-size: 16px !important; }
@@ -25,14 +25,16 @@ with st.sidebar:
     if st.text_input("Contraseña:", type="password") != PASSWORD:
         st.stop()
 
-# Formulario
+# Formulario REORGANIZADO
 with st.container():
-    c1, c2 = st.columns(2)
+    c1, c2, c3 = st.columns(3) # Tres columnas para los primeros campos
     profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
-    curso = c1.text_input("Curso", key=f"f_cur_{st.session_state.reset_todo}")
-    modulo = c2.text_input("Módulo", key=f"f_mod_{st.session_state.reset_todo}")
-    nivel = c2.text_input("Nivel del Bloque", key=f"f_niv_{st.session_state.reset_todo}")
-    alumno = st.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.alumno_key}")
+    curso = c2.text_input("Curso", key=f"f_cur_{st.session_state.reset_todo}")
+    modulo = c3.text_input("Módulo", key=f"f_mod_{st.session_state.reset_todo}")
+    
+    c4, c5 = st.columns(2) # Dos columnas para los campos inferiores
+    nivel = c4.text_input("Nivel del Bloque", key=f"f_niv_{st.session_state.reset_todo}")
+    alumno = c5.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.alumno_key}")
 
 criterios = [
     "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
@@ -45,7 +47,7 @@ criterios = [
 
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 
-# DISEÑO EN 4 COLUMNAS CON TARJETAS (BORDER)
+# DISEÑO EN 4 COLUMNAS CON TARJETAS
 cols = st.columns(4)
 notas = {}
 for i, crit in enumerate(criterios):
