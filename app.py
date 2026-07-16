@@ -5,6 +5,14 @@ import requests
 PASSWORD = "TuClaveSecreta"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
+# --- DISEÑO CSS PARA PEQUEÑECER LETRAS ---
+st.markdown("""
+    <style>
+    .main h1 { font-size: 24px !important; }
+    .main h3 { font-size: 18px !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
