@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import requests
 
 # --- CONFIGURACIÓN ---
 PASSWORD = "TuClaveSecreta" 
@@ -20,12 +21,12 @@ st.title("M-Zero Pro - Evaluación")
 # Formulario
 with st.container():
     c1, c2 = st.columns(2)
-    # Campos fijos (sin key dinámica para que no se borren al guardar)
+    # Estas keys NO cambian para que no se borren al guardar alumno
     profesor = c1.text_input("Profesor", key="f_prof")
     curso = c1.text_input("Curso", key="f_cur")
     modulo = c2.text_input("Módulo", key="f_mod")
     nivel = c2.text_input("Nivel", key="f_niv")
-    # Campo alumno con key dinámica para borrarse al guardar
+    # Este SI cambia para borrarse al guardar
     alumno = st.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.form_key}")
 
 pesos = {
@@ -38,20 +39,14 @@ pesos = {
 st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
 notas = {}
 for crit, p in pesos.items():
-    # index=None asegura que no haya nada marcado al iniciar
     notas[crit] = st.radio(f"{crit} ({p}%)", [1, 2, 3, 4, 5], horizontal=True, 
                            key=f"rad_{crit}_{st.session_state.form_key}", index=None)
 
-# Cálculo solo si todos los criterios están marcados
+# Cálculo
 if None not in notas.values():
     total = sum(((notas[crit] - 1) * 2.5) * (pesos[crit] / 100) for crit in pesos)
     nota_final = round(total, 1)
-
-    if notas["10. Seguridad"] == 1:
-        nota_final, resultado = 4.0, "SUSPENSO (Línea Roja)"
-    else:
-        resultado = "APROBADO" if nota_final >= 5 else "SUSPENSO"
-
+    resultado = "SUSPENSO (Línea Roja)" if notas["10. Seguridad"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
     st.metric("NOTA FINAL", f"{nota_final} - {resultado}")
 else:
     nota_final, resultado = None, None
@@ -60,17 +55,24 @@ else:
 # Botón Guardar
 if st.button("GUARDAR ALUMNO"):
     if nota_final is not None and alumno:
-        st.session_state.lista_alumnos.append({"Alumno": alumno, "Nota": nota_final, "Estado": resultado})
+        st.session_state.lista_alumnos.append({"Alumno": alumno, "Curso": curso, "Módulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": resultado})
         st.session_state.form_key += 1 
         st.rerun()
     else:
         st.error("Completa el nombre del alumno y todas las puntuaciones.")
 
-# Tabla
+# Tabla y Envío
 st.divider()
 if st.session_state.lista_alumnos:
     st.table(pd.DataFrame(st.session_state.lista_alumnos))
-    if st.button("ENVIAR Y LIMPIAR SESIÓN"):
-        st.session_state.lista_alumnos = []
-        st.session_state.form_key += 100 
-        st.rerun()
+    if st.button("ENVIAR TODO A GOOGLE SHEETS"):
+        url = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
+        try:
+            requests.post(url, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=15)
+            st.success("Enviado correctamente.")
+            st.session_state.lista_alumnos = []
+            st.cache_data.clear() # Limpia los campos fijos de texto
+            st.session_state.form_key += 100 # Fuerza limpieza de alumno y notas
+            st.rerun()
+        except Exception as e:
+            st.error(f"Error al enviar: {e}")
