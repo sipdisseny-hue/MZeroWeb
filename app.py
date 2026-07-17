@@ -37,13 +37,15 @@ with st.sidebar:
 if not st.session_state.autenticado:
     st.markdown("## Bienvenido a M-Zero Pro")
     
-    # Contenedor cuadrado con borde (agrupa botón e imagen)
-    col_centro, col_espacio = st.columns([2, 3])
-    with col_centro:
-        with st.container(border=True):
-            if st.button("Asociados y Colaboradores"):
-                st.session_state.mostrar_pdf = not st.session_state.mostrar_pdf
-            st.image("Asociados y colaboradores.png", width=150)
+    # Contenedor ajustado automáticamente al tamaño del contenido
+    with st.container(border=True):
+        # Título en azul y negrita
+        st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
+        
+        # Imagen aumentada
+        if st.button("Haz clic para ver el documento", key="btn_pdf"):
+            st.session_state.mostrar_pdf = not st.session_state.mostrar_pdf
+        st.image("Asociados y colaboradores.png", width=300)
             
     # Visualización del PDF según estado
     if st.session_state.mostrar_pdf:
