@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 import base64
 
-# CONFIGURACIÓN: SOLO CAMBIA EL TEXTO ENTRE COMILLAS POR TU ID REAL
+# CONFIGURACIÓN
 ID_DE_SHEET = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
@@ -13,17 +13,24 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
-# --- NUEVA SECCIÓN EN EL CENTRO ---
-with st.expander("📂 Asociados y Colaboradores"):
-    st.image("Asociados y colaboradores.png", width=150)
-    st.markdown("### Asociados y Colaboradores")
-    try:
-        with open("Asociados y colaboradores.pdf", "rb") as f:
-            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="600" type="application/pdf"></iframe>'
-        st.markdown(pdf_display, unsafe_allow_html=True)
-    except Exception:
-        st.warning("No se pudo cargar el PDF.")
+# --- NUEVA SECCIÓN (SOLO PANTALLA INICIAL) ---
+if not st.session_state.autenticado:
+    with st.expander("📂 Asociados y Colaboradores"):
+        # Logo y Título como cabecera del botón
+        c_logo, c_titulo = st.columns([1, 6])
+        with c_logo:
+            st.image("Asociados y colaboradores.png", width=60)
+        with c_titulo:
+            st.markdown("### Asociados y Colaboradores")
+            
+        # PDF incrustado que aparece al clicar el expander
+        try:
+            with open("Asociados y colaboradores.pdf", "rb") as f:
+                base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="600" type="application/pdf"></iframe>'
+            st.markdown(pdf_display, unsafe_allow_html=True)
+        except Exception:
+            st.warning("No se pudo cargar el PDF.")
 
 # --- SIDEBAR: LOGO Y AUTENTICACIÓN ---
 with st.sidebar:
