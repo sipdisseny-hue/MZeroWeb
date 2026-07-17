@@ -12,6 +12,12 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
+# --- NUEVA SECCIÓN EN EL CENTRO (VISIBLE PARA TODOS) ---
+with st.expander("📂 Asociados y Colaboradores"):
+    st.image("Asociados y colaboradores.png", width=150)
+    st.markdown("### Asociados y Colaboradores")
+    st.pdf("Asociados y colaboradores.pdf")
+
 # --- SIDEBAR: AUTENTICACIÓN QUE LEE TU HOJA ---
 with st.sidebar:
     st.image("logo_mzero.png")
