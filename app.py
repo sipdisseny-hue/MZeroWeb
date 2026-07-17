@@ -12,15 +12,9 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
-# --- SIDEBAR: LOGO, DOCUMENTACIÓN Y AUTENTICACIÓN ---
+# --- SIDEBAR: LOGO Y AUTENTICACIÓN ---
 with st.sidebar:
-    st.image("logo_mzero.png")
-    
-    with st.expander("📂 Documentación Asociados"):
-        st.image("Asociados y colaboradores.avif", width=100)
-        st.markdown("**Asociados y Colaboradores**")
-        st.pdf("Asociados y colaboradores.pdf")
-    
+    st.image("logo_mzero.png", use_container_width=True)
     st.markdown("## M-Zero Pro - Evaluación")
     usuario_in = st.text_input("Usuario:")
     pass_in = st.text_input("Contraseña:", type="password")
@@ -38,6 +32,16 @@ with st.sidebar:
             st.error("Error al conectar con la hoja Credenciales")
 
 if not st.session_state.autenticado:
+    # --- AQUÍ AÑADIMOS LA DOCUMENTACIÓN EN EL CUERPO CENTRAL ---
+    with st.expander("📂 Asociados y Colaboradores"):
+        try:
+            # Ponemos un contenedor para la imagen y el título
+            st.image("Asociados y colaboradores.avif", width=150)
+            st.markdown("### Asociados y Colaboradores")
+            st.pdf("Asociados y colaboradores.pdf")
+        except Exception:
+            st.warning("No se encontraron los archivos de documentación. Asegúrate de que estén subidos al servidor.")
+            
     st.info("Introduce tus credenciales para acceder al formulario.")
     st.stop()
 
