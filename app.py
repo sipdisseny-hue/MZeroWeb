@@ -55,16 +55,13 @@ if opcion == "Documentos":
         
         # Lógica de permisos y persistencia
         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-            def guardar_texto():
-                st.session_state.texto_documentos = st.session_state.editor_key
-            
-            st.session_state.texto_documentos = st.text_area(
-                "Editar notas (Solo para ti):", 
-                value=st.session_state.texto_documentos,
-                key="editor_key",
-                on_change=guardar_texto,
-                height=300
-            )
+            # Campo de edición
+            texto_temp = st.text_area("Editar notas (Solo para ti):", value=st.session_state.texto_documentos, height=300)
+            # Botón de Guardar añadido
+            if st.button("💾 GUARDAR NOTAS"):
+                st.session_state.texto_documentos = texto_temp
+                st.success("Notas guardadas correctamente.")
+                st.rerun()
         else:
             st.info(st.session_state.texto_documentos)
 
