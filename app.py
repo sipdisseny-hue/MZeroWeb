@@ -14,7 +14,7 @@ if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 if 'mostrar_pdf' not in st.session_state: st.session_state.mostrar_pdf = False
 
-# --- SIDEBAR (CON GESTIÓN DE ERRORES ORIGINAL) ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro - Evaluación")
@@ -35,7 +35,6 @@ with st.sidebar:
 
 # --- LÓGICA DE VISIBILIDAD ---
 if not st.session_state.autenticado:
-    # Pantalla inicial
     st.markdown("## Bienvenido a M-Zero Pro")
     with st.container(border=True):
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
@@ -97,13 +96,19 @@ else:
             st.session_state.alumno_key += 1
             st.rerun()
 
-    # --- RESUMEN Y BOTÓN ELIMINAR ---
+    # --- RESUMEN TIPO EXCEL CON BOTÓN ELIMINAR ---
     if st.session_state.lista_alumnos:
         st.subheader("Resumen de Alumnos")
+        
+        # Mostrar tabla estilo Excel
+        df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
+        st.table(df_resumen)
+        
+        # Botón para eliminar cada registro (mostrado debajo de la tabla)
+        st.write("---")
+        st.write("Selecciona qué alumno eliminar si hay algún error:")
         for i, reg in enumerate(st.session_state.lista_alumnos):
-            col1, col2 = st.columns([6, 1])
-            col1.write(f"**{reg['Alumno']}** | Nota: {reg['Nota']} | {reg['Estado']}")
-            if col2.button("🗑️ Eliminar", key=f"del_{i}"):
+            if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
                 st.session_state.lista_alumnos.pop(i)
                 st.rerun()
 
