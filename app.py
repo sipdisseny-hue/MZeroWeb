@@ -36,7 +36,8 @@ with st.sidebar:
             url = f"https://docs.google.com/spreadsheets/d/{ID_DE_SHEET}/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
                 df = pd.read_csv(url)
-                if ((df['Usuarios'] == usuario_in) & (df['Password'] == pass_in)).any():
+                if ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) & 
+                    (df['Password'].astype(str).str.strip() == pass_in.strip())).any():
                     st.session_state.autenticado = True
                     st.session_state.usuario_actual = usuario_in
                     st.rerun()
@@ -52,9 +53,18 @@ if opcion == "Documentos":
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
         
-        # Lógica de permisos actualizada para usuario: mzerojc
+        # Lógica de permisos y persistencia
         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-            st.session_state.texto_documentos = st.text_area("Editar notas (Solo para ti):", value=st.session_state.texto_documentos)
+            def guardar_texto():
+                st.session_state.texto_documentos = st.session_state.editor_key
+            
+            st.session_state.texto_documentos = st.text_area(
+                "Editar notas (Solo para ti):", 
+                value=st.session_state.texto_documentos,
+                key="editor_key",
+                on_change=guardar_texto,
+                height=300
+            )
         else:
             st.info(st.session_state.texto_documentos)
 
@@ -62,7 +72,7 @@ elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
         st.warning("Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.")
     else:
-        # --- FORMULARIO PRINCIPAL (Código congelado) ---
+        # --- FORMULARIO PRINCIPAL ---
         with st.container():
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
