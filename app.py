@@ -66,20 +66,18 @@ elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
         st.warning("Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.")
     else:
-        # --- FORMULARIO PRINCIPAL ---
         with st.container():
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
             curso = c2.text_input("Curso", key=f"f_cur_{st.session_state.reset_todo}")
             modulo = c3.text_input("Módulo", key=f"f_mod_{st.session_state.reset_todo}")
-            
             c4, c5 = st.columns(2)
             nivel = c4.text_input("Nivel del Bloque", key=f"f_niv_{st.session_state.reset_todo}")
             alumno = c5.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.alumno_key}")
 
         criterios = [
-            "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
-            "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
+            "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Atonomia ejecutiva",
+            "4. indice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
             "7. Resolución escenarios de prácticas", "8. Resolución escenarios de averías",
             "9. Precisión conceptual y terminología", "10. Seguridad y normativas",
             "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje",
@@ -112,8 +110,7 @@ elif opcion == "Evaluaciones":
 
         if st.session_state.lista_alumnos:
             st.subheader("Resumen de Alumnos")
-            df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
-            st.table(df_resumen)
+            st.table(pd.DataFrame(st.session_state.lista_alumnos))
             
             with st.expander("Gestionar alumnos (Eliminar)"):
                 for i, reg in enumerate(st.session_state.lista_alumnos):
@@ -122,15 +119,15 @@ elif opcion == "Evaluaciones":
                         st.rerun()
 
             if st.button("ENVIAR TODO A GOOGLE SHEETS", type="primary"):
+                # URL CORREGIDA: Asegúrate de que esta URL sea la de tu nuevo despliegue
                 url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
                 try:
                     response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
                     if response.status_code == 200:
-                        st.success("Enviado con éxito a Google Sheets")
+                        st.success("Enviado con éxito")
                         st.session_state.lista_alumnos = []
                         st.session_state.reset_todo += 1
                         st.rerun()
                     else:
-                        st.error(f"Error en el servidor: {response.status_code}")
-                except Exception as e: 
-                    st.error(f"Error crítico de conexión: {e}")
+                        st.error(f"Error: {response.status_code}")
+                except Exception as e: st.error(f"Error crítico: {e}")
