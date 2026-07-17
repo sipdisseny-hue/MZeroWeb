@@ -12,6 +12,7 @@ if 'autenticado' not in st.session_state: st.session_state.autenticado = False
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
+if 'mostrar_pdf' not in st.session_state: st.session_state.mostrar_pdf = False
 
 # --- SIDEBAR: SIEMPRE VISIBLE ---
 with st.sidebar:
@@ -36,26 +37,26 @@ with st.sidebar:
 if not st.session_state.autenticado:
     st.markdown("## Bienvenido a M-Zero Pro")
     
-    # Creamos un contenedor centrado para el "botón"
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        # Usamos un expander con diseño personalizado
-        with st.expander(" ", expanded=False):
-            # Contenido visual del botón: Texto arriba, imagen abajo
-            st.markdown("<h3 style='text-align: center;'>Asociados y Colaboradores</h3>", unsafe_allow_html=True)
+    # Contenedor cuadrado con borde (agrupa botón e imagen)
+    col_centro, col_espacio = st.columns([2, 3])
+    with col_centro:
+        with st.container(border=True):
+            if st.button("Asociados y Colaboradores"):
+                st.session_state.mostrar_pdf = not st.session_state.mostrar_pdf
             st.image("Asociados y colaboradores.png", width=150)
             
-            # PDF incrustado que aparece al clicar
-            try:
-                with open("Asociados y colaboradores.pdf", "rb") as f:
-                    base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="500" type="application/pdf"></iframe>'
-                st.markdown(pdf_display, unsafe_allow_html=True)
-            except Exception:
-                st.warning("No se pudo cargar el PDF.")
+    # Visualización del PDF según estado
+    if st.session_state.mostrar_pdf:
+        try:
+            with open("Asociados y colaboradores.pdf", "rb") as f:
+                base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="500" type="application/pdf"></iframe>'
+            st.markdown(pdf_display, unsafe_allow_html=True)
+        except Exception:
+            st.warning("No se pudo cargar el PDF.")
 
 else:
-    # --- FORMULARIO (TRAS AUTENTICACIÓN) ---
+    # --- FORMULARIO (ESTRUCTURA ORIGINAL) ---
     with st.container():
         c1, c2, c3 = st.columns(3)
         profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
