@@ -13,7 +13,7 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
-# --- SIDEBAR: NAVEGACIÓN ---
+# --- SIDEBAR: NAVEGACIÓN Y ACCESO ---
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
@@ -21,21 +21,27 @@ with st.sidebar:
     opcion = st.radio("Navegación", ["Documentos", "Evaluaciones"])
     st.divider()
     
-    usuario_in = st.text_input("Usuario:")
-    pass_in = st.text_input("Contraseña:", type="password")
-    
-    if st.button("Acceder"):
-        # RESTAURACIÓN: He devuelto la lógica de conexión original exacta
-        url = f"https://docs.google.com/spreadsheets/d/{ID_DE_SHEET}/gviz/tq?tqx=out:csv&sheet=Credenciales"
-        try:
-            df = pd.read_csv(url)
-            if ((df['Usuarios'] == usuario_in) & (df['Password'] == pass_in)).any():
-                st.session_state.autenticado = True
-                st.rerun()
-            else:
-                st.error("Usuario o contraseña incorrectos")
-        except Exception as e:
-            st.error("Error al conectar con la hoja Credenciales")
+    # Lógica de acceso y cierre de sesión
+    if st.session_state.autenticado:
+        st.success("Sesión iniciada")
+        if st.button("CERRAR SESIÓN"):
+            st.session_state.autenticado = False
+            st.rerun() # Esto recarga y limpia los campos de texto automáticamente
+    else:
+        usuario_in = st.text_input("Usuario:")
+        pass_in = st.text_input("Contraseña:", type="password")
+        
+        if st.button("Acceder"):
+            url = f"https://docs.google.com/spreadsheets/d/{ID_DE_SHEET}/gviz/tq?tqx=out:csv&sheet=Credenciales"
+            try:
+                df = pd.read_csv(url)
+                if ((df['Usuarios'] == usuario_in) & (df['Password'] == pass_in)).any():
+                    st.session_state.autenticado = True
+                    st.rerun()
+                else:
+                    st.error("Usuario o contraseña incorrectos")
+            except Exception as e:
+                st.error("Error al conectar con la hoja Credenciales")
 
 # --- LÓGICA DE PANTALLAS ---
 if opcion == "Documentos":
@@ -49,7 +55,7 @@ elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
         st.warning("Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.")
     else:
-        # --- FORMULARIO PRINCIPAL (Código "congelado" intacto) ---
+        # --- FORMULARIO PRINCIPAL (Código "congelado" e intacto) ---
         with st.container():
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
