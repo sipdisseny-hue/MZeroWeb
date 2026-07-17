@@ -18,7 +18,6 @@ with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
     
-    # Selector de Pantalla
     opcion = st.radio("Navegación", ["Documentos", "Evaluaciones"])
     st.divider()
     
@@ -26,32 +25,31 @@ with st.sidebar:
     pass_in = st.text_input("Contraseña:", type="password")
     
     if st.button("Acceder"):
+        # RESTAURACIÓN: He devuelto la lógica de conexión original exacta
         url = f"https://docs.google.com/spreadsheets/d/{ID_DE_SHEET}/gviz/tq?tqx=out:csv&sheet=Credenciales"
         try:
             df = pd.read_csv(url)
             if ((df['Usuarios'] == usuario_in) & (df['Password'] == pass_in)).any():
                 st.session_state.autenticado = True
                 st.rerun()
-            else: st.error("Acceso denegado")
-        except: st.error("Error al conectar con credenciales")
+            else:
+                st.error("Usuario o contraseña incorrectos")
+        except Exception as e:
+            st.error("Error al conectar con la hoja Credenciales")
 
 # --- LÓGICA DE PANTALLAS ---
-
-# PANTALLA 1: DOCUMENTOS
 if opcion == "Documentos":
     st.markdown("## Área de Documentación y Consultas")
     with st.container(border=True):
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
-        # Aquí puedes escribir tus textos fijos, poner logos, etc.
         st.image("Asociados y colaboradores.png", width=300)
-        st.write("Bienvenido al área de consulta. Esta sección es informativa y está protegida contra ediciones no autorizadas.")
+        st.write("Bienvenido al área de consulta.")
 
-# PANTALLA 2: EVALUACIONES
 elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
         st.warning("Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.")
     else:
-        # --- FORMULARIO PRINCIPAL (Tu código "congelado") ---
+        # --- FORMULARIO PRINCIPAL (Código "congelado" intacto) ---
         with st.container():
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
@@ -95,7 +93,6 @@ elif opcion == "Evaluaciones":
                 st.session_state.alumno_key += 1
                 st.rerun()
 
-        # --- RESUMEN Y ENVÍO ---
         if st.session_state.lista_alumnos:
             st.subheader("Resumen de Alumnos")
             df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
