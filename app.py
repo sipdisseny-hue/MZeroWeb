@@ -12,9 +12,8 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
-# --- SIDEBAR: AUTENTICACIÓN ---
+# --- SIDEBAR: AUTENTICACIÓN QUE LEE TU HOJA ---
 with st.sidebar:
-    st.image("logo_mzero.png", use_container_width=True)
     st.markdown("## M-Zero Pro - Evaluación")
     usuario_in = st.text_input("Usuario:")
     pass_in = st.text_input("Contraseña:", type="password")
@@ -30,12 +29,6 @@ with st.sidebar:
                 st.error("Usuario o contraseña incorrectos")
         except Exception as e:
             st.error("Error al conectar con la hoja Credenciales")
-
-# --- DOCUMENTACIÓN EN EL CENTRO ---
-with st.expander("📂 Asociados y Colaboradores"):
-    st.image("Asociados y colaboradores.avif", width=150)
-    st.markdown("### Asociados y Colaboradores")
-    st.pdf("Asociados y colaboradores.pdf")
 
 if not st.session_state.autenticado:
     st.info("Introduce tus credenciales para acceder al formulario.")
