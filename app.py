@@ -34,31 +34,28 @@ with st.sidebar:
 
 # --- PANTALLA PRINCIPAL (DERECHA) ---
 if not st.session_state.autenticado:
-    # Este contenedor central es el que querías para los asociados
     st.markdown("## Bienvenido a M-Zero Pro")
-    st.write("Por favor, inicia sesión en la barra lateral para comenzar.")
     
-    # El cuadro contenedor
-    with st.container(border=True):
-        with st.expander("📂 Asociados y Colaboradores"):
-            # Logo y Título como cabecera dentro del cuadro
-            c_logo, c_titulo = st.columns([1, 6])
-            with c_logo:
-                st.image("Asociados y colaboradores.png", width=60)
-            with c_titulo:
-                st.markdown("### Asociados y Colaboradores")
+    # Creamos un contenedor centrado para el "botón"
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        # Usamos un expander con diseño personalizado
+        with st.expander(" ", expanded=False):
+            # Contenido visual del botón: Texto arriba, imagen abajo
+            st.markdown("<h3 style='text-align: center;'>Asociados y Colaboradores</h3>", unsafe_allow_html=True)
+            st.image("Asociados y colaboradores.png", width=150)
             
-            # PDF incrustado
+            # PDF incrustado que aparece al clicar
             try:
                 with open("Asociados y colaboradores.pdf", "rb") as f:
                     base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="600" type="application/pdf"></iframe>'
+                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="500" type="application/pdf"></iframe>'
                 st.markdown(pdf_display, unsafe_allow_html=True)
             except Exception:
                 st.warning("No se pudo cargar el PDF.")
 
 else:
-    # --- FORMULARIO (SOLO SE VE TRAS AUTENTICACIÓN) ---
+    # --- FORMULARIO (TRAS AUTENTICACIÓN) ---
     with st.container():
         c1, c2, c3 = st.columns(3)
         profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
