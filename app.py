@@ -14,7 +14,7 @@ if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 if 'texto_documentos' not in st.session_state: st.session_state.texto_documentos = "Bienvenido al área de consulta."
 if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
 
-# --- SIDEBAR: NAVEGACIÓN Y ACCESO ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
@@ -39,10 +39,8 @@ with st.sidebar:
                     st.session_state.autenticado = True
                     st.session_state.usuario_actual = usuario_in
                     st.rerun()
-                else:
-                    st.error("Usuario o contraseña incorrectos")
-            except Exception as e:
-                st.error("Error al conectar con la hoja Credenciales")
+                else: st.error("Usuario o contraseña incorrectos")
+            except Exception as e: st.error("Error al conectar con la hoja Credenciales")
 
 # --- LÓGICA DE PANTALLAS ---
 if opcion == "Documentos":
@@ -62,7 +60,7 @@ if opcion == "Documentos":
 
 elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
-        st.warning("Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.")
+        st.warning("Debes iniciar sesión en el sidebar.")
     else:
         with st.container():
             c1, c2, c3 = st.columns(3)
@@ -95,11 +93,8 @@ elif opcion == "Evaluaciones":
             nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
             res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
             st.metric("NOTA FINAL", f"{nota_final} - {res}")
-        else:
-            nota_final, res = None, None
-
-        if st.button("GUARDAR ALUMNO"):
-            if nota_final is not None:
+            
+            if st.button("GUARDAR ALUMNO"):
                 registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso, "Modulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res}
                 registro.update(notas)
                 st.session_state.lista_alumnos.append(registro)
@@ -110,8 +105,13 @@ elif opcion == "Evaluaciones":
             st.subheader("Resumen de Alumnos")
             st.table(pd.DataFrame(st.session_state.lista_alumnos))
             
+            with st.expander("Gestionar alumnos (Eliminar)"):
+                for i, reg in enumerate(st.session_state.lista_alumnos):
+                    if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
+                        st.session_state.lista_alumnos.pop(i)
+                        st.rerun()
+
             if st.button("ENVIAR TODO A GOOGLE SHEETS", type="primary"):
-                # URL de despliegue con /exec al final
                 requests.post("https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec", 
                               json={"evaluaciones": st.session_state.lista_alumnos})
                 st.session_state.lista_alumnos = []
