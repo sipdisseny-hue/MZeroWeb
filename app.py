@@ -96,27 +96,32 @@ else:
             st.session_state.alumno_key += 1
             st.rerun()
 
-    # --- RESUMEN TIPO EXCEL CON BOTÓN ELIMINAR ---
+    # --- RESUMEN Y ENVÍO ---
     if st.session_state.lista_alumnos:
         st.subheader("Resumen de Alumnos")
         
-        # Mostrar tabla estilo Excel
+        # 1. Tabla Visual
         df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
         st.table(df_resumen)
         
-        # Botón para eliminar cada registro (mostrado debajo de la tabla)
-        st.write("---")
-        st.write("Selecciona qué alumno eliminar si hay algún error:")
-        for i, reg in enumerate(st.session_state.lista_alumnos):
-            if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
-                st.session_state.lista_alumnos.pop(i)
-                st.rerun()
+        # 2. Gestión de Eliminación (Separado para no bloquear el botón de envío)
+        with st.expander("Gestionar alumnos (Eliminar)"):
+            for i, reg in enumerate(st.session_state.lista_alumnos):
+                if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
+                    st.session_state.lista_alumnos.pop(i)
+                    st.rerun()
 
-        if st.button("ENVIAR TODO A GOOGLE SHEETS"):
+        # 3. Botón de Envío (¡Fuera del bucle de eliminación!)
+        if st.button("ENVIAR TODO A GOOGLE SHEETS", type="primary"):
             url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
             try:
-                requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
-                st.session_state.lista_alumnos = []
-                st.session_state.reset_todo += 1
-                st.rerun()
-            except Exception as e: st.error(f"Error: {e}")
+                response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
+                if response.status_code == 200:
+                    st.success("Enviado con éxito a Google Sheets")
+                    st.session_state.lista_alumnos = []
+                    st.session_state.reset_todo += 1
+                    st.rerun()
+                else:
+                    st.error(f"Error en el servidor: {response.status_code}")
+            except Exception as e: 
+                st.error(f"Error crítico de conexión: {e}")
