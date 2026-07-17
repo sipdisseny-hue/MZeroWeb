@@ -14,7 +14,7 @@ if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 if 'mostrar_pdf' not in st.session_state: st.session_state.mostrar_pdf = False
 
-# --- SIDEBAR ---
+# --- SIDEBAR: SIEMPRE VISIBLE ---
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro - Evaluación")
@@ -33,40 +33,47 @@ with st.sidebar:
         except Exception as e:
             st.error("Error al conectar con la hoja Credenciales")
 
-# --- PANTALLA PRINCIPAL ---
+# --- LÓGICA DE VISIBILIDAD ---
 if not st.session_state.autenticado:
+    # Pantalla inicial
     st.markdown("## Bienvenido a M-Zero Pro")
     with st.container(border=True):
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
         if st.button("Haz clic para ver el documento", key="btn_pdf"):
             st.session_state.mostrar_pdf = not st.session_state.mostrar_pdf
         st.image("Asociados y colaboradores.png", width=300)
+            
     if st.session_state.mostrar_pdf:
         try:
             with open("Asociados y colaboradores.pdf", "rb") as f:
                 base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-            st.markdown(f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="500" type="application/pdf"></iframe>', unsafe_allow_html=True)
-        except Exception: st.warning("No se pudo cargar el PDF.")
+            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="500" type="application/pdf"></iframe>'
+            st.markdown(pdf_display, unsafe_allow_html=True)
+        except Exception:
+            st.warning("No se pudo cargar el PDF.")
 
 else:
-    # --- FORMULARIO ORIGINAL ---
+    # --- FORMULARIO PRINCIPAL ---
     with st.container():
         c1, c2, c3 = st.columns(3)
         profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
         curso = c2.text_input("Curso", key=f"f_cur_{st.session_state.reset_todo}")
         modulo = c3.text_input("Módulo", key=f"f_mod_{st.session_state.reset_todo}")
+        
         c4, c5 = st.columns(2)
         nivel = c4.text_input("Nivel del Bloque", key=f"f_niv_{st.session_state.reset_todo}")
         alumno = c5.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.alumno_key}")
 
-    criterios = ["1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
-                 "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
-                 "7. Resolución escenarios de prácticas", "8. Resolución escenarios de averías",
-                 "9. Precisión conceptual y terminología", "10. Seguridad y normativas",
-                 "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje",
-                 "13. Comunicación y respeto al superior"]
+    criterios = [
+        "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
+        "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
+        "7. Resolución escenarios de prácticas", "8. Resolución escenarios de averías",
+        "9. Precisión conceptual y terminología", "10. Seguridad y normativas",
+        "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje",
+        "13. Comunicación y respeto al superior"
+    ]
 
-    st.subheader("Puntuación")
+    st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
     cols = st.columns(4)
     notas = {}
     for i, crit in enumerate(criterios):
@@ -90,28 +97,8 @@ else:
             st.session_state.alumno_key += 1
             st.rerun()
 
-    # --- RESUMEN Y EDICIÓN ---
     if st.session_state.lista_alumnos:
-        st.subheader("Resumen de Alumnos")
-        for idx, reg in enumerate(st.session_state.lista_alumnos):
-            col1, col2 = st.columns([4, 1])
-            col1.write(f"**Alumno:** {reg['Alumno']} | **Nota:** {reg['Nota']} | **Estado:** {reg['Estado']}")
-            
-            # Solo añadimos esta funcionalidad sin tocar el resto
-            with col2.popover("Editar +"):
-                st.write(f"Editando a: {reg['Alumno']}")
-                notas_edit = {}
-                for crit in criterios:
-                    notas_edit[crit] = st.radio(crit, [1, 2, 3, 4, 5], index=reg[crit]-1, horizontal=True)
-                
-                if st.button("Actualizar cambios", key=f"btn_edit_{idx}"):
-                    suma_puntos = sum((notas_edit[c] - 1) * 2.5 for c in criterios)
-                    reg.update(notas_edit)
-                    reg["Nota"] = round(suma_puntos / len(criterios), 1)
-                    reg["Estado"] = "SUSPENSO (Línea Roja)" if notas_edit["10. Seguridad y normativas"] == 1 else ("APROBADO" if reg["Nota"] >= 5 else "SUSPENSO")
-                    st.rerun()
-
-        # Botón de envío final
+        st.table(pd.DataFrame(st.session_state.lista_alumnos))
         if st.button("ENVIAR TODO A GOOGLE SHEETS"):
             url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
             try:
