@@ -53,11 +53,8 @@ if opcion == "Documentos":
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
         
-        # Lógica de permisos y persistencia
         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-            # Campo de edición
             texto_temp = st.text_area("Editar notas (Solo para ti):", value=st.session_state.texto_documentos, height=300)
-            # Botón de Guardar añadido
             if st.button("💾 GUARDAR NOTAS"):
                 st.session_state.texto_documentos = texto_temp
                 st.success("Notas guardadas correctamente.")
@@ -108,7 +105,7 @@ elif opcion == "Evaluaciones":
         if st.button("GUARDAR ALUMNO"):
             if nota_final is not None:
                 registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso, "Modulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res}
-                registro.update(notas)
+                registro.update(notas) # <-- ¡Aquí vuelven a estar las puntuaciones!
                 st.session_state.lista_alumnos.append(registro)
                 st.session_state.alumno_key += 1
                 st.rerun()
