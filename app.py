@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import requests
-import base64
 
 # CONFIGURACIÓN
 ID_DE_SHEET = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs"
@@ -12,6 +11,8 @@ if 'autenticado' not in st.session_state: st.session_state.autenticado = False
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
+if 'texto_documentos' not in st.session_state: st.session_state.texto_documentos = "Bienvenido al área de consulta."
+if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
 
 # --- SIDEBAR: NAVEGACIÓN Y ACCESO ---
 with st.sidebar:
@@ -21,12 +22,12 @@ with st.sidebar:
     opcion = st.radio("Navegación", ["Documentos", "Evaluaciones"])
     st.divider()
     
-    # Lógica de acceso y cierre de sesión
     if st.session_state.autenticado:
-        st.success("Sesión iniciada")
+        st.success(f"Sesión iniciada: {st.session_state.usuario_actual}")
         if st.button("CERRAR SESIÓN"):
             st.session_state.autenticado = False
-            st.rerun() # Esto recarga y limpia los campos de texto automáticamente
+            st.session_state.usuario_actual = ""
+            st.rerun()
     else:
         usuario_in = st.text_input("Usuario:")
         pass_in = st.text_input("Contraseña:", type="password")
@@ -37,6 +38,7 @@ with st.sidebar:
                 df = pd.read_csv(url)
                 if ((df['Usuarios'] == usuario_in) & (df['Password'] == pass_in)).any():
                     st.session_state.autenticado = True
+                    st.session_state.usuario_actual = usuario_in
                     st.rerun()
                 else:
                     st.error("Usuario o contraseña incorrectos")
@@ -49,13 +51,18 @@ if opcion == "Documentos":
     with st.container(border=True):
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
-        st.write("Bienvenido al área de consulta.")
+        
+        # Lógica de permisos actualizada para usuario: mzerojc
+        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+            st.session_state.texto_documentos = st.text_area("Editar notas (Solo para ti):", value=st.session_state.texto_documentos)
+        else:
+            st.info(st.session_state.texto_documentos)
 
 elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
         st.warning("Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.")
     else:
-        # --- FORMULARIO PRINCIPAL (Código "congelado" e intacto) ---
+        # --- FORMULARIO PRINCIPAL (Código congelado) ---
         with st.container():
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
