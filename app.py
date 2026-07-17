@@ -105,7 +105,7 @@ elif opcion == "Evaluaciones":
         if st.button("GUARDAR ALUMNO"):
             if nota_final is not None:
                 registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso, "Modulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res}
-                registro.update(notas) # <-- ¡Aquí vuelven a estar las puntuaciones!
+                registro.update(notas)
                 st.session_state.lista_alumnos.append(registro)
                 st.session_state.alumno_key += 1
                 st.rerun()
