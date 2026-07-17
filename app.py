@@ -14,7 +14,7 @@ if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 if 'mostrar_pdf' not in st.session_state: st.session_state.mostrar_pdf = False
 
-# --- SIDEBAR: SIEMPRE VISIBLE ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro - Evaluación")
@@ -33,21 +33,16 @@ with st.sidebar:
         except Exception as e:
             st.error("Error al conectar con la hoja Credenciales")
 
-# --- PANTALLA PRINCIPAL (DERECHA) ---
+# --- LÓGICA DE VISIBILIDAD ---
 if not st.session_state.autenticado:
+    # Pantalla inicial
     st.markdown("## Bienvenido a M-Zero Pro")
-    
-    # Contenedor ajustado automáticamente al tamaño del contenido
     with st.container(border=True):
-        # Título en azul y negrita
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
-        
-        # Imagen aumentada
         if st.button("Haz clic para ver el documento", key="btn_pdf"):
             st.session_state.mostrar_pdf = not st.session_state.mostrar_pdf
         st.image("Asociados y colaboradores.png", width=300)
             
-    # Visualización del PDF según estado
     if st.session_state.mostrar_pdf:
         try:
             with open("Asociados y colaboradores.pdf", "rb") as f:
@@ -58,7 +53,7 @@ if not st.session_state.autenticado:
             st.warning("No se pudo cargar el PDF.")
 
 else:
-    # --- FORMULARIO (ESTRUCTURA ORIGINAL) ---
+    # --- FORMULARIO (ESTA PARTE ESTABA OCULTA POR ERROR DE SANGRÍA) ---
     with st.container():
         c1, c2, c3 = st.columns(3)
         profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
