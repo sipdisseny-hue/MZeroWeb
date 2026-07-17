@@ -90,8 +90,9 @@ else:
 
     if st.button("GUARDAR ALUMNO"):
         if nota_final is not None:
+            # CORRECCIÓN: Aquí es donde aseguramos que TODOS los criterios se guardan en el registro
             registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso, "Modulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res}
-            registro.update(notas)
+            registro.update(notas) 
             st.session_state.lista_alumnos.append(registro)
             st.session_state.alumno_key += 1
             st.rerun()
@@ -100,18 +101,18 @@ else:
     if st.session_state.lista_alumnos:
         st.subheader("Resumen de Alumnos")
         
-        # 1. Tabla Visual
+        # Tabla Visual con todos los datos
         df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
         st.table(df_resumen)
         
-        # 2. Gestión de Eliminación (Separado para no bloquear el botón de envío)
+        # Gestión de Eliminación
         with st.expander("Gestionar alumnos (Eliminar)"):
             for i, reg in enumerate(st.session_state.lista_alumnos):
                 if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
                     st.session_state.lista_alumnos.pop(i)
                     st.rerun()
 
-        # 3. Botón de Envío (¡Fuera del bucle de eliminación!)
+        # Botón de Envío
         if st.button("ENVIAR TODO A GOOGLE SHEETS", type="primary"):
             url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
             try:
