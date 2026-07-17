@@ -12,9 +12,15 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
-# --- SIDEBAR: AUTENTICACIÓN QUE LEE TU HOJA ---
+# --- SIDEBAR: LOGO, DOCUMENTACIÓN Y AUTENTICACIÓN ---
 with st.sidebar:
     st.image("logo_mzero.png")
+    
+    with st.expander("📂 Documentación Asociados"):
+        st.image("Asociados y colaboradores.avif", width=100)
+        st.markdown("**Asociados y Colaboradores**")
+        st.pdf("Asociados y colaboradores.pdf")
+    
     st.markdown("## M-Zero Pro - Evaluación")
     usuario_in = st.text_input("Usuario:")
     pass_in = st.text_input("Contraseña:", type="password")
