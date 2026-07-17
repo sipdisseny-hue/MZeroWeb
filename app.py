@@ -14,6 +14,7 @@ if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 
 # --- SIDEBAR: AUTENTICACIÓN QUE LEE TU HOJA ---
 with st.sidebar:
+    st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro - Evaluación")
     usuario_in = st.text_input("Usuario:")
     pass_in = st.text_input("Contraseña:", type="password")
