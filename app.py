@@ -54,23 +54,31 @@ if opcion == "Documentos":
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
         
-        # Tres columnas para los desplegables
+        # Tres columnas para los desplegables con lógica de edición para el admin
         col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            with st.expander("Mecanizado"): st.write("Contenido aquí...")
-            with st.expander("Climatización"): st.write("Contenido aquí...")
-            with st.expander("Fontanería"): st.write("Contenido aquí...")
-            
-        with col2:
-            with st.expander("Electricidad"): st.write("Contenido aquí...")
-            with st.expander("Obra"): st.write("Contenido aquí...")
-            with st.expander("Electromecánica"): st.write("Contenido aquí...")
+        columnas = [col1, col2, col3]
+        titulos = [
+            ["Mecanizado", "Climatización", "Fontanería"],
+            ["Electricidad", "Obra", "Electromecánica"],
+            ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]
+        ]
 
-        with col3:
-            with st.expander("Hidráulica"): st.write("Contenido aquí...")
-            with st.expander("Construcción Mecánica"): st.write("Contenido aquí...")
-            with st.expander("Asociaciones y Gremios"): st.write("Contenido aquí...")
+        for i, col in enumerate(columnas):
+            with col:
+                for titulo in titulos[i]:
+                    with st.expander(titulo):
+                        # Lógica de edición (solo admin)
+                        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                            st.write("--- MODO EDICIÓN ---")
+                            nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp[titulo], height=150, key=f"edit_{titulo}")
+                            img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_{titulo}")
+                            
+                            if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
+                                st.session_state.contenido_exp[titulo] = nuevo_text
+                                st.rerun()
+                        
+                        # Visualización del contenido
+                        st.markdown(st.session_state.contenido_exp[titulo], unsafe_allow_html=True)
 
         # --- BLOQUE 2: FUNCIONALIDAD ---
         st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
