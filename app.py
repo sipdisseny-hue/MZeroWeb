@@ -104,33 +104,61 @@ if opcion == "Documentos":
                         # Visualización del contenido
                         st.markdown(st.session_state.contenido_exp[titulo], unsafe_allow_html=True)
 
-        # --- BLOQUE 2: FUNCIONALIDAD ---
+       # --- BLOQUE 2: FUNCIONALIDAD ---
         st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
-        with st.expander("Argumentos M-Zero"): st.write("Información...")
-        with st.expander("¿Por qué ser Asociado o Colaborador?"): st.write("Información...")
-        with st.expander("Metodología M0"): st.write("Información...")
-        with st.expander("El sello M-Zero 'Certificación de calidad'"): st.write("Información...")
+        
+        # Lista de títulos para el bucle
+        titulos_func = [
+            "Argumentos M-Zero", 
+            "¿Por qué ser Asociado o Colaborador?", 
+            "Metodología M0", 
+            "El sello M-Zero 'Certificación de calidad'"
+        ]
+        
+        for titulo in titulos_func:
+            with st.expander(titulo):
+                # Modo edición (Solo ADMIN)
+                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                    st.session_state.contenido_funcionalidad[titulo] = st.text_area(
+                        f"Editar {titulo}:", 
+                        value=st.session_state.contenido_funcionalidad.get(titulo, ""), 
+                        height=150, 
+                        key=f"func_{titulo}"
+                    )
+                # Visualización
+                st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
         st.divider()
 
         # --- BLOQUE 3: CONTACTO ---
         st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
-        with st.expander("Móvil / WhatsApp"): st.write("Tu número de teléfono")
-        with st.expander("Email"): st.write("Tu email")
+        titulos_cont = ["Móvil / WhatsApp", "Email"]
+        
+        for titulo in titulos_cont:
+            with st.expander(titulo):
+                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                    st.session_state.contenido_contacto[titulo] = st.text_area(
+                        f"Editar {titulo}:", 
+                        value=st.session_state.contenido_contacto.get(titulo, ""), 
+                        height=70, 
+                        key=f"cont_{titulo}"
+                    )
+                st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
         # --- BLOQUE 4: CÓMO PARTICIPAR ---
         st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
-        # Solo el admin puede editar este texto
-        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-            with st.expander("⚙️ EDITAR INFORMACIÓN (Solo Admin)"):
-                texto_temp = st.text_area("Edita la información:", value=st.session_state.texto_documentos, height=150)
-                if st.button("💾 GUARDAR CAMBIOS"):
-                    st.session_state.texto_documentos = texto_temp
-                    st.success("Información actualizada.")
-                    st.rerun()
         
         with st.expander("Información del sistema"):
-            st.markdown(st.session_state.texto_documentos)
+            # Modo edición (Solo ADMIN)
+            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                st.session_state.texto_documentos = st.text_area(
+                    "Editar información:", 
+                    value=st.session_state.texto_documentos, 
+                    height=150, 
+                    key="edit_participar"
+                )
+            # Visualización
+            st.markdown(st.session_state.texto_documentos, unsafe_allow_html=True)
 
     # --- ESLOGAN DESTACADO ---
     st.markdown("""
