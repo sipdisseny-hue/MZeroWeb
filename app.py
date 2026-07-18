@@ -19,9 +19,24 @@ if 'contenido_exp' not in st.session_state:
         "Electricidad": "", "Obra": "", "Electromecánica": "",
         "Hidráulica": "", "Construcción Mecánica": "", "Asociaciones y Gremios": ""
     }
-if 'contenido_funcionalidad' not in st.session_state: st.session_state.contenido_funcionalidad = {}
-if 'contenido_contacto' not in st.session_state: st.session_state.contenido_contacto = {}
-if 'contenido_participar' not in st.session_state: st.session_state.contenido_participar = {}
+if 'contenido_funcionalidad' not in st.session_state:
+    st.session_state.contenido_funcionalidad = {
+        "Argumentos M-Zero": "", 
+        "¿Por qué ser Asociado o Colaborador?": "", 
+        "Metodología M0": "", 
+        "El sello M-Zero": ""
+    }
+
+if 'contenido_contacto' not in st.session_state:
+    st.session_state.contenido_contacto = {
+        "Móvil / WhatsApp": "", 
+        "Email": ""
+    }
+
+if 'contenido_participar' not in st.session_state:
+    st.session_state.contenido_participar = {
+        "Información del sistema": ""
+    }
 
 # --- SIDEBAR: NAVEGACIÓN Y ACCESO ---
 with st.sidebar:
