@@ -2,6 +2,20 @@ import streamlit as st
 import pandas as pd
 import requests
 
+def guardar_en_sheets(titulo, nuevo_contenido):
+    url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
+    payload = {
+        "accion": "guardar_texto", 
+        "titulo": titulo, 
+        "contenido": nuevo_contenido
+    }
+    try:
+        response = requests.post(url_script, json=payload, timeout=20)
+        return response.status_code == 200
+    except Exception as e:
+        st.error(f"Error al conectar con Sheets: {e}")
+        return False
+
 # CONFIGURACIÓN
 ID_DE_SHEET = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs"
 st.set_page_config(page_title="MZero Web", layout="wide")
