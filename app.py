@@ -13,6 +13,12 @@ if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 if 'texto_documentos' not in st.session_state: st.session_state.texto_documentos = "Bienvenido al área de consulta."
 if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
+if 'contenido_exp' not in st.session_state:
+    st.session_state.contenido_exp = {
+        "Mecanizado": "", "Climatización": "", "Fontanería": "",
+        "Electricidad": "", "Obra": "", "Electromecánica": "",
+        "Hidráulica": "", "Construcción Mecánica": "", "Asociaciones y Gremios": ""
+    }
 
 # --- SIDEBAR: NAVEGACIÓN Y ACCESO ---
 with st.sidebar:
