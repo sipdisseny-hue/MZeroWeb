@@ -115,40 +115,31 @@ if opcion == "Documentos":
                         # Visualización del contenido
                         st.markdown(st.session_state.contenido_exp[titulo], unsafe_allow_html=True)
 
-# --- BLOQUE 2: FUNCIONALIDAD ---
-st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
-
-titulos_func = [
-    "Argumentos M-Zero", 
-    "¿Por qué ser Asociado o Colaborador?", 
-    "Metodología M0", 
-    "El sello M-Zero 'Certificación de calidad'"
-]
-
-for titulo in titulos_func:
-    with st.expander(titulo):
-        # Modo edición (Solo ADMIN)
-        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-            nuevo_text = st.text_area(
-                f"Editar {titulo}:", 
-                value=st.session_state.contenido_funcionalidad.get(titulo, ""), 
-                height=150, 
-                key=f"func_{titulo}"
-            )
-            
-            # AÑADIMOS ESTE BOTÓN PARA GUARDAR
-            if st.button(f"Guardar {titulo}", key=f"btn_func_{titulo}"):
-                st.session_state.contenido_funcionalidad[titulo] = nuevo_text
-                if guardar_en_sheets(titulo, nuevo_text):
-                    st.success("¡Cambios enviados a Sheets!")
-                    st.rerun()
-                else:
-                    st.error("Error al guardar")
+	# --- BLOQUE 2: FUNCIONALIDAD ---
+        st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
         
-        # Visualización
-        st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
+        # Lista de títulos para el bucle
+        titulos_func = [
+            "Argumentos M-Zero", 
+            "¿Por qué ser Asociado o Colaborador?", 
+            "Metodología M0", 
+            "El sello M-Zero 'Certificación de calidad'"
+        ]
+        
+        for titulo in titulos_func:
+            with st.expander(titulo):
+                # Modo edición (Solo ADMIN)
+                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                    st.session_state.contenido_funcionalidad[titulo] = st.text_area(
+                        f"Editar {titulo}:", 
+                        value=st.session_state.contenido_funcionalidad.get(titulo, ""), 
+                        height=150, 
+                        key=f"func_{titulo}"
+                    )
+                # Visualización
+                st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
-st.divider()       
+        st.divider()       
 
         # --- BLOQUE 3: CONTACTO ---
         st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
