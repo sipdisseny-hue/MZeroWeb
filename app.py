@@ -19,6 +19,9 @@ if 'contenido_exp' not in st.session_state:
         "Electricidad": "", "Obra": "", "Electromecánica": "",
         "Hidráulica": "", "Construcción Mecánica": "", "Asociaciones y Gremios": ""
     }
+if 'contenido_funcionalidad' not in st.session_state: st.session_state.contenido_funcionalidad = {}
+if 'contenido_contacto' not in st.session_state: st.session_state.contenido_contacto = {}
+if 'contenido_participar' not in st.session_state: st.session_state.contenido_participar = {}
 
 # --- SIDEBAR: NAVEGACIÓN Y ACCESO ---
 with st.sidebar:
