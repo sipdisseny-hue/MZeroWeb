@@ -50,59 +50,60 @@ with st.sidebar:
 if opcion == "Documentos":
     st.markdown("## Área de Documentación y Consultas")
     
-    # PANEL DE ADMINISTRACIÓN (Solo visible para mzerojc)
-    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-        with st.expander("⚙️ PANEL DE ADMINISTRACIÓN"):
-            st.write("Edición de contenidos:")
-            texto_temp = st.text_area("Texto para 'Cómo participar':", value=st.session_state.texto_documentos, height=200)
-            if st.button("💾 GUARDAR CAMBIOS"):
-                st.session_state.texto_documentos = texto_temp
-                st.success("Contenido actualizado.")
-                st.rerun()
-
-    # ESTRUCTURA PRINCIPAL DE DOCUMENTOS
     with st.container(border=True):
-        # 1. Asociados y Colaboradores
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
+        st.image("Asociados y colaboradores.png", width=300)
         
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            with st.expander("Mecanizado, Climatización, Fontanería"):
-                st.write("Contenido de empresas...")
-        with col2:
-            with st.expander("Electricidad, Obra, Electromecánica"):
-                st.write("Contenido de empresas...")
-        with col3:
-            with st.expander("Hidráulica, Construcción Mecánica, Asociaciones"):
-                st.write("Contenido de empresas...")
+        # --- BLOQUE 1: DESPLEGABLES INDIVIDUALES ---
+        st.markdown("#### Mecanizado, Climatización y Fontanería")
+        with st.expander("Mecanizado"): st.write("Contenido aquí...")
+        with st.expander("Climatización"): st.write("Contenido aquí...")
+        with st.expander("Fontanería"): st.write("Contenido aquí...")
+        
+        st.markdown("#### Electricidad, Obra y Electromecánica")
+        with st.expander("Electricidad"): st.write("Contenido aquí...")
+        with st.expander("Obra"): st.write("Contenido aquí...")
+        with st.expander("Electromecánica"): st.write("Contenido aquí...")
+
+        st.markdown("#### Hidráulica, Construcción Mecánica, Asociaciones y Gremios")
+        with st.expander("Hidráulica"): st.write("Contenido aquí...")
+        with st.expander("Construcción Mecánica"): st.write("Contenido aquí...")
+        with st.expander("Asociaciones y Gremios"): st.write("Contenido aquí...")
 
         st.divider()
 
-        # 2. Funcionalidad
+        # --- BLOQUE 2: FUNCIONALIDAD ---
         st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
-        with st.expander("Ver opciones de funcionalidad"):
-            st.write("1. Argumentos M-Zero")
-            st.write("2. ¿Por qué ser Asociado o Colaborador?")
-            st.write("3. Metodología M0")
-            st.write("4. El sello M-Zero 'Certificación de calidad'")
+        with st.expander("Argumentos M-Zero"): st.write("Información...")
+        with st.expander("¿Por qué ser Asociado o Colaborador?"): st.write("Información...")
+        with st.expander("Metodología M0"): st.write("Información...")
+        with st.expander("El sello M-Zero 'Certificación de calidad'"): st.write("Información...")
 
         st.divider()
 
-        # 3. Contacto
+        # --- BLOQUE 3: CONTACTO ---
         st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
-        with st.expander("Ver datos de contacto"):
-            st.write("Móvil / WhatsApp: ...")
-            st.write("Email: ...")
+        with st.expander("Móvil / WhatsApp"): st.write("Tu número de teléfono")
+        with st.expander("Email"): st.write("Tu email")
 
-        # 4. Cómo participar
+        # --- BLOQUE 4: CÓMO PARTICIPAR ---
         st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
+        # Solo el admin puede editar este texto
+        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+            with st.expander("⚙️ EDITAR INFORMACIÓN (Solo Admin)"):
+                texto_temp = st.text_area("Edita la información:", value=st.session_state.texto_documentos, height=150)
+                if st.button("💾 GUARDAR CAMBIOS"):
+                    st.session_state.texto_documentos = texto_temp
+                    st.success("Información actualizada.")
+                    st.rerun()
+        
         with st.expander("Información del sistema"):
             st.markdown(st.session_state.texto_documentos)
 
-    # 5. Eslogan final (Separado y destacado)
+    # --- ESLOGAN DESTACADO ---
     st.markdown("""
         <div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; 
-                    padding: 30px; border: 3px solid #0066cc; border-radius: 15px; 
+                    padding: 25px; border: 3px solid #0066cc; border-radius: 15px; 
                     margin-top: 40px; background-color: #f8fbff;">
             "Conectando talento, transformando la industria"
         </div>
