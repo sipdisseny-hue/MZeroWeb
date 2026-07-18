@@ -49,21 +49,64 @@ with st.sidebar:
 # --- LÓGICA DE PANTALLAS ---
 if opcion == "Documentos":
     st.markdown("## Área de Documentación y Consultas")
-    with st.container(border=True):
-        st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
-        st.image("Asociados y colaboradores.png", width=300)
-        
-        # Lógica de permisos y persistencia
-        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-            # Campo de edición
-            texto_temp = st.text_area("Editar notas (Solo para ti):", value=st.session_state.texto_documentos, height=300)
-            # Botón de Guardar añadido
-            if st.button("💾 GUARDAR NOTAS"):
+    
+    # PANEL DE ADMINISTRACIÓN (Solo visible para mzerojc)
+    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+        with st.expander("⚙️ PANEL DE ADMINISTRACIÓN"):
+            st.write("Edición de contenidos:")
+            texto_temp = st.text_area("Texto para 'Cómo participar':", value=st.session_state.texto_documentos, height=200)
+            if st.button("💾 GUARDAR CAMBIOS"):
                 st.session_state.texto_documentos = texto_temp
-                st.success("Notas guardadas correctamente.")
+                st.success("Contenido actualizado.")
                 st.rerun()
-        else:
-            st.info(st.session_state.texto_documentos)
+
+    # ESTRUCTURA PRINCIPAL DE DOCUMENTOS
+    with st.container(border=True):
+        # 1. Asociados y Colaboradores
+        st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            with st.expander("Mecanizado, Climatización, Fontanería"):
+                st.write("Contenido de empresas...")
+        with col2:
+            with st.expander("Electricidad, Obra, Electromecánica"):
+                st.write("Contenido de empresas...")
+        with col3:
+            with st.expander("Hidráulica, Construcción Mecánica, Asociaciones"):
+                st.write("Contenido de empresas...")
+
+        st.divider()
+
+        # 2. Funcionalidad
+        st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
+        with st.expander("Ver opciones de funcionalidad"):
+            st.write("1. Argumentos M-Zero")
+            st.write("2. ¿Por qué ser Asociado o Colaborador?")
+            st.write("3. Metodología M0")
+            st.write("4. El sello M-Zero 'Certificación de calidad'")
+
+        st.divider()
+
+        # 3. Contacto
+        st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
+        with st.expander("Ver datos de contacto"):
+            st.write("Móvil / WhatsApp: ...")
+            st.write("Email: ...")
+
+        # 4. Cómo participar
+        st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
+        with st.expander("Información del sistema"):
+            st.markdown(st.session_state.texto_documentos)
+
+    # 5. Eslogan final (Separado y destacado)
+    st.markdown("""
+        <div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; 
+                    padding: 30px; border: 3px solid #0066cc; border-radius: 15px; 
+                    margin-top: 40px; background-color: #f8fbff;">
+            "Conectando talento, transformando la industria"
+        </div>
+    """, unsafe_allow_html=True)
 
 elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
