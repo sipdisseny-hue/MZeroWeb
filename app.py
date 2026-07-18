@@ -54,23 +54,23 @@ if opcion == "Documentos":
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
         
-        # --- BLOQUE 1: DESPLEGABLES INDIVIDUALES ---
-        st.markdown("#### Mecanizado, Climatización y Fontanería")
-        with st.expander("Mecanizado"): st.write("Contenido aquí...")
-        with st.expander("Climatización"): st.write("Contenido aquí...")
-        with st.expander("Fontanería"): st.write("Contenido aquí...")
+        # Tres columnas para los desplegables
+        col1, col2, col3 = st.columns(3)
         
-        st.markdown("#### Electricidad, Obra y Electromecánica")
-        with st.expander("Electricidad"): st.write("Contenido aquí...")
-        with st.expander("Obra"): st.write("Contenido aquí...")
-        with st.expander("Electromecánica"): st.write("Contenido aquí...")
+        with col1:
+            with st.expander("Mecanizado"): st.write("Contenido aquí...")
+            with st.expander("Climatización"): st.write("Contenido aquí...")
+            with st.expander("Fontanería"): st.write("Contenido aquí...")
+            
+        with col2:
+            with st.expander("Electricidad"): st.write("Contenido aquí...")
+            with st.expander("Obra"): st.write("Contenido aquí...")
+            with st.expander("Electromecánica"): st.write("Contenido aquí...")
 
-        st.markdown("#### Hidráulica, Construcción Mecánica, Asociaciones y Gremios")
-        with st.expander("Hidráulica"): st.write("Contenido aquí...")
-        with st.expander("Construcción Mecánica"): st.write("Contenido aquí...")
-        with st.expander("Asociaciones y Gremios"): st.write("Contenido aquí...")
-
-        st.divider()
+        with col3:
+            with st.expander("Hidráulica"): st.write("Contenido aquí...")
+            with st.expander("Construcción Mecánica"): st.write("Contenido aquí...")
+            with st.expander("Asociaciones y Gremios"): st.write("Contenido aquí...")
 
         # --- BLOQUE 2: FUNCIONALIDAD ---
         st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
