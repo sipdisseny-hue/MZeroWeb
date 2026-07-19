@@ -122,17 +122,30 @@ if opcion == "Documentos":
                         
                         st.markdown(st.session_state.contenido_exp[titulo], unsafe_allow_html=True)
 
-    # --- BLOQUE 2: FUNCIONALIDAD ---
+    # --- BLOQUE 2: FUNCIONALIDAD (CORREGIDO PARA GRABAR LOCALMENTE) ---
     st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
     titulos_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
+
     for titulo in titulos_func:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                # Usamos un campo de texto que mantiene su valor en el session_state
                 temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
+            
                 if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                    # 1. Guardamos en la memoria de la sesión primero (esto es lo que hace que NO se borre)
+                    st.session_state.contenido_funcionalidad[titulo] = temp_text
+                
+                    # 2. Intentamos guardar en Sheets
                     if guardar_en_sheets(titulo, temp_text):
-                        st.session_state.contenido_funcionalidad[titulo] = temp_text
-                        refrescar_app()
+                        st.success("Guardado en Google y localmente")
+                else:
+                    st.warning("Guardado solo localmente (Error en Sheets)")
+                
+                # 3. Refrescamos para que se vea el cambio inmediatamente
+                st.rerun()
+
+            # Esta línea siempre mostrará lo que esté en la memoria (session_state)
             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 3: CONTACTO ---
