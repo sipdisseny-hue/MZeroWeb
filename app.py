@@ -11,7 +11,10 @@ def guardar_en_sheets(titulo, nuevo_contenido):
     }
     try:
         response = requests.post(url_script, json=payload, timeout=20)
-        return response.status_code == 200
+        if response.status_code == 200:
+            st.cache_data.clear() # <--- AÑADE ESTA LÍNEA AQUÍ
+            return True
+        return False
     except Exception as e:
         st.error(f"Error al conectar con Sheets: {e}")
         return False
@@ -129,28 +132,24 @@ if opcion == "Documentos":
             with st.expander(titulo):
                 # Modo edición (Solo ADMIN)
                 if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                    # Usamos una variable temporal para el editor
-                    input_key = f"edit_func_{titulo}"
-                    
-                    # El valor se inicializa con el dato actual del estado
-                    nuevo_texto = st.text_area(
+                    # 1. Creamos el área de texto temporal
+                    temp_text = st.text_area(
                         f"Editar {titulo}:", 
                         value=st.session_state.contenido_funcionalidad.get(titulo, ""), 
                         height=150, 
-                        key=input_key
+                        key=f"input_{titulo}"
                     )
                     
+                    # 2. Botón de guardar
                     if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
-                        # 1. Llamamos a tu función de guardado
-                        if guardar_en_sheets(titulo, nuevo_texto):
-                            # 2. ACTUALIZAMOS EL ESTADO MEMORIA
-                            st.session_state.contenido_funcionalidad[titulo] = nuevo_texto
+                        if guardar_en_sheets(titulo, temp_text):
+                            st.session_state.contenido_funcionalidad[titulo] = temp_text
                             st.success(f"Guardado '{titulo}' con éxito")
                             st.rerun() 
                         else:
                             st.error(f"Error al guardar {titulo}")
 
-                # Visualización (siempre lee del estado, que ya está actualizado al hacer rerun)
+                # Visualización
                 st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
      
 
