@@ -174,7 +174,7 @@ for titulo in titulos_func:
                 
                 st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
-        # --- BLOQUE 4: CÓMO PARTICIPAR ---
+# --- BLOQUE 4: CÓMO PARTICIPAR ---
 st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
 
 with st.expander("Información del sistema"):
