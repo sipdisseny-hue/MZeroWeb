@@ -159,20 +159,20 @@ for titulo in titulos_func:
         st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
      
 
-        # --- BLOQUE 3: CONTACTO ---
-        st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
-        titulos_cont = ["Móvil / WhatsApp", "Email"]
+# --- BLOQUE 3: CONTACTO ---
+st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
+titulos_cont = ["Móvil / WhatsApp", "Email"]
+
+for titulo in titulos_cont:
+    with st.expander(titulo):
+        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+            nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"cont_{titulo}")
+            if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
+                if guardar_en_sheets(titulo, nuevo_cont):
+                    st.session_state.contenido_contacto[titulo] = nuevo_cont
+                    refrescar_app()
         
-        for titulo in titulos_cont:
-            with st.expander(titulo):
-                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                    nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"cont_{titulo}")
-                    if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
-                        if guardar_en_sheets(titulo, nuevo_cont):
-                            st.session_state.contenido_contacto[titulo] = nuevo_cont
-                            refrescar_app() # <--- REFRESCAMOS AQUÍ
-                
-                st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
+        st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
 # --- BLOQUE 4: CÓMO PARTICIPAR ---
 st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
