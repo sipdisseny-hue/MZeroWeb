@@ -98,7 +98,6 @@ if opcion == "Documentos":
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
         
-        # Tres columnas para los desplegables con lógica de edición para el admin
         col1, col2, col3 = st.columns(3)
         columnas = [col1, col2, col3]
         titulos = [
@@ -111,7 +110,6 @@ if opcion == "Documentos":
             with col:
                 for titulo in titulos[i]:
                     with st.expander(titulo):
-                        # Lógica de edición (solo admin)
                         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                             st.write("--- MODO EDICIÓN ---")
                             nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp[titulo], height=150, key=f"edit_{titulo}")
@@ -122,88 +120,45 @@ if opcion == "Documentos":
                                     st.session_state.contenido_exp[titulo] = nuevo_text
                                     refrescar_app()
                         
-                        # Visualización del contenido
                         st.markdown(st.session_state.contenido_exp[titulo], unsafe_allow_html=True)
 
-# --- BLOQUE 2: FUNCIONALIDAD ---
-st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
+    # --- BLOQUE 2: FUNCIONALIDAD ---
+    st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
+    titulos_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
+    for titulo in titulos_func:
+        with st.expander(titulo):
+            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
+                if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                    if guardar_en_sheets(titulo, temp_text):
+                        st.session_state.contenido_funcionalidad[titulo] = temp_text
+                        refrescar_app()
+            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
-titulos_func = [
-    "Argumentos M-Zero", 
-    "¿Por qué ser Asociado o Colaborador?", 
-    "Metodología M0", 
-    "El sello M-Zero 'Certificación de calidad'"
-]
+    # --- BLOQUE 3: CONTACTO ---
+    st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
+    titulos_cont = ["Móvil / WhatsApp", "Email"]
+    for titulo in titulos_cont:
+        with st.expander(titulo):
+            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"cont_{titulo}")
+                if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
+                    if guardar_en_sheets(titulo, nuevo_cont):
+                        st.session_state.contenido_contacto[titulo] = nuevo_cont
+                        refrescar_app()
+            st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
-for titulo in titulos_func:
-    with st.expander(titulo):
-        # Modo edición (Solo ADMIN)
+    # --- BLOQUE 4: CÓMO PARTICIPAR ---
+    st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
+    with st.expander("Información del sistema"):
         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-            # 1. Creamos el área de texto temporal
-            temp_text = st.text_area(
-                f"Editar {titulo}:", 
-                value=st.session_state.contenido_funcionalidad.get(titulo, ""), 
-                height=150, 
-                key=f"input_{titulo}"
-            )
-            
-            # 2. Botón de guardar
-            if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
-                if guardar_en_sheets(titulo, temp_text):
-                    st.session_state.contenido_funcionalidad[titulo] = temp_text
-                    refrescar_app() # <--- ÚNICO CAMBIO: Sustituimos st.rerun() por refrescar_app()
-                else:
-                    st.error(f"Error al guardar {titulo}")
-
-        # Visualización
-        st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
-     
-
-# --- BLOQUE 3: CONTACTO ---
-st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
-titulos_cont = ["Móvil / WhatsApp", "Email"]
-
-for titulo in titulos_cont:
-    with st.expander(titulo):
-        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-            nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"cont_{titulo}")
-            if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
-                if guardar_en_sheets(titulo, nuevo_cont):
-                    st.session_state.contenido_contacto[titulo] = nuevo_cont
+            nuevo_texto = st.text_area("Editar información:", value=st.session_state.texto_documentos, height=150, key="edit_participar")
+            if st.button("Guardar información", key="btn_save_participar"):
+                if guardar_en_sheets("Información del sistema", nuevo_texto):
+                    st.session_state.texto_documentos = nuevo_texto
                     refrescar_app()
-        
-        st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
-
-# --- BLOQUE 4: CÓMO PARTICIPAR ---
-st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
-
-with st.expander("Información del sistema"):
-    # Modo edición (Solo ADMIN)
-    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-        nuevo_texto = st.text_area(
-            "Editar información:", 
-            value=st.session_state.texto_documentos, 
-            height=150, 
-            key="edit_participar"
-        )
-        
-        # Botón de guardar
-        if st.button("Guardar información", key="btn_save_participar"):
-            if guardar_en_sheets("Información del sistema", nuevo_texto):
-                st.session_state.texto_documentos = nuevo_texto
-                refrescar_app()
-
-    # Visualización
-    st.markdown(st.session_state.texto_documentos, unsafe_allow_html=True)
-    
-    # --- ESLOGAN DESTACADO ---
-    st.markdown("""
-        <div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; 
-                    padding: 25px; border: 3px solid #0066cc; border-radius: 15px; 
-                    margin-top: 40px; background-color: #f8fbff;">
-            "Conectando talento, transformando la industria"
-        </div>
-    """, unsafe_allow_html=True)
+        st.markdown(st.session_state.texto_documentos, unsafe_allow_html=True)
+        st.markdown("""<div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; padding: 25px; border: 3px solid #0066cc; border-radius: 15px; margin-top: 40px; background-color: #f8fbff;">"Conectando talento, transformando la industria"</div>""", unsafe_allow_html=True)
 
 elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
