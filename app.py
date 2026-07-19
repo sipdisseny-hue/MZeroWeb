@@ -196,7 +196,7 @@ with st.expander("Información del sistema"):
     # Visualización
     st.markdown(st.session_state.texto_documentos, unsafe_allow_html=True)
     
-       # --- ESLOGAN DESTACADO ---
+    # --- ESLOGAN DESTACADO ---
     st.markdown("""
         <div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; 
                     padding: 25px; border: 3px solid #0066cc; border-radius: 15px; 
