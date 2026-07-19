@@ -7,13 +7,17 @@ ID_DE_SHEET = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
-@st.cache_data(ttl=3600)
+@st.cache_data(ttl=600)
 def cargar_datos_de_google():
     url = f"https://docs.google.com/spreadsheets/d/{ID_DE_SHEET}/gviz/tq?tqx=out:csv&sheet=Textos"
     try:
         df = pd.read_csv(url)
-        return dict(zip(df['Titulo'], df['Contenido']))
-    except:
+        # Aseguramos que las columnas existan y limpiamos los valores vacíos
+        if 'Titulo' in df.columns and 'Contenido' in df.columns:
+            return dict(zip(df['Titulo'].astype(str), df['Contenido'].fillna("").astype(str)))
+        return {}
+    except Exception as e:
+        st.error(f"Error de lectura: {e}")
         return {}
 
 def refrescar_app():
