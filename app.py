@@ -2,30 +2,13 @@ import streamlit as st
 import pandas as pd
 import requests
 
-def guardar_en_sheets(titulo, nuevo_contenido):
-    url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
-    payload = {
-        "accion": "guardar_texto", 
-        "titulo": titulo, 
-        "contenido": nuevo_contenido
-    }
-    try:
-        response = requests.post(url_script, json=payload, timeout=20)
-        if response.status_code == 200:
-            st.cache_data.clear() # <--- AÑADE ESTA LÍNEA AQUÍ
-            return True
-        return False
-    except Exception as e:
-        st.error(f"Error al conectar con Sheets: {e}")
-        return False
-
 # CONFIGURACIÓN
 ID_DE_SHEET = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
-# --- LECTURA DE DATOS ---
+# --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=3600)
-def cargar_datos_iniciales():
+def cargar_datos_de_google():
     url = f"https://docs.google.com/spreadsheets/d/{ID_DE_SHEET}/gviz/tq?tqx=out:csv&sheet=Textos"
     try:
         df = pd.read_csv(url)
@@ -33,24 +16,47 @@ def cargar_datos_iniciales():
     except:
         return {}
 
-datos_guardados = cargar_datos_iniciales()
+def refrescar_app():
+    """Limpia caché, recarga los datos de Sheets y actualiza el estado"""
+    st.cache_data.clear()
+    nuevos_datos = cargar_datos_de_google()
+    
+    st.session_state.texto_documentos = nuevos_datos.get("Información del sistema", "Bienvenido al área de consulta.")
+    st.session_state.contenido_funcionalidad = {key: nuevos_datos.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
+    st.session_state.contenido_exp = {key: nuevos_datos.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
+    st.session_state.contenido_contacto = {key: nuevos_datos.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
+    st.rerun()
 
 # --- INICIALIZACIÓN DE ESTADOS ---
+datos_iniciales = cargar_datos_de_google()
+
 if 'autenticado' not in st.session_state: st.session_state.autenticado = False
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
-if 'texto_documentos' not in st.session_state: st.session_state.texto_documentos = datos_guardados.get("Información del sistema", "Bienvenido al área de consulta.")
 if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
 
+if 'texto_documentos' not in st.session_state: 
+    st.session_state.texto_documentos = datos_iniciales.get("Información del sistema", "Bienvenido al área de consulta.")
+
 if 'contenido_funcionalidad' not in st.session_state:
-    st.session_state.contenido_funcionalidad = {key: datos_guardados.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
+    st.session_state.contenido_funcionalidad = {key: datos_iniciales.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
 
 if 'contenido_exp' not in st.session_state:
-    st.session_state.contenido_exp = {key: datos_guardados.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
+    st.session_state.contenido_exp = {key: datos_iniciales.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
 
 if 'contenido_contacto' not in st.session_state:
-    st.session_state.contenido_contacto = {key: datos_guardados.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
+    st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
+
+# --- FUNCIÓN GUARDAR (Actualizada para usar la nueva lógica) ---
+def guardar_en_sheets(titulo, nuevo_contenido):
+    url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
+    payload = {"accion": "guardar_texto", "titulo": titulo, "contenido": nuevo_contenido}
+    try:
+        response = requests.post(url_script, json=payload, timeout=20)
+        return response.status_code == 200
+    except:
+        return False
 
 # --- SIDEBAR: NAVEGACIÓN Y ACCESO ---
 with st.sidebar:
@@ -112,45 +118,45 @@ if opcion == "Documentos":
                             img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_{titulo}")
                             
                             if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
-                                st.session_state.contenido_exp[titulo] = nuevo_text
-                                st.rerun()
+                                if guardar_en_sheets(titulo, nuevo_text):
+                                    st.session_state.contenido_exp[titulo] = nuevo_text
+                                    refrescar_app()
                         
                         # Visualización del contenido
                         st.markdown(st.session_state.contenido_exp[titulo], unsafe_allow_html=True)
 
-	# --- BLOQUE 2: FUNCIONALIDAD ---
-        st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
-        
-        titulos_func = [
-            "Argumentos M-Zero", 
-            "¿Por qué ser Asociado o Colaborador?", 
-            "Metodología M0", 
-            "El sello M-Zero 'Certificación de calidad'"
-        ]
-        
-        for titulo in titulos_func:
-            with st.expander(titulo):
-                # Modo edición (Solo ADMIN)
-                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                    # 1. Creamos el área de texto temporal
-                    temp_text = st.text_area(
-                        f"Editar {titulo}:", 
-                        value=st.session_state.contenido_funcionalidad.get(titulo, ""), 
-                        height=150, 
-                        key=f"input_{titulo}"
-                    )
-                    
-                    # 2. Botón de guardar
-                    if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
-                        if guardar_en_sheets(titulo, temp_text):
-                            st.session_state.contenido_funcionalidad[titulo] = temp_text
-                            st.success(f"Guardado '{titulo}' con éxito")
-                            st.rerun() 
-                        else:
-                            st.error(f"Error al guardar {titulo}")
+# --- BLOQUE 2: FUNCIONALIDAD ---
+st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
 
-                # Visualización
-                st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
+titulos_func = [
+    "Argumentos M-Zero", 
+    "¿Por qué ser Asociado o Colaborador?", 
+    "Metodología M0", 
+    "El sello M-Zero 'Certificación de calidad'"
+]
+
+for titulo in titulos_func:
+    with st.expander(titulo):
+        # Modo edición (Solo ADMIN)
+        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+            # 1. Creamos el área de texto temporal
+            temp_text = st.text_area(
+                f"Editar {titulo}:", 
+                value=st.session_state.contenido_funcionalidad.get(titulo, ""), 
+                height=150, 
+                key=f"input_{titulo}"
+            )
+            
+            # 2. Botón de guardar
+            if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                if guardar_en_sheets(titulo, temp_text):
+                    st.session_state.contenido_funcionalidad[titulo] = temp_text
+                    refrescar_app() # <--- ÚNICO CAMBIO: Sustituimos st.rerun() por refrescar_app()
+                else:
+                    st.error(f"Error al guardar {titulo}")
+
+        # Visualización
+        st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
      
 
         # --- BLOQUE 3: CONTACTO ---
@@ -160,30 +166,37 @@ if opcion == "Documentos":
         for titulo in titulos_cont:
             with st.expander(titulo):
                 if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                    st.session_state.contenido_contacto[titulo] = st.text_area(
-                        f"Editar {titulo}:", 
-                        value=st.session_state.contenido_contacto.get(titulo, ""), 
-                        height=70, 
-                        key=f"cont_{titulo}"
-                    )
+                    nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"cont_{titulo}")
+                    if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
+                        if guardar_en_sheets(titulo, nuevo_cont):
+                            st.session_state.contenido_contacto[titulo] = nuevo_cont
+                            refrescar_app() # <--- REFRESCAMOS AQUÍ
+                
                 st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
         # --- BLOQUE 4: CÓMO PARTICIPAR ---
-        st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
-        
-        with st.expander("Información del sistema"):
-            # Modo edición (Solo ADMIN)
-            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                st.session_state.texto_documentos = st.text_area(
-                    "Editar información:", 
-                    value=st.session_state.texto_documentos, 
-                    height=150, 
-                    key="edit_participar"
-                )
-            # Visualización
-            st.markdown(st.session_state.texto_documentos, unsafe_allow_html=True)
+st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
 
-    # --- ESLOGAN DESTACADO ---
+with st.expander("Información del sistema"):
+    # Modo edición (Solo ADMIN)
+    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+        nuevo_texto = st.text_area(
+            "Editar información:", 
+            value=st.session_state.texto_documentos, 
+            height=150, 
+            key="edit_participar"
+        )
+        
+        # Botón de guardar
+        if st.button("Guardar información", key="btn_save_participar"):
+            if guardar_en_sheets("Información del sistema", nuevo_texto):
+                st.session_state.texto_documentos = nuevo_texto
+                refrescar_app()
+
+    # Visualización
+    st.markdown(st.session_state.texto_documentos, unsafe_allow_html=True)
+    
+       # --- ESLOGAN DESTACADO ---
     st.markdown("""
         <div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; 
                     padding: 25px; border: 3px solid #0066cc; border-radius: 15px; 
