@@ -118,7 +118,6 @@ if opcion == "Documentos":
 	# --- BLOQUE 2: FUNCIONALIDAD ---
         st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
         
-        # Lista de títulos para el bucle
         titulos_func = [
             "Argumentos M-Zero", 
             "¿Por qué ser Asociado o Colaborador?", 
@@ -130,23 +129,30 @@ if opcion == "Documentos":
             with st.expander(titulo):
                 # Modo edición (Solo ADMIN)
                 if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                    st.session_state.contenido_funcionalidad[titulo] = st.text_area(
+                    # Usamos una variable temporal para el editor
+                    input_key = f"edit_func_{titulo}"
+                    
+                    # El valor se inicializa con el dato actual del estado
+                    nuevo_texto = st.text_area(
                         f"Editar {titulo}:", 
                         value=st.session_state.contenido_funcionalidad.get(titulo, ""), 
                         height=150, 
-                        key=f"func_{titulo}"
+                        key=input_key
                     )
-                    if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
-                        # Llamamos a tu función de guardado existente
-                        if guardar_en_sheets(titulo, st.session_state.contenido_funcionalidad[titulo]):
-                            st.success(f"Guardado {titulo} en Sheets")
+                    
+                    if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                        # 1. Llamamos a tu función de guardado
+                        if guardar_en_sheets(titulo, nuevo_texto):
+                            # 2. ACTUALIZAMOS EL ESTADO MEMORIA
+                            st.session_state.contenido_funcionalidad[titulo] = nuevo_texto
+                            st.success(f"Guardado '{titulo}' con éxito")
+                            st.rerun() 
                         else:
                             st.error(f"Error al guardar {titulo}")
 
-                # Visualización
+                # Visualización (siempre lee del estado, que ya está actualizado al hacer rerun)
                 st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
-
-        st.divider()       
+     
 
         # --- BLOQUE 3: CONTACTO ---
         st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
