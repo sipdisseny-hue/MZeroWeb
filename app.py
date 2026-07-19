@@ -139,6 +139,11 @@ if opcion == "Documentos":
                         height=150, 
                         key=f"func_{titulo}"
                     )
+		if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
+                # Aquí debes llamar a tu función de guardado (por ejemplo, guardar_en_json)
+                # O la lógica que use tu aplicación para persistir datos.
+               	st.success(f"Guardado {titulo}")
+
                 # Visualización
                 st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
