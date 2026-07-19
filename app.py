@@ -140,9 +140,11 @@ if opcion == "Documentos":
                         key=f"func_{titulo}"
                     )
                     if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
-                        # Aquí debes llamar a tu función de guardado (por ejemplo, guardar_en_json)
-                        # O la lógica que use tu aplicación para persistir datos.
-                        st.success(f"Guardado {titulo}")
+                        # Llamamos a tu función de guardado existente
+                        if guardar_en_sheets(titulo, st.session_state.contenido_funcionalidad[titulo]):
+                            st.success(f"Guardado {titulo} en Sheets")
+                        else:
+                            st.error(f"Error al guardar {titulo}")
 
                 # Visualización
                 st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
