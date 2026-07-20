@@ -3,10 +3,9 @@ import pandas as pd
 import requests
 
 # CONFIGURACIÓN
-# Ya no necesitamos el ID_DE_SHEET clásico porque usaremos la Web App de Apps Script directamente
 st.set_page_config(page_title="MZero Web", layout="wide")
 
-# --- LECTURA DE DATOS Y SINCRONIZACIÓN (Actualizada para usar tu nueva URL) ---
+# --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=600)
 def cargar_datos_de_google():
     url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
@@ -14,7 +13,6 @@ def cargar_datos_de_google():
         response = requests.get(url_script, timeout=20)
         if response.status_code == 200:
             data = response.json()
-            # Convierte la lista de diccionarios que devuelve el script en el formato {Titulo: Contenido}
             return {item["Titulo"]: item["Contenido"] for item in data}
         return {}
     except Exception as e:
@@ -53,7 +51,7 @@ if 'contenido_exp' not in st.session_state:
 if 'contenido_contacto' not in st.session_state:
     st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
 
-# --- FUNCIÓN GUARDAR (Actualizada con tu nueva URL) ---
+# --- FUNCIÓN GUARDAR ---
 def guardar_en_sheets(titulo, nuevo_contenido):
     url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
     payload = {"titulo": titulo, "contenido": nuevo_contenido}
@@ -62,6 +60,27 @@ def guardar_en_sheets(titulo, nuevo_contenido):
         return response.status_code == 200
     except:
         return False
+
+# --- BLOQUE 2: FUNCIONALIDAD ---
+st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
+titulos_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
+
+for titulo in titulos_func:
+    with st.expander(titulo):
+        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+            temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
+            
+            if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                st.session_state.contenido_funcionalidad[titulo] = temp_text
+                
+                if guardar_en_sheets(titulo, temp_text):
+                    st.success("Guardado en Google y localmente")
+                else:
+                    st.warning("Guardado solo localmente (Error en Sheets)")
+                
+                st.rerun()
+
+        st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
 
 # --- SIDEBAR: NAVEGACIÓN Y ACCESO ---
 with st.sidebar:
