@@ -3,7 +3,7 @@ import pandas as pd
 import requests
 
 # CONFIGURACIÓN
-ID_DE_SHEET = "1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs"
+ID_DE_SHEET = "1Cb4ovaidAyttDcSnl3aRoq2hYePYKyaP4c4cak2QN7U"
 st.set_page_config(page_title="MZero Web", layout="wide")
 
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
@@ -150,7 +150,7 @@ if opcion == "Documentos":
                 st.rerun()
 
             # Esta línea siempre mostrará lo que esté en la memoria (session_state)
-            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
+            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
 
     # --- BLOQUE 3: CONTACTO ---
     st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
