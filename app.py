@@ -148,34 +148,34 @@ if opcion == "Documentos":
 
     # --- BLOQUE 2: FUNCIONALIDAD (CORREGIDO PARA GRABAR LOCALMENTE Y EN SHEETS) ---
 
-    # Asegurar que la session_state de funcionalidad existe y carga los datos de Google si está vacía
-    if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
-        st.session_state.contenido_funcionalidad = cargar_datos_de_google()
+# Asegurar que la session_state de funcionalidad existe y carga los datos de Google si está vacía
+if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
+    st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
-    st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
-    titulos_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
+st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
+titulos_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
 
-    for titulo in titulos_func:
-        with st.expander(titulo):
-            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                # Usamos un campo de texto que mantiene su valor en el session_state
-                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
+for titulo in titulos_func:
+    with st.expander(titulo):
+        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+            # Usamos un campo de texto que mantiene su valor en el session_state
+            temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
         
-                if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
-                    # 1. Guardamos en la memoria de la sesión primero
-                    st.session_state.contenido_funcionalidad[titulo] = temp_text
+            if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                # 1. Guardamos en la memoria de la sesión primero
+                st.session_state.contenido_funcionalidad[titulo] = temp_text
             
-                    # 2. Intentamos guardar en Sheets y mostramos el mensaje correcto
-                    if guardar_en_sheets(titulo, temp_text):
-                        st.success("Guardado en Google y localmente")
-                    else:
-                        st.warning("Guardado solo localmente (Error en Sheets)")
+                # 2. Intentamos guardar en Sheets y mostramos el mensaje correcto
+                if guardar_en_sheets(titulo, temp_text):
+                    st.success("Guardado en Google y localmente")
+                else:
+                    st.warning("Guardado solo localmente (Error en Sheets)")
                 
-                    # 3. Refrescamos para que se vea el cambio inmediatamente
-                    st.rerun()
+                # 3. Refrescamos para que se vea el cambio inmediatamente
+                st.rerun()
 
-             # Esta línea siempre mostrará lo que esté en la memoria (session_state)
-             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
+        # Esta línea siempre mostrará lo que esté en la memoria (session_state)
+        st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
 
     # --- BLOQUE 3: CONTACTO ---
     st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
