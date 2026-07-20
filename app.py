@@ -3,18 +3,19 @@ import pandas as pd
 import requests
 
 # CONFIGURACIÓN
-ID_DE_SHEET = "1Cb4ovaidAyttDcSnl3aRoq2hYePYKyaP4c4cak2QN7U"
+# Ya no necesitamos el ID_DE_SHEET clásico porque usaremos la Web App de Apps Script directamente
 st.set_page_config(page_title="MZero Web", layout="wide")
 
-# --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
+# --- LECTURA DE DATOS Y SINCRONIZACIÓN (Actualizada para usar tu nueva URL) ---
 @st.cache_data(ttl=600)
 def cargar_datos_de_google():
-    url = f"https://docs.google.com/spreadsheets/d/{ID_DE_SHEET}/gviz/tq?tqx=out:csv&sheet=Textos"
+    url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
     try:
-        df = pd.read_csv(url)
-        # Aseguramos que las columnas existan y limpiamos los valores vacíos
-        if 'Titulo' in df.columns and 'Contenido' in df.columns:
-            return dict(zip(df['Titulo'].astype(str), df['Contenido'].fillna("").astype(str)))
+        response = requests.get(url_script, timeout=20)
+        if response.status_code == 200:
+            data = response.json()
+            # Convierte la lista de diccionarios que devuelve el script en el formato {Titulo: Contenido}
+            return {item["Titulo"]: item["Contenido"] for item in data}
         return {}
     except Exception as e:
         st.error(f"Error de lectura: {e}")
@@ -52,10 +53,10 @@ if 'contenido_exp' not in st.session_state:
 if 'contenido_contacto' not in st.session_state:
     st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
 
-# --- FUNCIÓN GUARDAR (Actualizada para usar la nueva lógica) ---
+# --- FUNCIÓN GUARDAR (Actualizada con tu nueva URL) ---
 def guardar_en_sheets(titulo, nuevo_contenido):
-    url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
-    payload = {"accion": "guardar_texto", "titulo": titulo, "contenido": nuevo_contenido}
+    url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
+    payload = {"titulo": titulo, "contenido": nuevo_contenido}
     try:
         response = requests.post(url_script, json=payload, timeout=20)
         return response.status_code == 200
@@ -126,7 +127,12 @@ if opcion == "Documentos":
                         
                         st.markdown(st.session_state.contenido_exp[titulo], unsafe_allow_html=True)
 
-    # --- BLOQUE 2: FUNCIONALIDAD (CORREGIDO PARA GRABAR LOCALMENTE) ---
+    # --- BLOQUE 2: FUNCIONALIDAD (CORREGIDO PARA GRABAR LOCALMENTE Y EN SHEETS) ---
+
+    # Asegurar que la session_state de funcionalidad existe y carga los datos de Google si está vacía
+    if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
+        st.session_state.contenido_funcionalidad = cargar_datos_de_google()
+
     st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
     titulos_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
 
@@ -135,22 +141,22 @@ if opcion == "Documentos":
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                 # Usamos un campo de texto que mantiene su valor en el session_state
                 temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
-            
+        
                 if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
-                    # 1. Guardamos en la memoria de la sesión primero (esto es lo que hace que NO se borre)
+                    # 1. Guardamos en la memoria de la sesión primero
                     st.session_state.contenido_funcionalidad[titulo] = temp_text
-                
-                    # 2. Intentamos guardar en Sheets
+            
+                    # 2. Intentamos guardar en Sheets y mostramos el mensaje correcto
                     if guardar_en_sheets(titulo, temp_text):
                         st.success("Guardado en Google y localmente")
-                else:
-                    st.warning("Guardado solo localmente (Error en Sheets)")
+                    else:
+                        st.warning("Guardado solo localmente (Error en Sheets)")
                 
-                # 3. Refrescamos para que se vea el cambio inmediatamente
-                st.rerun()
+                    # 3. Refrescamos para que se vea el cambio inmediatamente
+                    st.rerun()
 
-            # Esta línea siempre mostrará lo que esté en la memoria (session_state)
-            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
+             # Esta línea siempre mostrará lo que esté en la memoria (session_state)
+             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
 
     # --- BLOQUE 3: CONTACTO ---
     st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
