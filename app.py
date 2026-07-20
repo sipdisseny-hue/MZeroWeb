@@ -80,10 +80,10 @@ with st.sidebar:
         pass_in = st.text_input("Contraseña:", type="password")
         
         if st.button("Acceder"):
-            url = f"https://docs.google.com/spreadsheets/d/{ID_DE_SHEET}/gviz/tq?tqx=out:csv&sheet=Credenciales"
+            url = f"https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
                 df = pd.read_csv(url)
-                if ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) & 
+                if ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) &  
                     (df['Password'].astype(str).str.strip() == pass_in.strip())).any():
                     st.session_state.autenticado = True
                     st.session_state.usuario_actual = usuario_in
