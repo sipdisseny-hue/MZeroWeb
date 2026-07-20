@@ -191,16 +191,17 @@ for titulo in titulos_func:
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 4: CÓMO PARTICIPAR ---
-    st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
-    with st.expander("Información del sistema"):
-        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-            nuevo_texto = st.text_area("Editar información:", value=st.session_state.texto_documentos, height=150, key="edit_participar")
-            if st.button("Guardar información", key="btn_save_participar"):
-                if guardar_en_sheets("Información del sistema", nuevo_texto):
-                    st.session_state.texto_documentos = nuevo_texto
-                    refrescar_app()
-        st.markdown(st.session_state.texto_documentos, unsafe_allow_html=True)
-        st.markdown("""<div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; padding: 25px; border: 3px solid #0066cc; border-radius: 15px; margin-top: 40px; background-color: #f8fbff;">"Conectando talento, transformando la industria"</div>""", unsafe_allow_html=True)
+st.markdown("<h3 style='color: #0066cc;'><b>Cómo participar</b></h3>", unsafe_allow_html=True)
+with st.expander("Información del sistema"):
+    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+        nuevo_texto = st.text_area("Editar información:", value=st.session_state.texto_documentos, height=150, key="edit_participar")
+        if st.button("Guardar información", key="btn_save_participar"):
+            if guardar_en_sheets("Información del sistema", nuevo_texto):
+                st.session_state.texto_documentos = nuevo_texto
+                refrescar_app()
+    
+    st.markdown(st.session_state.texto_documentos, unsafe_allow_html=True)
+    st.markdown("""<div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; padding: 25px; border: 3px solid #0066cc; border-radius: 15px; margin-top: 40px; background-color: #f8fbff;">"Conectando talento, transformando la industria"</div>""", unsafe_allow_html=True)
 
 elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
