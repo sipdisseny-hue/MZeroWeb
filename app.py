@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+from io import StringIO
 
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
@@ -136,7 +137,7 @@ if opcion == "Documentos":
 
         st.divider()
 
-        # --- BLOQUE 2: COLABORADORES (En línea horizontal de 3) ---
+        # --- BLOQUE 2: COLABORADORES ---
         st.markdown("<h4 style='color: #0066cc;'>Colaboradores</h4>", unsafe_allow_html=True)
         
         col_c1, col_c2, col_c3 = st.columns(3)
