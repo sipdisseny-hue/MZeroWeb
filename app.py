@@ -87,17 +87,24 @@ with st.sidebar:
                 response = requests.get(url, headers=headers, timeout=10)
                 if response.status_code == 200:
                     df = pd.read_csv(StringIO(response.text))
-                    if ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) &  
-                        (df['Password'].astype(str).str.strip() == pass_in.strip())).any():
+                    
+                    # Limpiamos espacios por si acaso en las columnas del excel
+                    df.columns = df.columns.str.strip()
+                    
+                    # Buscamos coincidencia exacta
+                    match = ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) &  
+                             (df['Password'].astype(str).str.strip() == pass_in.strip()))
+                    
+                    if match.any():
                         st.session_state.autenticado = True
-                        st.session_state.usuario_actual = usuario_in
+                        st.session_state.usuario_actual = usuario_in.strip()
                         st.rerun()
                     else:
                         st.error("Usuario o contraseña incorrectos")
                 else:
                     st.error("Error al conectar con la hoja Credenciales")
             except Exception as e:
-                st.error("Error al conectar con la hoja Credenciales")
+                st.error(f"Error de acceso: {e}")
 
 # --- LÓGICA DE PANTALLAS ---
 if opcion == "Documentos":
