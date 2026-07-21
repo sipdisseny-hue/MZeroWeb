@@ -216,7 +216,10 @@ for col, titulo in columnas_participar:
 					if guardar_en_sheets(titulo, nuevo_text):
 						st.session_state.contenido_exp[titulo] = nuevo_text
 						refrescar_app()
-			st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+			st.markdown(
+				st.session_state.contenido_exp.get(titulo, ""), 
+				unsafe_allow_html=True
+			)
 
 # --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
 st.markdown("""<div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; padding: 25px; border: 3px solid #0066cc; border-radius: 15px; margin-top: 20px; background-color: #f8fbff;">"Conectando talento, transformando la industria"</div>""", unsafe_allow_html=True)
