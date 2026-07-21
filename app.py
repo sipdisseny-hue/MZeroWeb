@@ -101,21 +101,27 @@ if opcion == "Documentos":
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
         
+        # --- BLOQUE 1: ASOCIADOS ---
+        st.markdown("<h4 style='color: #0066cc; margin-top: 20px;'>Asociados</h4>", unsafe_allow_html=True)
+        
+        # Mantenemos la distribución original de 3 subcolumnas idéntica a la que tenías
         col1, col2, col3 = st.columns(3)
-        columnas = [col1, col2, col3]
-        titulos = [
-            ["Mecanizado", "Climatización", "Fontanería"],
-            ["Electricidad", "Obra", "Electromecánica"],
+        columnas_asociados = [col1, col2, col3]
+        
+        # Distribuimos los títulos de asociados (los originales + las 2 nuevas incorporaciones)
+        titulos_asociados = [
+            ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
+            ["Electricidad", "Obra", "Electromecánica", "Renovables"],
             ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]
         ]
 
-        for i, col in enumerate(columnas):
+        for i, col in enumerate(columnas_asociados):
             with col:
-                for titulo in titulos[i]:
+                for titulo in titulos_asociados[i]:
                     with st.expander(titulo):
                         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                             st.write("--- MODO EDICIÓN ---")
-                            nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp[titulo], height=150, key=f"edit_{titulo}")
+                            nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_{titulo}")
                             img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_{titulo}")
                             
                             if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
@@ -123,7 +129,33 @@ if opcion == "Documentos":
                                     st.session_state.contenido_exp[titulo] = nuevo_text
                                     refrescar_app()
                         
-                        st.markdown(st.session_state.contenido_exp[titulo], unsafe_allow_html=True)
+                        st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+
+        st.divider()
+
+        # --- BLOQUE 2: COLABORADORES ---
+        st.markdown("<h4 style='color: #0066cc;'>Colaboradores</h4>", unsafe_allow_html=True)
+        
+        # Las tres pestañas desplegables independientes solicitadas
+        titulos_colaboradores = [
+            "Centros de formación", 
+            "Gremios", 
+            "Asociaciones"
+        ]
+        
+        for titulo in titulos_colaboradores:
+            with st.expander(titulo):
+                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                    st.write("--- MODO EDICIÓN ---")
+                    nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_col_{titulo}")
+                    img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_col_{titulo}")
+                    
+                    if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}"):
+                        if guardar_en_sheets(titulo, nuevo_text):
+                            st.session_state.contenido_exp[titulo] = nuevo_text
+                            refrescar_app()
+                
+                st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 2: FUNCIONALIDAD ---
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
