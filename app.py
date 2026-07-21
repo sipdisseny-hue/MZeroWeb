@@ -240,7 +240,7 @@ if opcion == "Documentos":
                 )
 
     # --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
-    st.write("Conectando talento, transformando la industria")
+    st.markdown("<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>Conectando talento, transformando la industria</b></h3>", unsafe_allow_html=True)
 
 elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
