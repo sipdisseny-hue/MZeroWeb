@@ -196,51 +196,51 @@ if opcion == "Documentos":
                         refrescar_app()
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
-# --- BLOQUE: CÓMO PARTICIPAR ---
-st.markdown("## Cómo participar")
+    # --- BLOQUE: CÓMO PARTICIPAR ---
+    st.markdown("## Cómo participar")
 
-cp1, cp2, cp3 = st.columns(3)
-columnas_participar = [
-    (cp1, "Asociados"),
-    (cp2, "Colaboradores"),
-    (cp3, "Candidatos")
-]
+    cp1, cp2, cp3 = st.columns(3)
+    columnas_participar = [
+        (cp1, "Asociados"),
+        (cp2, "Colaboradores"),
+        (cp3, "Candidatos")
+    ]
 
-for col, titulo in columnas_participar:
-    with col:
-        with st.expander(titulo):
-            sesion_ok = (
-                st.session_state.autenticado 
-                and st.session_state.usuario_actual == "mzerojc"
-            )
-            if sesion_ok:
-                st.write("--- MODO EDICIÓN ---")
-                nuevo_text = st.text_area(
-                    f"Editar {titulo}:", 
-                    value=st.session_state.contenido_exp.get(
+    for col, titulo in columnas_participar:
+        with col:
+            with st.expander(titulo):
+                sesion_ok = (
+                    st.session_state.autenticado 
+                    and st.session_state.usuario_actual == "mzerojc"
+                )
+                if sesion_ok:
+                    st.write("--- MODO EDICIÓN ---")
+                    nuevo_text = st.text_area(
+                        f"Editar {titulo}:", 
+                        value=st.session_state.contenido_exp.get(
+                            titulo, ""
+                        ), 
+                        height=150, 
+                        key=f"edit_part_{titulo}"
+                    )
+                    btn_guardar = st.button(
+                        f"Guardar {titulo}", 
+                        key=f"btn_part_{titulo}"
+                    )
+                    if btn_guardar:
+                        if guardar_en_sheets(titulo, nuevo_text):
+                            st.session_state.contenido_exp[titulo] = nuevo_text
+                            refrescar_app()
+                
+                st.markdown(
+                    st.session_state.contenido_exp.get(
                         titulo, ""
                     ), 
-                    height=150, 
-                    key=f"edit_part_{titulo}"
+                    unsafe_allow_html=True
                 )
-                btn_guardar = st.button(
-                    f"Guardar {titulo}", 
-                    key=f"btn_part_{titulo}"
-                )
-                if btn_guardar:
-                    if guardar_en_sheets(titulo, nuevo_text):
-                        st.session_state.contenido_exp[titulo] = nuevo_text
-                        refrescar_app()
-            
-            st.markdown(
-                st.session_state.contenido_exp.get(
-                    titulo, ""
-                ), 
-                unsafe_allow_html=True
-            )
 
-# --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
-st.write("Conectando talento, transformando la industria")
+    # --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
+    st.write("Conectando talento, transformando la industria")
 
 elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
