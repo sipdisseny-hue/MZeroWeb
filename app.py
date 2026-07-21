@@ -82,16 +82,32 @@ with st.sidebar:
         if st.button("Acceder"):
             url = f"https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
-                df = pd.read_csv(url)
-                if ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) &  
-                    (df['Password'].astype(str).str.strip() == pass_in.strip())).any():
+                # Forzamos que lea todas las columnas como texto plano para evitar que interprete mal números o formatos
+                df = pd.read_csv(url, dtype=str)
+                
+                # Limpiamos los nombres de las columnas por si tienen espacios ocultos
+                df.columns = df.columns.str.strip()
+                
+                # Comparamos eliminando espacios en blanco por delante y por detrás en la entrada del usuario y en las celdas
+                usuario_ingresado = str(usuario_in).strip()
+                pass_ingresada = str(pass_in).strip()
+                
+                match = False
+                for idx, row in df.iterrows():
+                    db_user = str(row['Usuarios']).strip()
+                    db_pass = str(row['Password']).strip()
+                    if db_user == usuario_ingresado and db_pass == pass_ingresada:
+                        match = True
+                        break
+                
+                if match:
                     st.session_state.autenticado = True
-                    st.session_state.usuario_actual = usuario_in
+                    st.session_state.usuario_actual = usuario_ingresado
                     st.rerun()
                 else:
                     st.error("Usuario o contraseña incorrectos")
             except Exception as e:
-                st.error("Error al conectar con la hoja Credenciales")
+                st.error(f"Error al conectar con la hoja Credenciales: {e}")
 
 # --- LÓGICA DE PANTALLAS ---
 if opcion == "Documentos":
