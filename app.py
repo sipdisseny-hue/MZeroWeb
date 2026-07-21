@@ -80,7 +80,7 @@ with st.sidebar:
         pass_in = st.text_input("Contraseña:", type="password")
         
         if st.button("Acceder"):
-            url = f"https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
+            url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
                 df = pd.read_csv(url)
                 if ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) &  
