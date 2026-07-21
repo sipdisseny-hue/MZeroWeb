@@ -82,14 +82,19 @@ with st.sidebar:
         if st.button("Acceder"):
             url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
-                df = pd.read_csv(url)
-                if ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) &  
-                    (df['Password'].astype(str).str.strip() == pass_in.strip())).any():
-                    st.session_state.autenticado = True
-                    st.session_state.usuario_actual = usuario_in
-                    st.rerun()
+                headers = {'User-Agent': 'Mozilla/5.0'}
+                response = requests.get(url, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    df = pd.read_csv(StringIO(response.text))
+                    if ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) &  
+                        (df['Password'].astype(str).str.strip() == pass_in.strip())).any():
+                        st.session_state.autenticado = True
+                        st.session_state.usuario_actual = usuario_in
+                        st.rerun()
+                    else:
+                        st.error("Usuario o contraseña incorrectos")
                 else:
-                    st.error("Usuario o contraseña incorrectos")
+                    st.error("Error al conectar con la hoja Credenciales")
             except Exception as e:
                 st.error("Error al conectar con la hoja Credenciales")
 
