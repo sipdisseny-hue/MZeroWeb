@@ -199,31 +199,40 @@ if opcion == "Documentos":
     # --- BLOQUE: CÓMO PARTICIPAR ---
 st.markdown("## Cómo participar")
 
-# Creamos tres columnas para colocar las pestañas en horizontal
 col_p1, col_p2, col_p3 = st.columns(3)
-columnas_participar = [col_p1, col_p2, col_p3]
 
-titulos_participar = [
-    "Asociados", 
-    "Colaboradores", 
-    "Candidatos"
-]
+with col_p1:
+    with st.expander("Asociados"):
+        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+            st.write("--- MODO EDICIÓN ---")
+            nuevo_text = st.text_area("Editar Asociados:", value=st.session_state.contenido_exp.get("Asociados", ""), height=150, key="edit_part_Asociados")
+            if st.button("Guardar Asociados", key="btn_part_Asociados"):
+                if guardar_en_sheets("Asociados", nuevo_text):
+                    st.session_state.contenido_exp["Asociados"] = nuevo_text
+                    refrescar_app()
+        st.markdown(st.session_state.contenido_exp.get("Asociados", ""), unsafe_allow_html=True)
 
-for i, col in enumerate(columnas_participar):
-    with col:
-        titulo = titulos_participar[i]
-        with st.expander(titulo):
-            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                st.write("--- MODO EDICIÓN ---")
-                nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_part_{titulo}")
-                img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_part_{titulo}")
-                
-                if st.button(f"Guardar {titulo}", key=f"btn_part_{titulo}"):
-                    if guardar_en_sheets(titulo, nuevo_text):
-                        st.session_state.contenido_exp[titulo] = nuevo_text
-                        refrescar_app()
-            
-            st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+with col_p2:
+    with st.expander("Colaboradores"):
+        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+            st.write("--- MODO EDICIÓN ---")
+            nuevo_text = st.text_area("Editar Colaboradores:", value=st.session_state.contenido_exp.get("Colaboradores", ""), height=150, key="edit_part_Colaboradores")
+            if st.button("Guardar Colaboradores", key="btn_part_Colaboradores"):
+                if guardar_en_sheets("Colaboradores", nuevo_text):
+                    st.session_state.contenido_exp["Colaboradores"] = nuevo_text
+                    refrescar_app()
+        st.markdown(st.session_state.contenido_exp.get("Colaboradores", ""), unsafe_allow_html=True)
+
+with col_p3:
+    with st.expander("Candidatos"):
+        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+            st.write("--- MODO EDICIÓN ---")
+            nuevo_text = st.text_area("Editar Candidatos:", value=st.session_state.contenido_exp.get("Candidatos", ""), height=150, key="edit_part_Candidatos")
+            if st.button("Guardar Candidatos", key="btn_part_Candidatos"):
+                if guardar_en_sheets("Candidatos", nuevo_text):
+                    st.session_state.contenido_exp["Candidatos"] = nuevo_text
+                    refrescar_app()
+        st.markdown(st.session_state.contenido_exp.get("Candidatos", ""), unsafe_allow_html=True)
 
     # --- ESLOGAN FUERA DEL DESPLEGABLE (VISIBLE SIEMPRE) ---
     st.markdown("""<div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; padding: 25px; border: 3px solid #0066cc; border-radius: 15px; margin-top: 20px; background-color: #f8fbff;">"Conectando talento, transformando la industria"</div>""", unsafe_allow_html=True)
