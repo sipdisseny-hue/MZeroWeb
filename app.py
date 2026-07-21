@@ -196,43 +196,45 @@ if opcion == "Documentos":
                         refrescar_app()
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
-    # --- BLOQUE: CÓMO PARTICIPAR ---
+# --- BLOQUE: CÓMO PARTICIPAR ---
 st.markdown("## Cómo participar")
 
-col_p1, col_p2, col_p3 = st.columns(3)
+cp1, cp2, cp3 = st.columns(3)
 
-with col_p1:
+with cp1:
     with st.expander("Asociados"):
         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
             st.write("--- MODO EDICIÓN ---")
-            nuevo_text = st.text_area("Editar Asociados:", value=st.session_state.contenido_exp.get("Asociados", ""), height=150, key="edit_part_Asociados")
-            if st.button("Guardar Asociados", key="btn_part_Asociados"):
-                if guardar_en_sheets("Asociados", nuevo_text):
-                    st.session_state.contenido_exp["Asociados"] = nuevo_text
+            nt1 = st.text_area("Editar Asociados:", value=st.session_state.contenido_exp.get("Asociados", ""), height=150, key="ep_asoc")
+            if st.button("Guardar Asociados", key="bp_asoc"):
+                if guardar_en_sheets("Asociados", nt1):
+                    st.session_state.contenido_exp["Asociados"] = nt1
                     refrescar_app()
         st.markdown(st.session_state.contenido_exp.get("Asociados", ""), unsafe_allow_html=True)
 
-with col_p2:
+with cp2:
     with st.expander("Colaboradores"):
         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
             st.write("--- MODO EDICIÓN ---")
-            nuevo_text = st.text_area("Editar Colaboradores:", value=st.session_state.contenido_exp.get("Colaboradores", ""), height=150, key="edit_part_Colaboradores")
-            if st.button("Guardar Colaboradores", key="btn_part_Colaboradores"):
-                if guardar_en_sheets("Colaboradores", nuevo_text):
-                    st.session_state.contenido_exp["Colaboradores"] = nuevo_text
+            nt2 = st.text_area("Editar Colaboradores:", value=st.session_state.contenido_exp.get("Colaboradores", ""), height=150, key="ep_colab")
+            if st.button("Guardar Colaboradores", key="bp_colab"):
+                if guardar_en_sheets("Colaboradores", nt2):
+                    st.session_state.contenido_exp["Colaboradores"] = nt2
                     refrescar_app()
         st.markdown(st.session_state.contenido_exp.get("Colaboradores", ""), unsafe_allow_html=True)
 
-with col_p3:
+with cp3:
     with st.expander("Candidatos"):
         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
             st.write("--- MODO EDICIÓN ---")
-            nuevo_text = st.text_area("Editar Candidatos:", value=st.session_state.contenido_exp.get("Candidatos", ""), height=150, key="edit_part_Candidatos")
-            if st.button("Guardar Candidatos", key="btn_part_Candidatos"):
-                if guardar_en_sheets("Candidatos", nuevo_text):
-                    st.session_state.contenido_exp["Candidatos"] = nuevo_text
+            nt3 = st.text_area("Editar Candidatos:", value=st.session_state.contenido_exp.get("Candidatos", ""), height=150, key="ep_cand")
+            if st.button("Guardar Candidatos", key="bp_cand"):
+                if guardar_en_sheets("Candidatos", nt3):
+                    st.session_state.contenido_exp["Candidatos"] = nt3
                     refrescar_app()
         st.markdown(st.session_state.contenido_exp.get("Candidatos", ""), unsafe_allow_html=True)
+
+st.markdown("""<div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; padding: 25px; border: 3px solid #0066cc; border-radius: 15px; margin-top: 20px; background-color: #f8fbff;">"Conectando talento, transformando la industria"</div>""", unsafe_allow_html=True)
 
 # --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
 st.markdown("""<div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; padding: 25px; border: 3px solid #0066cc; border-radius: 15px; margin-top: 20px; background-color: #f8fbff;">"Conectando talento, transformando la industria"</div>""", unsafe_allow_html=True)
