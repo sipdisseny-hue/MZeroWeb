@@ -104,11 +104,9 @@ if opcion == "Documentos":
         # --- BLOQUE 1: ASOCIADOS ---
         st.markdown("<h4 style='color: #0066cc; margin-top: 20px;'>Asociados</h4>", unsafe_allow_html=True)
         
-        # Mantenemos la distribución original de 3 subcolumnas idéntica a la que tenías
         col1, col2, col3 = st.columns(3)
         columnas_asociados = [col1, col2, col3]
         
-        # Distribuimos los títulos de asociados (los originales + las 2 nuevas incorporaciones)
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
             ["Electricidad", "Obra", "Electromecánica", "Renovables"],
@@ -133,29 +131,33 @@ if opcion == "Documentos":
 
         st.divider()
 
-        # --- BLOQUE 2: COLABORADORES ---
+        # --- BLOQUE 2: COLABORADORES (En línea horizontal de 3) ---
         st.markdown("<h4 style='color: #0066cc;'>Colaboradores</h4>", unsafe_allow_html=True)
         
-        # Las tres pestañas desplegables independientes solicitadas
+        col_c1, col_c2, col_c3 = st.columns(3)
+        columnas_colaboradores = [col_c1, col_c2, col_c3]
+        
         titulos_colaboradores = [
             "Centros de formación", 
             "Gremios", 
             "Asociaciones"
         ]
         
-        for titulo in titulos_colaboradores:
-            with st.expander(titulo):
-                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                    st.write("--- MODO EDICIÓN ---")
-                    nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_col_{titulo}")
-                    img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_col_{titulo}")
+        for i, col in enumerate(columnas_colaboradores):
+            with col:
+                titulo = titulos_colaboradores[i]
+                with st.expander(titulo):
+                    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                        st.write("--- MODO EDICIÓN ---")
+                        nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_col_{titulo}")
+                        img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_col_{titulo}")
+                        
+                        if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}"):
+                            if guardar_en_sheets(titulo, nuevo_text):
+                                st.session_state.contenido_exp[titulo] = nuevo_text
+                                refrescar_app()
                     
-                    if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}"):
-                        if guardar_en_sheets(titulo, nuevo_text):
-                            st.session_state.contenido_exp[titulo] = nuevo_text
-                            refrescar_app()
-                
-                st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+                    st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 2: FUNCIONALIDAD ---
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
