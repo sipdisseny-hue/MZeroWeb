@@ -234,8 +234,8 @@ with col_p3:
                     refrescar_app()
         st.markdown(st.session_state.contenido_exp.get("Candidatos", ""), unsafe_allow_html=True)
 
-    # --- ESLOGAN FUERA DEL DESPLEGABLE (VISIBLE SIEMPRE) ---
-    st.markdown("""<div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; padding: 25px; border: 3px solid #0066cc; border-radius: 15px; margin-top: 20px; background-color: #f8fbff;">"Conectando talento, transformando la industria"</div>""", unsafe_allow_html=True)
+# --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
+st.markdown("""<div style="text-align: center; font-size: 1.6em; font-weight: bold; color: #0066cc; padding: 25px; border: 3px solid #0066cc; border-radius: 15px; margin-top: 20px; background-color: #f8fbff;">"Conectando talento, transformando la industria"</div>""", unsafe_allow_html=True)
 
 elif opcion == "Evaluaciones":
     if not st.session_state.autenticado:
