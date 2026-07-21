@@ -86,16 +86,19 @@ with st.sidebar:
                 headers = {'User-Agent': 'Mozilla/5.0'}
                 response = requests.get(url, headers=headers, timeout=10)
                 if response.status_code == 200:
-                    df = pd.read_csv(StringIO(response.text))
+                    # Leemos sin cabecera fija para usar los índices numéricos de columna (0 y 1)
+                    df = pd.read_csv(StringIO(response.text), header=None)
                     
-                    # Limpiamos espacios por si acaso en las columnas del excel
-                    df.columns = df.columns.str.strip()
-                    
-                    # Buscamos coincidencia exacta
-                    match = ((df['Usuarios'].astype(str).str.strip() == usuario_in.strip()) &  
-                             (df['Password'].astype(str).str.strip() == pass_in.strip()))
-                    
-                    if match.any():
+                    # Recorremos las filas desde la fila 1 (saltando la cabecera de la fila 0)
+                    login_ok = False
+                    for i in range(1, len(df)):
+                        u_excel = str(df.iloc[i, 0]).strip()
+                        p_excel = str(df.iloc[i, 1]).strip()
+                        if u_excel == usuario_in.strip() and p_excel == pass_in.strip():
+                            login_ok = True
+                            break
+                            
+                    if login_ok:
                         st.session_state.autenticado = True
                         st.session_state.usuario_actual = usuario_in.strip()
                         st.rerun()
