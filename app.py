@@ -196,11 +196,15 @@ if opcion == "Documentos":
                         refrescar_app()
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
-# --- BLOQUE: CÓMO PARTICIPAR ---
-st.markdown("## Cómo participar")
+    # --- BLOQUE: CÓMO PARTICIPAR ---
+    st.markdown("## Cómo participar")
 
-cp1, cp2, cp3 = st.columns(3)
-columnas_participar = [(cp1, "Asociados"), (cp2, "Colaboradores"), (cp3, "Candidatos")]
+    cp1, cp2, cp3 = st.columns(3)
+    columnas_participar = [
+	    (cp1, "Asociados"), 
+	    (cp2, "Colaboradores"), 
+	    (cp3, "Candidatos")
+]
 
 for col, titulo in columnas_participar:
 	with col:
