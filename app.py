@@ -281,13 +281,48 @@ elif opcion == "Evaluaciones":
             "13. Comunicación y respeto al superior"
         ]
 
+        descripciones_rubrica = {}
+        try:
+            url_apps_script = "https://script.google.com/macros/s/AKfycbw1LE9jUADAHotUmihjq7PhLQ4zTnT8FJjlFEoGg9SWA_qXD4WcznFu8ugVavsECgPJhA/exec"
+            resp_rubrica = requests.get(url_apps_script, timeout=10)
+            if resp_rubrica.status_code == 200:
+                data_json = resp_rubrica.json()
+                for item in data_json:
+                    descripciones_rubrica[item["criterio"].strip()] = {
+                        "que_se_mide": item["que_se_mide"],
+                        "nivel_rubrica": item["nivel_rubrica"]
+                    }
+        except Exception:
+            pass
+
         st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
         cols = st.columns(4)
         notas = {}
+        
         for i, crit in enumerate(criterios):
             with cols[i % 4]:
                 with st.container(border=True):
-                    st.markdown(f"**{crit}**")
+                    # 1. Creamos dos columnas internas: 82% para el título y 18% para el botón de info
+                    col_t, col_b = st.columns([0.82, 0.18])
+                    
+                    with col_t:
+                        st.markdown(f"**{crit}**")
+                        
+                    with col_b:
+                        # Buscamos la descripción del criterio o ponemos una por defecto para evitar errores
+                        info_crit = descripciones_rubrica.get(crit, {
+                            "que_se_mide": "Información detallada en desarrollo.",
+                            "nivel_rubrica": "Pendiente de definir rúbrica."
+                        })
+                        
+                        # 2. Desplegable tipo popover con el icono de información
+                        with st.popover("ℹ️", help="Ver rúbrica"):
+                            st.markdown(f"**¿Qué se mide aquí?**\n\n{info_crit['que_se_mide']}")
+                            st.markdown("---")
+                            st.markdown("**Nivel de Rúbrica:**")
+                            st.markdown(info_crit['nivel_rubrica'])
+
+                    # 3. Tu selector de notas original idéntico al que ya usabas
                     notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
         if None not in notas.values() and alumno:
