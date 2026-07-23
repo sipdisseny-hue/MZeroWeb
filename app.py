@@ -1,7 +1,7 @@
-import streamlit as st
+from io import StringIO
 import pandas as pd
 import requests
-from io import StringIO
+import streamlit as st
 
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
@@ -80,12 +80,10 @@ def cargar_catalogo_cursos_y_modulos(sufijo_pestana):
                 if cursos or modulos:
                     return cursos, modulos
             elif isinstance(data, list):
-                # Si devuelve una lista genérica
                 return data, []
     except Exception:
         pass
-    
-    # RESPALDO DE SEGURIDAD GENERAL
+     
     url_script_fallback = "https://script.google.com/macros/s/AKfycbzAfnmO33bANwUsvDRkeMzLjLgLWZeSdzLNduleZ9UYDLEtIqe4YIb-gHSWmJaaFBYY/exec"
     try:
         response = requests.get(url_script_fallback, timeout=20)
@@ -126,18 +124,18 @@ def refrescar_app():
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
-    
+     
     idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     T = TEXTOS[lang]
-    
+     
     opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
-    
+     
     st.divider()
-    
+     
     if 'autenticado' not in st.session_state: st.session_state.autenticado = False
     if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
-    
+     
     if st.session_state.autenticado:
         st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
         if st.button(T["cerrar_sesion"]):
@@ -147,7 +145,7 @@ with st.sidebar:
     else:
         usuario_in = st.text_input(T["usuario"])
         pass_in = st.text_input(T["password"], type="password")
-        
+         
         if st.button(T["btn_acceder"]):
             url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
@@ -202,11 +200,11 @@ def guardar_en_sheets(titulo, nuevo_contenido):
 # ==========================================
 if opcion == T["menu_docs"] and lang == "es":
     st.markdown("## Área de Documentación y Consultas")
-    
+     
     with st.container(border=True):
         st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
-        
+         
         st.markdown("<h4 style='color: #0066cc; margin-top: 20px;'>Asociados</h4>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
         titulos_asociados = [
@@ -288,11 +286,11 @@ if opcion == T["menu_docs"] and lang == "es":
 # ==========================================
 elif opcion == T["menu_docs"] and lang == "ca":
     st.markdown("## Àrea de Documentació i Consultes")
-    
+     
     with st.container(border=True):
         st.markdown("<h3 style='color: #0066cc;'><b>Associats i Col·laboradors</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
-        
+         
         st.markdown("<h4 style='color: #0066cc; margin-top: 20px;'>Associats</h4>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
         titulos_asociados_ca = [
@@ -383,12 +381,12 @@ elif opcion == T["menu_eval"]:
         with st.container():
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input(T["profesor"], key=f"f_prof_{st.session_state.reset_todo}")
-            
+             
             opciones_cursos_display = [
                 f"{c.get('Código Curso', '')} - {c.get('Nombre del Curso', '')}" 
                 for c in cursos_db
             ] if cursos_db else ["MZ-M - Mecanizados"]
-            
+             
             curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
             curso_codigo_actual = curso_seleccionado_full.split(" - ")[0].strip() if " - " in curso_seleccionado_full else curso_seleccionado_full.strip()
 
@@ -397,7 +395,7 @@ elif opcion == T["menu_eval"]:
                 if str(m.get("Curso asociado", "")).strip().lower() == curso_codigo_actual.lower() 
                 or str(m.get("Curso asociado", "")).strip() == ""
             ]
-            
+             
             if not modulos_filtrados:
                 modulos_filtrados = modulos_db
 
@@ -405,7 +403,7 @@ elif opcion == T["menu_eval"]:
                 f"{m.get('Subcodigo', '')} - {m.get('Descripción', '')}" 
                 for m in modulos_filtrados
             ] if modulos_filtrados else ["No hay módulos disponibles"]
-            
+             
             modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
             modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0].strip() if " - " in modulo_seleccionado_full else modulo_seleccionado_full.strip()
 
@@ -441,7 +439,7 @@ elif opcion == T["menu_eval"]:
         st.subheader(T["subt_puntuacion"])
         cols = st.columns(4)
         notas = {}
-        
+         
         for i, crit in enumerate(criterios):
             with cols[i % 4]:
                 with st.container(border=True):
@@ -477,7 +475,7 @@ elif opcion == T["menu_eval"]:
         if st.session_state.lista_alumnos:
             st.subheader(T["resumen_alumnos"])
             st.table(pd.DataFrame(st.session_state.lista_alumnos))
-            
+             
             with st.expander(T["gestionar_alumnos"]):
                 for i, reg in enumerate(st.session_state.lista_alumnos):
                     if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
@@ -486,8 +484,19 @@ elif opcion == T["menu_eval"]:
 
             if st.button(T["enviar_sheets"], type="primary"):
                 url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
+                
+                # Saneamiento del nombre del curso para que solo envíe el código puro (ej. 'MZ-M') 
+                # asegurando que Apps Script encuentre la pestaña destino correctamente en Google Sheets.
+                datos_a_enviar = []
+                for reg in st.session_state.lista_alumnos:
+                    reg_copia = reg.copy()
+                    curso_raw = str(reg_copia.get("Curso", ""))
+                    if " - " in curso_raw:
+                        reg_copia["Curso"] = curso_raw.split(" - ")[0].strip()
+                    datos_a_enviar.append(reg_copia)
+
                 try:
-                    response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
+                    response = requests.post(url_script, json={"evaluaciones": datos_a_enviar}, timeout=20)
                     if response.status_code == 200:
                         st.success(T["exito_envio"])
                         st.session_state.lista_alumnos = []
