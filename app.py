@@ -81,8 +81,8 @@ def cargar_catalogo_cursos_y_modulos():
     return [], []
 
 @st.cache_data(ttl=600)
-def cargar_datos_de_google():
-    url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
+def cargar_datos_de_google(nombre_pestana):
+    url_script = f"https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec?sheet={nombre_pestana}"
     try:
         response = requests.get(url_script, timeout=20)
         if response.status_code == 200:
@@ -97,35 +97,7 @@ def refrescar_app():
     st.cache_data.clear()
     st.rerun()
 
-# --- INICIALIZACIÓN DE ESTADOS ---
-datos_iniciales = cargar_datos_de_google()
-cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
-
-if 'autenticado' not in st.session_state: st.session_state.autenticado = False
-if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
-if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
-if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
-if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
-
-if 'contenido_exp' not in st.session_state:
-    st.session_state.contenido_exp = {key: datos_iniciales.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios", "Centros de formación", "Gremios", "Asociaciones", "Asociados", "Colaboradores", "Candidatos"]}
-
-if 'contenido_funcionalidad' not in st.session_state:
-    st.session_state.contenido_funcionalidad = {key: datos_iniciales.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
-
-if 'contenido_contacto' not in st.session_state:
-    st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
-
-def guardar_en_sheets(titulo, nuevo_contenido):
-    url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
-    payload = {"titulo": titulo, "contenido": nuevo_contenido}
-    try:
-        response = requests.post(url_script, json=payload, timeout=20)
-        return response.status_code == 200
-    except:
-        return False
-
-# --- SIDEBAR ---
+# --- SIDEBAR (Para capturar el idioma antes de cargar textos) ---
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
@@ -166,6 +138,52 @@ with st.sidebar:
                     st.error(T["error_cred"])
             except Exception as e:
                 st.error(f"Error: {e}")
+
+# --- SELECCIÓN DE LA PESTAÑA CORRECTA SEGÚN IDIOMA ---
+pestana_activa = "Text" if lang == "ca" else "Textos"
+datos_iniciales = cargar_datos_de_google(pestana_activa)
+cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
+
+# --- INICIALIZACIÓN DE ESTADOS ---
+if 'autenticado' not in st.session_state: st.session_state.autenticado = False
+if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
+if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
+if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
+if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
+
+if 'contenido_exp' not in st.session_state:
+    st.session_state.contenido_exp = {}
+
+if 'contenido_funcionalidad' not in st.session_state:
+    st.session_state.contenido_funcionalidad = {}
+
+if 'contenido_contacto' not in st.session_state:
+    st.session_state.contenido_contacto = {}
+
+# Actualizamos los diccionarios con los datos cargados de la pestaña activa
+claves_exp = ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios", "Centros de formación", "Gremios", "Asociaciones", "Asociados", "Colaboradores", "Candidatos",
+              "Mecanitzat", "Climatització", "Fontaneria", "Electricitat", "Electromecànica", "Hidràulica", "Construcció Mecànica", "Associacions i Gremis", "Centres de formació", "Gremis", "Associacions", "Associats", "Col·laboradors", "Candidats"]
+
+claves_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'", "Arguments M-Zero", "Per què ser Associat o Col·laborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
+
+claves_cont = ["Móvil / WhatsApp", "Email", "Mòbil / WhatsApp"]
+
+for k in claves_exp:
+    if k in datos_iniciales: st.session_state.contenido_exp[k] = datos_iniciales.get(k, "")
+for k in claves_func:
+    if k in datos_iniciales: st.session_state.contenido_funcionalidad[k] = datos_iniciales.get(k, "")
+for k in claves_cont:
+    if k in datos_iniciales: st.session_state.contenido_contacto[k] = datos_iniciales.get(k, "")
+
+def guardar_en_sheets(titulo, nuevo_contenido):
+    url_script = f"https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec?sheet={pestana_activa}"
+    payload = {"titulo": titulo, "contenido": nuevo_contenido}
+    try:
+        response = requests.post(url_script, json=payload, timeout=20)
+        return response.status_code == 200
+    except:
+        return False
+
 
 # ==========================================
 # PANTALLA 1: DOCUMENTOS EN CASTELLANO
@@ -254,7 +272,7 @@ if opcion == T["menu_docs"] and lang == "es":
 
 
 # ==========================================
-# PANTALLA 2: DOCUMENTOS EN CATALÁN (DUPLICADO LIMPIO)
+# PANTALLA 2: DOCUMENTOS EN CATALÁN (USA LA PESTAÑA "Text")
 # ==========================================
 elif opcion == T["menu_docs"] and lang == "ca":
     st.markdown("## Àrea de Documentació i Consultes")
@@ -301,7 +319,7 @@ elif opcion == T["menu_docs"] and lang == "ca":
                     st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Funcionalitat</b></h3>", unsafe_allow_html=True)
-    for titulo in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]:
+    for titulo in ["Arguments M-Zero", "Per què ser Associat o Col·laborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                 temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"ca_func_{titulo}")
@@ -312,7 +330,7 @@ elif opcion == T["menu_docs"] and lang == "ca":
             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
 
     st.markdown("<h3 style='color: #0066cc;'><b>Contacte</b></h3>", unsafe_allow_html=True)
-    for titulo in ["Móvil / WhatsApp", "Email"]:
+    for titulo in ["Mòbil / WhatsApp", "Email"]:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                 nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"ca_cont_{titulo}")
@@ -324,7 +342,7 @@ elif opcion == T["menu_docs"] and lang == "ca":
 
     st.markdown("## Com participar")
     cp1, cp2, cp3 = st.columns(3)
-    for col, titulo in [(cp1, "Asociados"), (cp2, "Colaboradores"), (cp3, "Candidatos")]:
+    for col, titulo in [(cp1, "Associats"), (cp2, "Col·laboradors"), (cp3, "Candidats")]:
         with col:
             with st.expander(titulo):
                 if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
@@ -340,7 +358,7 @@ elif opcion == T["menu_docs"] and lang == "ca":
 
 
 # ==========================================
-# PANTALLA DE EVALUACIONES (MANTIENE URL DE DESTINO ORIGINAL)
+# PANTALLA DE EVALUACIONES
 # ==========================================
 elif opcion == T["menu_eval"]:
     if not st.session_state.autenticado:
