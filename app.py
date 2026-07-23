@@ -224,7 +224,7 @@ if opcion == T["menu_docs"] and lang == "es":
                     st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
-    for titulo in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]:
+    for titulo in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodologia M0", "El sello M-Zero 'Certificación de calidad'"]:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                 temp_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_funcionalidad.get(titulo, "")), height=150, key=f"es_func_{titulo}")
@@ -263,7 +263,7 @@ if opcion == T["menu_docs"] and lang == "es":
 
 
 # ==========================================
-# PANTALLA 2: DOCUMENTOS EN CATALÁN
+# PANTALLA 2: DOCUMENTOS EN CATALÁN (CON LAS CLAVES EXACTAS DE LA PESTAÑA TEXT)
 # ==========================================
 elif opcion == T["menu_docs"] and lang == "ca":
     st.markdown("## Àrea de Documentació i Consultes")
@@ -296,8 +296,9 @@ elif opcion == T["menu_docs"] and lang == "ca":
         st.divider()
         st.markdown("<h4 style='color: #0066cc;'>Col·laboradors</h4>", unsafe_allow_html=True)
         col_c1, col_c2, col_c3 = st.columns(3)
+        titulos_colab_ca = ["Centres de formació", "Gremis", "Associacions"]
         for i, col in enumerate([col_c1, col_c2, col_c3]):
-            titulo = ["Centres de formació", "Gremis", "Associacions"][i]
+            titulo = titulos_colab_ca[i]
             with col:
                 with st.expander(titulo):
                     if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
@@ -310,7 +311,8 @@ elif opcion == T["menu_docs"] and lang == "ca":
                     st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Funcionalitat</b></h3>", unsafe_allow_html=True)
-    for titulo in ["Arguments M-Zero", "Per què ser Associat o Col·laborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]:
+    titulos_func_ca = ["Arguments M-Zero", "Per què ser Associat o Col·laborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
+    for titulo in titulos_func_ca:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                 temp_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_funcionalidad.get(titulo, "")), height=150, key=f"ca_func_{titulo}")
@@ -321,7 +323,8 @@ elif opcion == T["menu_docs"] and lang == "ca":
             st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_funcionalidad.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Contacte</b></h3>", unsafe_allow_html=True)
-    for titulo in ["Mòbil / WhatsApp", "Email"]:
+    titulos_cont_ca = ["Mòbil / WhatsApp", "Email"]
+    for titulo in titulos_cont_ca:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                 nuevo_cont = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_contacto.get(titulo, "")), height=70, key=f"ca_cont_{titulo}")
@@ -333,7 +336,8 @@ elif opcion == T["menu_docs"] and lang == "ca":
 
     st.markdown("## Com participar")
     cp1, cp2, cp3 = st.columns(3)
-    for col, titulo in [(cp1, "Associats"), (cp2, "Col·laboradors"), (cp3, "Candidats")]:
+    titulos_participar_ca = ["Associats", "Col·laboradors", "Candidats"]
+    for col, titulo in zip([cp1, cp2, cp3], titulos_participar_ca):
         with col:
             with st.expander(titulo):
                 if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
