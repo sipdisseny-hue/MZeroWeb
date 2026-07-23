@@ -33,7 +33,7 @@ TEXTOS = {
         "modulo": "Módulo",
         "nivel_bloque": "Nivel del Bloque",
         "alumno": "Nombre del Alumno",
-        "subt_puntuacion": "Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)",
+        "subt_puntuacion": "Puntuación (de 0 a 10)",
         "que_se_mide": "¿Qué se mide aquí?",
         "nivel_rubrica": "Nivel de Rúbrica:",
         "nota_final": "NOTA FINAL",
@@ -69,7 +69,7 @@ TEXTOS = {
         "modulo": "Mòdul",
         "nivel_bloque": "Nivell del Bloc",
         "alumno": "Nom de l'Alumne",
-        "subt_puntuacion": "Puntuació (1=Insuficient, 3=Suficient, 5=Excel·lent)",
+        "subt_puntuacion": "Puntuació (de 0 a 10)",
         "que_se_mide": "Què es mesura aquí?",
         "nivel_rubrica": "Nivell de Rúbrica:",
         "nota_final": "NOTA FINAL",
@@ -165,7 +165,7 @@ with st.sidebar:
     
     opcion = st.radio(T_temp["nav_titulo"], [T_temp["menu_docs"], T_temp["menu_eval"]])
     
-    # Selector de idioma limpio en su posición original exacta
+    # Selector de idioma
     idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     
@@ -356,7 +356,6 @@ if opcion == T["menu_docs"]:
                     unsafe_allow_html=True
                 )
 
-    # --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
 elif opcion == T["menu_eval"]:
@@ -395,9 +394,11 @@ elif opcion == T["menu_eval"]:
             "13. Comunicación y respeto al superior"
         ]
 
+        # CARGA DINÁMICA DE LA PESTAÑA DE RÚBRICA SEGÚN EL IDIOMA (PARA MOSTRAR EL TEXTO CORRECTO)
+        nombre_pestana_rubrica = "Rubrica CAT" if lang == "ca" else "Rubrica"
         descripciones_rubrica = {}
         try:
-            url_apps_script = "https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec"
+            url_apps_script = f"https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec?sheet={nombre_pestana_rubrica}"
             resp_rubrica = requests.get(url_apps_script, timeout=10)
             if resp_rubrica.status_code == 200:
                 data_json = resp_rubrica.json()
@@ -433,11 +434,13 @@ elif opcion == T["menu_eval"]:
                             st.markdown(f"**{T['nivel_rubrica']}**")
                             st.markdown(info_crit['nivel_rubrica'])
 
+                    # Notas con escala clásica de valores (1 a 5)
                     notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
         if None not in notas.values() and alumno:
-            nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
-            res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
+            suma_notas = sum(notas[c] for c in criterios)
+            nota_final = round((suma_notas / (len(criterios) * 5)) * 10, 1)
+            res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] < 3 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
             st.metric(T["nota_final"], f"{nota_final} - {res}")
         else:
             nota_final, res = None, None
@@ -461,6 +464,7 @@ elif opcion == T["menu_eval"]:
                         st.session_state.lista_alumnos.pop(i)
                         st.rerun()
 
+            # EL ENVÍO A GOOGLE SHEETS SIGUE APUNTANDO A LA MISMA PESTAÑA DE SIEMPRE, SIN MODIFICAR DESTINOS
             if st.button(T["enviar_sheets"], type="primary"):
                 url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
                 try:
