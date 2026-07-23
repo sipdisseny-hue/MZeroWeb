@@ -88,7 +88,13 @@ def cargar_datos_de_google(nombre_pestana):
         if response.status_code == 200:
             data = response.json()
             if isinstance(data, list):
-                return {item["Titulo"]: item["Contenido"] for item in data}
+                resultado = {}
+                for item in data:
+                    t = item.get("Titulo") or item.get("Títul") or item.get("título") or item.get("títul")
+                    c = item.get("Contenido") or item.get("Contingut") or item.get("contenido") or item.get("contingut")
+                    if t:
+                        resultado[str(t).strip()] = str(c) if c else ""
+                return resultado
         return {}
     except Exception as e:
         return {}
@@ -142,7 +148,7 @@ with st.sidebar:
             except Exception as e:
                 st.error(f"Error: {e}")
 
-# --- SELECCIÓN DE PESTAÑA SEGÚN IDIOMA (CAMBIO PRINCIPAL) ---
+# --- SELECCIÓN DE PESTAÑA SEGÚN IDIOMA ---
 pestana_activa = "Text" if lang == "ca" else "Textos"
 datos_iniciales = cargar_datos_de_google(pestana_activa)
 cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
@@ -155,19 +161,10 @@ if 'contenido_exp' not in st.session_state: st.session_state.contenido_exp = {}
 if 'contenido_funcionalidad' not in st.session_state: st.session_state.contenido_funcionalidad = {}
 if 'contenido_contacto' not in st.session_state: st.session_state.contenido_contacto = {}
 
-claves_exp = ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios", "Centros de formación", "Gremios", "Asociaciones", "Asociados", "Colaboradores", "Candidatos",
-              "Mecanitzat", "Climatització", "Fontaneria", "Electricitat", "Electromecànica", "Hidràulica", "Construcció Mecànica", "Associacions i Gremis", "Centres de formació", "Gremis", "Associacions", "Associats", "Col·laboradors", "Candidats"]
-
-claves_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'", "Arguments M-Zero", "Per què ser Associat o Col·laborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
-
-claves_cont = ["Móvil / WhatsApp", "Email", "Mòbil / WhatsApp"]
-
-for k in claves_exp:
-    if k in datos_iniciales: st.session_state.contenido_exp[k] = datos_iniciales.get(k, "")
-for k in claves_func:
-    if k in datos_iniciales: st.session_state.contenido_funcionalidad[k] = datos_iniciales.get(k, "")
-for k in claves_cont:
-    if k in datos_iniciales: st.session_state.contenido_contacto[k] = datos_iniciales.get(k, "")
+for k, v in datos_iniciales.items():
+    st.session_state.contenido_exp[k] = v
+    st.session_state.contenido_funcionalidad[k] = v
+    st.session_state.contenido_contacto[k] = v
 
 def guardar_en_sheets(titulo, nuevo_contenido):
     url_script = f"https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec?sheet={pestana_activa}"
@@ -203,12 +200,12 @@ if opcion == T["menu_docs"] and lang == "es":
                     with st.expander(titulo):
                         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                             st.write(T["modo_edicion"])
-                            nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"es_edit_{titulo}")
+                            nuevo_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), height=150, key=f"es_edit_{titulo}")
                             if st.button(f"Guardar {titulo}", key=f"es_btn_{titulo}"):
                                 if guardar_en_sheets(titulo, nuevo_text):
                                     st.session_state.contenido_exp[titulo] = nuevo_text
                                     refrescar_app()
-                        st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+                        st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), unsafe_allow_html=True)
 
         st.divider()
         st.markdown("<h4 style='color: #0066cc;'>Colaboradores</h4>", unsafe_allow_html=True)
@@ -219,34 +216,34 @@ if opcion == T["menu_docs"] and lang == "es":
                 with st.expander(titulo):
                     if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                         st.write(T["modo_edicion"])
-                        nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"es_edit_col_{titulo}")
+                        nuevo_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), height=150, key=f"es_edit_col_{titulo}")
                         if st.button(f"Guardar {titulo}", key=f"es_btn_col_{titulo}"):
                             if guardar_en_sheets(titulo, nuevo_text):
                                 st.session_state.contenido_exp[titulo] = nuevo_text
                                 refrescar_app()
-                    st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+                    st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
     for titulo in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"es_func_{titulo}")
+                temp_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_funcionalidad.get(titulo, "")), height=150, key=f"es_func_{titulo}")
                 if st.button(f"Guardar {titulo}", key=f"es_save_func_{titulo}"):
                     if guardar_en_sheets(titulo, temp_text):
                         st.session_state.contenido_funcionalidad[titulo] = temp_text
                         refrescar_app()
-            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
+            st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_funcionalidad.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
     for titulo in ["Móvil / WhatsApp", "Email"]:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"es_cont_{titulo}")
+                nuevo_cont = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_contacto.get(titulo, "")), height=70, key=f"es_cont_{titulo}")
                 if st.button(f"Guardar {titulo}", key=f"es_save_cont_{titulo}"):
                     if guardar_en_sheets(titulo, nuevo_cont):
                         st.session_state.contenido_contacto[titulo] = nuevo_cont
                         refrescar_app()
-            st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
+            st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_contacto.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("## Cómo participar")
     cp1, cp2, cp3 = st.columns(3)
@@ -255,12 +252,12 @@ if opcion == T["menu_docs"] and lang == "es":
             with st.expander(titulo):
                 if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                     st.write(T["modo_edicion"])
-                    nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"es_part_{titulo}")
+                    nuevo_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), height=150, key=f"es_part_{titulo}")
                     if st.button(f"Guardar {titulo}", key=f"es_btn_part_{titulo}"):
                         if guardar_en_sheets(titulo, nuevo_text):
                             st.session_state.contenido_exp[titulo] = nuevo_text
                             refrescar_app()
-                st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+                st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>Conectando talento, transformando la industria</b></h3>", unsafe_allow_html=True)
 
@@ -289,12 +286,12 @@ elif opcion == T["menu_docs"] and lang == "ca":
                     with st.expander(titulo):
                         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                             st.write(T["modo_edicion"])
-                            nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"ca_edit_{titulo}")
+                            nuevo_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), height=150, key=f"ca_edit_{titulo}")
                             if st.button(f"Guardar {titulo}", key=f"ca_btn_{titulo}"):
                                 if guardar_en_sheets(titulo, nuevo_text):
                                     st.session_state.contenido_exp[titulo] = nuevo_text
                                     refrescar_app()
-                        st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+                        st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), unsafe_allow_html=True)
 
         st.divider()
         st.markdown("<h4 style='color: #0066cc;'>Col·laboradors</h4>", unsafe_allow_html=True)
@@ -305,34 +302,34 @@ elif opcion == T["menu_docs"] and lang == "ca":
                 with st.expander(titulo):
                     if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                         st.write(T["modo_edicion"])
-                        nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"ca_edit_col_{titulo}")
+                        nuevo_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), height=150, key=f"ca_edit_col_{titulo}")
                         if st.button(f"Guardar {titulo}", key=f"ca_btn_col_{titulo}"):
                             if guardar_en_sheets(titulo, nuevo_text):
                                 st.session_state.contenido_exp[titulo] = nuevo_text
                                 refrescar_app()
-                    st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+                    st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Funcionalitat</b></h3>", unsafe_allow_html=True)
     for titulo in ["Arguments M-Zero", "Per què ser Associat o Col·laborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"ca_func_{titulo}")
+                temp_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_funcionalidad.get(titulo, "")), height=150, key=f"ca_func_{titulo}")
                 if st.button(f"Guardar {titulo}", key=f"ca_save_func_{titulo}"):
                     if guardar_en_sheets(titulo, temp_text):
                         st.session_state.contenido_funcionalidad[titulo] = temp_text
                         refrescar_app()
-            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
+            st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_funcionalidad.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Contacte</b></h3>", unsafe_allow_html=True)
     for titulo in ["Mòbil / WhatsApp", "Email"]:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"ca_cont_{titulo}")
+                nuevo_cont = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_contacto.get(titulo, "")), height=70, key=f"ca_cont_{titulo}")
                 if st.button(f"Guardar {titulo}", key=f"ca_save_cont_{titulo}"):
                     if guardar_en_sheets(titulo, nuevo_cont):
                         st.session_state.contenido_contacto[titulo] = nuevo_cont
                         refrescar_app()
-            st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
+            st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_contacto.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("## Com participar")
     cp1, cp2, cp3 = st.columns(3)
@@ -341,12 +338,12 @@ elif opcion == T["menu_docs"] and lang == "ca":
             with st.expander(titulo):
                 if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                     st.write(T["modo_edicion"])
-                    nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"ca_part_{titulo}")
+                    nuevo_text = st.text_area(f"Editar {titulo}:", value=datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), height=150, key=f"ca_part_{titulo}")
                     if st.button(f"Guardar {titulo}", key=f"ca_btn_part_{titulo}"):
                         if guardar_en_sheets(titulo, nuevo_text):
                             st.session_state.contenido_exp[titulo] = nuevo_text
                             refrescar_app()
-                st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+                st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_exp.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>Connectant talent, transformant la indústria</b></h3>", unsafe_allow_html=True)
 
