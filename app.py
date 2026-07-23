@@ -266,9 +266,9 @@ elif opcion == T["menu_docs"] and lang == "ca":
         st.markdown("<h4 style='color: #0066cc; margin-top: 20px;'>Associats</h4>", unsafe_allow_html=True)
         col1, col2, col3 = st.columns(3)
         titulos_asociados_ca = [
-            ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
-            ["Electricidad", "Obra", "Electromecánica", "Renovables"],
-            ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]
+            ["Mecanitzat", "Climatització", "Fontaneria", "Empreses de treball temporal"],
+            ["Electricitat", "Obra", "Electromecànica", "Renovables"],
+            ["Hidràulica", "Construcció Mecànica", "Associacions i Gremis"]
         ]
 
         for i, col in enumerate([col1, col2, col3]):
@@ -288,7 +288,7 @@ elif opcion == T["menu_docs"] and lang == "ca":
         st.markdown("<h4 style='color: #0066cc;'>Col·laboradors</h4>", unsafe_allow_html=True)
         col_c1, col_c2, col_c3 = st.columns(3)
         for i, col in enumerate([col_c1, col_c2, col_c3]):
-            titulo = ["Centros de formación", "Gremios", "Asociaciones"][i]
+            titulo = ["Centres de formació", "Gremis", "Associacions"][i]
             with col:
                 with st.expander(titulo):
                     if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
