@@ -55,7 +55,7 @@ TEXTOS = {
         "btn_acceder": "Accedir",
         "error_login": "Usuari o contrasenya incorrectes",
         "error_cred": "Error en connectar amb el full Credencials",
-        "area_docs": "Àrea de Documentació i Consultes",
+        "area_docs": "Àrea de Documentació i Consultas",
         "asoc_colab": "Associats i Col·laboradors",
         "asociados": "Associats",
         "colaboradores": "Col·laboradors",
@@ -100,8 +100,8 @@ def cargar_catalogo_cursos_y_modulos():
     return [], []
 
 @st.cache_data(ttl=600)
-def cargar_datos_de_google():
-    url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
+def cargar_datos_de_google(idioma_actual):
+    url_script = f"https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec?lang={idioma_actual}"
     try:
         response = requests.get(url_script, timeout=20)
         if response.status_code == 200:
@@ -113,63 +113,31 @@ def cargar_datos_de_google():
         st.error(f"Error de lectura: {e}")
         return {}
 
-def refrescar_app():
+def refrescar_app(idioma_actual):
     st.cache_data.clear()
-    nuevos_datos = cargar_datos_de_google()
+    nuevos_datos = cargar_datos_de_google(idioma_actual)
     
     st.session_state.texto_documentos = nuevos_datos.get("Información del sistema", "Bienvenido al área de consulta.")
     st.session_state.contenido_funcionalidad = {key: nuevos_datos.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
-    st.session_state.contenido_exp = {key: nuevos_datos.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
+    st.session_state.contenido_exp = {key: nuevos_datos.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios", "Centros de formación", "Gremios", "Asociaciones", "Asociados", "Colaboradores", "Candidatos"]}
     st.session_state.contenido_contacto = {key: nuevos_datos.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
     st.rerun()
 
-# --- INICIALIZACIÓN DE ESTADOS ---
-datos_iniciales = cargar_datos_de_google()
-cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
-
-if 'autenticado' not in st.session_state: st.session_state.autenticado = False
-if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
-if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
-if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
-if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
-
-if 'texto_documentos' not in st.session_state: 
-    st.session_state.texto_documentos = datos_iniciales.get("Información del sistema", "Bienvenido al área de consulta.")
-
-if 'contenido_funcionalidad' not in st.session_state:
-    st.session_state.contenido_funcionalidad = {key: datos_iniciales.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
-
-if 'contenido_exp' not in st.session_state:
-    st.session_state.contenido_exp = {key: datos_iniciales.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
-
-if 'contenido_contacto' not in st.session_state:
-    st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
-
-# --- FUNCIÓN GUARDAR ---
-def guardar_en_sheets(titulo, nuevo_contenido):
-    url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
-    payload = {"titulo": titulo, "contenido": nuevo_contenido}
-    try:
-        response = requests.post(url_script, json=payload, timeout=20)
-        return response.status_code == 200
-    except:
-        return False
-
 # --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
 with st.sidebar:
-    st.image("logo_mzero.png")
+    try:
+        st.image("logo_mzero.png")
+    except:
+        pass
     st.markdown("## M-Zero Pro")
     
-    lang_temp = "es"
-    T_temp = TEXTOS[lang_temp]
-    
-    opcion = st.radio(T_temp["nav_titulo"], [T_temp["menu_docs"], T_temp["menu_eval"]])
-    
-    # Selector de idioma limpio en su posición original exacta
+    # Selector de idioma primero para que defina 'lang' de inmediato
     idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     
     T = TEXTOS[lang]
+    
+    opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
     
     st.divider()
     
@@ -210,13 +178,48 @@ with st.sidebar:
             except Exception as e:
                 st.error(f"Error de acceso: {e}")
 
+# --- INICIALIZACIÓN DE ESTADOS ---
+datos_iniciales = cargar_datos_de_google(lang)
+cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
+
+if 'autenticado' not in st.session_state: st.session_state.autenticado = False
+if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
+if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
+if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
+if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
+
+if 'texto_documentos' not in st.session_state: 
+    st.session_state.texto_documentos = datos_iniciales.get("Información del sistema", "Bienvenido al área de consulta.")
+
+if 'contenido_funcionalidad' not in st.session_state:
+    st.session_state.contenido_funcionalidad = {key: datos_iniciales.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
+
+if 'contenido_exp' not in st.session_state:
+    st.session_state.contenido_exp = {key: datos_iniciales.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios", "Centros de formación", "Gremios", "Asociaciones", "Asociados", "Colaboradores", "Candidatos"]}
+
+if 'contenido_contacto' not in st.session_state:
+    st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
+
+# --- FUNCIÓN GUARDAR ---
+def guardar_en_sheets(titulo, nuevo_contenido, idioma_actual):
+    url_script = f"https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec?lang={idioma_actual}"
+    payload = {"titulo": titulo, "contenido": nuevo_contenido}
+    try:
+        response = requests.post(url_script, json=payload, timeout=20)
+        return response.status_code == 200
+    except:
+        return False
+
 # --- LÓGICA DE PANTALLAS ---
 if opcion == T["menu_docs"]:
     st.markdown(f"## {T['area_docs']}")
     
     with st.container(border=True):
         st.markdown(f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
-        st.image("Asociados y colaboradores.png", width=300)
+        try:
+            st.image("Asociados y colaboradores.png", width=300)
+        except:
+            pass
         
         # --- BLOQUE 1: ASOCIADOS ---
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
@@ -236,13 +239,12 @@ if opcion == T["menu_docs"]:
                     with st.expander(titulo):
                         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                             st.write(T["modo_edicion"])
-                            nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_{titulo}")
-                            img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_{titulo}")
+                            nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_{titulo}_{lang}")
                             
-                            if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
-                                if guardar_en_sheets(titulo, nuevo_text):
+                            if st.button(f"Guardar {titulo}", key=f"btn_{titulo}_{lang}"):
+                                if guardar_en_sheets(titulo, nuevo_text, lang):
                                     st.session_state.contenido_exp[titulo] = nuevo_text
-                                    refrescar_app()
+                                    refrescar_app(lang)
                         
                         st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
 
@@ -266,36 +268,30 @@ if opcion == T["menu_docs"]:
                 with st.expander(titulo):
                     if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                         st.write(T["modo_edicion"])
-                        nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_col_{titulo}")
-                        img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_col_{titulo}")
+                        nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_col_{titulo}_{lang}")
                         
-                        if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}"):
-                            if guardar_en_sheets(titulo, nuevo_text):
+                        if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}_{lang}"):
+                            if guardar_en_sheets(titulo, nuevo_text, lang):
                                 st.session_state.contenido_exp[titulo] = nuevo_text
-                                refrescar_app()
+                                refrescar_app(lang)
                     
                     st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 2: FUNCIONALIDAD ---
-    if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
-        st.session_state.contenido_funcionalidad = cargar_datos_de_google()
-
     st.markdown(f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
     titulos_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
 
     for titulo in titulos_func:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
+                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}_{lang}")
             
-                if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}_{lang}"):
                     st.session_state.contenido_funcionalidad[titulo] = temp_text
-                
-                    if guardar_en_sheets(titulo, temp_text):
+                    if guardar_en_sheets(titulo, temp_text, lang):
                         st.success("Guardado en Google y localmente")
                     else:
                         st.warning("Guardado solo localmente (Error en Sheets)")
-                
                     st.rerun()
 
             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
@@ -306,11 +302,11 @@ if opcion == T["menu_docs"]:
     for titulo in titulos_cont:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"cont_{titulo}")
-                if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
-                    if guardar_en_sheets(titulo, nuevo_cont):
+                nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"cont_{titulo}_{lang}")
+                if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}_{lang}"):
+                    if guardar_en_sheets(titulo, nuevo_cont, lang):
                         st.session_state.contenido_contacto[titulo] = nuevo_cont
-                        refrescar_app()
+                        refrescar_app(lang)
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE: CÓMO PARTICIPAR ---
@@ -334,29 +330,25 @@ if opcion == T["menu_docs"]:
                     st.write(T["modo_edicion"])
                     nuevo_text = st.text_area(
                         f"Editar {titulo}:", 
-                        value=st.session_state.contenido_exp.get(
-                            titulo, ""
-                        ), 
+                        value=st.session_state.contenido_exp.get(titulo, ""), 
                         height=150, 
-                        key=f"edit_part_{titulo}"
+                        key=f"edit_part_{titulo}_{lang}"
                     )
                     btn_guardar = st.button(
                         f"Guardar {titulo}", 
-                        key=f"btn_part_{titulo}"
+                        key=f"btn_part_{titulo}_{lang}"
                     )
                     if btn_guardar:
-                        if guardar_en_sheets(titulo, nuevo_text):
+                        if guardar_en_sheets(titulo, nuevo_text, lang):
                             st.session_state.contenido_exp[titulo] = nuevo_text
-                            refrescar_app()
+                            refrescar_app(lang)
                 
                 st.markdown(
-                    st.session_state.contenido_exp.get(
-                        titulo, ""
-                    ), 
+                    st.session_state.contenido_exp.get(titulo, ""), 
                     unsafe_allow_html=True
                 )
 
-    # --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
+    # --- ESLOGAN ---
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
 elif opcion == T["menu_eval"]:
@@ -367,20 +359,44 @@ elif opcion == T["menu_eval"]:
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input(T["profesor"], key=f"f_prof_{st.session_state.reset_todo}")
             
-            opciones_cursos_display = [f"{c['codigo_curso']} - {c['nombre_curso']}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanizados"]
+            # --- FILTRADO DE CURSOS Y MÓDULOS POR COLUMNA IDIOMA (YA QUE NO VAN POR PESTAÑAS) ---
+            cursos_filtrados = [
+                c for c in cursos_db 
+                if str(c.get("idioma", c.get("Idioma", ""))).strip().lower() == lang.lower()
+            ]
+            if not cursos_filtrados:
+                cursos_filtrados = cursos_db
+
+            opciones_cursos_display = [
+                f"{c.get('codigo_curso', c.get('Código Curso', ''))} - {c.get('nombre_curso', c.get('Nombre del Curso', ''))}" 
+                for c in cursos_filtrados
+            ] if cursos_filtrados else ["MZ-M - Mecanizados"]
+            
             curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
             curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
 
-            modulos_filtrados = [m for m in modulos_db if m["curso_asociado"] == curso_codigo_actual]
-            opciones_modulos_display = [f"{m['subcodigo']} - {m['descripcion']}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
+            modulos_filtrados = [
+                m for m in modulos_db 
+                if str(m.get("curso_asociado", m.get("Curso asociado", ""))).strip() == curso_codigo_actual 
+                and str(m.get("idioma", m.get("Idioma", ""))).strip().lower() == lang.lower()
+            ]
+            if not modulos_filtrados:
+                modulos_filtrados = [m for m in modulos_db if str(m.get("curso_asociado", m.get("Curso asociado", ""))).strip() == curso_codigo_actual]
+
+            opciones_modulos_display = [
+                f"{m.get('subcodigo', m.get('Subcodigo', ''))} - {m.get('descripcion', m.get('Descripción', ''))}" 
+                for m in modulos_filtrados
+            ] if modulos_filtrados else ["Selecciona un curso válido"]
+            
             modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
             modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
 
             nivel_sugerido = ""
             for m in modulos_filtrados:
-                if m["subcodigo"] == modulo_codigo_actual:
-                    nivel_sugerido = str(m["nivel_bloque"])
+                if str(m.get("subcodigo", m.get("Subcodigo", ""))) == modulo_codigo_actual:
+                    nivel_sugerido = str(m.get("nivel_bloque", m.get("Nivel bloque", "")))
                     break
+            # ---------------------------------------------------------------------------------------
 
             c4, c5 = st.columns(2)
             nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
@@ -397,7 +413,7 @@ elif opcion == T["menu_eval"]:
 
         descripciones_rubrica = {}
         try:
-            url_apps_script = "https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec"
+            url_apps_script = f"https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec?lang={lang}"
             resp_rubrica = requests.get(url_apps_script, timeout=10)
             if resp_rubrica.status_code == 200:
                 data_json = resp_rubrica.json()
@@ -433,7 +449,7 @@ elif opcion == T["menu_eval"]:
                             st.markdown(f"**{T['nivel_rubrica']}**")
                             st.markdown(info_crit['nivel_rubrica'])
 
-                    notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
+                notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
         if None not in notas.values() and alumno:
             nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
@@ -464,7 +480,7 @@ elif opcion == T["menu_eval"]:
             if st.button(T["enviar_sheets"], type="primary"):
                 url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
                 try:
-                    response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
+                    response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos, "lang": lang}, timeout=20)
                     if response.status_code == 200:
                         st.success(T["exito_envio"])
                         st.session_state.lista_alumnos = []
