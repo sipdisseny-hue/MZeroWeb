@@ -153,10 +153,10 @@ pestana_activa = "Text" if lang == "ca" else "Textos"
 datos_iniciales = cargar_datos_de_google(pestana_activa)
 cursos_db_raw, modulos_db_raw = cargar_catalogo_cursos_y_modulos()
 
-# FILTRAR CURSOS Y MÓDULOS SEGÚN EL IDIOMA ACTIVO ("Es" o "Ca")
+# FILTRAR CURSOS Y MÓDULOS SEGÚN EL IDIOMA ACTIVO Y ORDENAR
 idioma_filtro = "Ca" if lang == "ca" else "Es"
-cursos_db = [c for c in cursos_db_raw if str(c.get("idioma", "")).strip() == idioma_filtro]
-modulos_db = [m for m in modulos_db_raw if str(m.get("idioma", "")).strip() == idioma_filtro]
+cursos_db = sorted([c for c in cursos_db_raw if str(c.get("idioma", "")).strip() == idioma_filtro], key=lambda x: str(x.get("codigo_curso", "")))
+modulos_db = sorted([m for m in modulos_db_raw if str(m.get("idioma", "")).strip() == idioma_filtro], key=lambda x: str(x.get("subcodigo", "")))
 
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
@@ -328,7 +328,6 @@ elif opcion == T["menu_docs"] and lang == "ca":
             st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_funcionalidad.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Contacte</b></h3>", unsafe_allow_html=True)
-    # CORREGIDO: Se usa "Mòbil / WhatsApp" que es como está guardado en la hoja en catalán
     titulos_cont_ca = ["Mòbil / WhatsApp", "Email"]
     for titulo in titulos_cont_ca:
         with st.expander(titulo):
@@ -369,16 +368,16 @@ elif opcion == T["menu_eval"]:
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input(T["profesor"], key=f"f_prof_{st.session_state.reset_todo}")
             
-            opciones_cursos_display = [f"{c['codigo_curso']} - {c['nombre_curso']}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanizados"]
+            opciones_cursos_display = [f"{c['codigo_curso']} - {c['nombre_curso']}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanitzats"]
             curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
             curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
 
-            modulos_filtrados = [m for m in modulos_db if m["curso_asociado"] == curso_codigo_actual]
+            modulos_filtrados = [m for m in modulos_db if str(m.get("curso_asociado", "")).strip() == str(curso_codigo_actual).strip()]
             opciones_modulos_display = [f"{m['subcodigo']} - {m['descripcion']}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
             modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
             modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
 
-            nivel_sugerido = next((str(m["nivel_bloque"]) for m in modulos_filtrados if m["subcodigo"] == modulo_codigo_actual), "")
+            nivel_sugerido = next((str(m["nivel_bloque"]) for m in modulos_filtrados if str(m.get("subcodigo", "")).strip() == str(modulo_codigo_actual).strip()), "")
 
             c4, c5 = st.columns(2)
             nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
