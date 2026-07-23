@@ -97,7 +97,7 @@ def refrescar_app():
     st.cache_data.clear()
     st.rerun()
 
-# --- SIDEBAR (Para capturar el idioma antes de cargar textos) ---
+# --- SIDEBAR ORIGINAL ---
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
@@ -109,6 +109,9 @@ with st.sidebar:
     opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
     
     st.divider()
+    
+    if 'autenticado' not in st.session_state: st.session_state.autenticado = False
+    if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
     
     if st.session_state.autenticado:
         st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
@@ -139,28 +142,19 @@ with st.sidebar:
             except Exception as e:
                 st.error(f"Error: {e}")
 
-# --- SELECCIÓN DE LA PESTAÑA CORRECTA SEGÚN IDIOMA ---
+# --- SELECCIÓN DE PESTAÑA SEGÚN IDIOMA (CAMBIO PRINCIPAL) ---
 pestana_activa = "Text" if lang == "ca" else "Textos"
 datos_iniciales = cargar_datos_de_google(pestana_activa)
 cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
 
-# --- INICIALIZACIÓN DE ESTADOS ---
-if 'autenticado' not in st.session_state: st.session_state.autenticado = False
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
-if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
 
-if 'contenido_exp' not in st.session_state:
-    st.session_state.contenido_exp = {}
+if 'contenido_exp' not in st.session_state: st.session_state.contenido_exp = {}
+if 'contenido_funcionalidad' not in st.session_state: st.session_state.contenido_funcionalidad = {}
+if 'contenido_contacto' not in st.session_state: st.session_state.contenido_contacto = {}
 
-if 'contenido_funcionalidad' not in st.session_state:
-    st.session_state.contenido_funcionalidad = {}
-
-if 'contenido_contacto' not in st.session_state:
-    st.session_state.contenido_contacto = {}
-
-# Actualizamos los diccionarios con los datos cargados de la pestaña activa
 claves_exp = ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios", "Centros de formación", "Gremios", "Asociaciones", "Asociados", "Colaboradores", "Candidatos",
               "Mecanitzat", "Climatització", "Fontaneria", "Electricitat", "Electromecànica", "Hidràulica", "Construcció Mecànica", "Associacions i Gremis", "Centres de formació", "Gremis", "Associacions", "Associats", "Col·laboradors", "Candidats"]
 
@@ -272,7 +266,7 @@ if opcion == T["menu_docs"] and lang == "es":
 
 
 # ==========================================
-# PANTALLA 2: DOCUMENTOS EN CATALÁN (USA LA PESTAÑA "Text")
+# PANTALLA 2: DOCUMENTOS EN CATALÁN
 # ==========================================
 elif opcion == T["menu_docs"] and lang == "ca":
     st.markdown("## Àrea de Documentació i Consultes")
