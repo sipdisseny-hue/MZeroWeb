@@ -8,13 +8,27 @@ st.set_page_config(page_title="MZero Web", layout="wide")
 
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=600)
+def cargar_catalogo_cursos_y_modulos():
+    url_script = "https://script.google.com/macros/s/AKfycbxEJ01lFU4PXwTqxAONwDDlDnzJTbZrSMktE2kr68nI93NJFwpJn8ZKZRfSGmIhh5H9cw/exec"
+    try:
+        response = requests.get(url_script, timeout=20)
+        if response.status_code == 200:
+            data = response.json()
+            if isinstance(data, dict):
+                return data.get("cursos", []), data.get("modulos", [])
+    except Exception as e:
+        st.error(f"Error al cargar cursos y módulos: {e}")
+    return [], []
+
+@st.cache_data(ttl=600)
 def cargar_datos_de_google():
     url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
     try:
         response = requests.get(url_script, timeout=20)
         if response.status_code == 200:
             data = response.json()
-            return {item["Titulo"]: item["Contenido"] for item in data}
+            if isinstance(data, list):
+                return {item["Titulo"]: item["Contenido"] for item in data}
         return {}
     except Exception as e:
         st.error(f"Error de lectura: {e}")
@@ -33,6 +47,7 @@ def refrescar_app():
 
 # --- INICIALIZACIÓN DE ESTADOS ---
 datos_iniciales = cargar_datos_de_google()
+cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
 
 if 'autenticado' not in st.session_state: st.session_state.autenticado = False
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
@@ -86,10 +101,8 @@ with st.sidebar:
                 headers = {'User-Agent': 'Mozilla/5.0'}
                 response = requests.get(url, headers=headers, timeout=10)
                 if response.status_code == 200:
-                    # Leemos sin cabecera fija para usar los índices numéricos de columna (0 y 1)
                     df = pd.read_csv(StringIO(response.text), header=None)
                     
-                    # Recorremos las filas desde la fila 1 (saltando la cabecera de la fila 0)
                     login_ok = False
                     for i in range(1, len(df)):
                         u_excel = str(df.iloc[i, 0]).strip()
@@ -265,11 +278,25 @@ elif opcion == "Evaluaciones":
         with st.container():
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
-            curso = c2.text_input("Curso", key=f"f_cur_{st.session_state.reset_todo}")
-            modulo = c3.text_input("Módulo", key=f"f_mod_{st.session_state.reset_todo}")
             
+            # --- CAMPOS ACTUALIZADOS A DESPLEGABLES EN CASCADA ---
+            opciones_cursos_display = [f"{c['codigo_curso']} - {c['nombre_curso']}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanizados"]
+            curso_seleccionado_full = c2.selectbox("Curso", opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
+            curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
+
+            modulos_filtrados = [m for m in modulos_db if m["curso_asociado"] == curso_codigo_actual]
+            opciones_modulos_display = [f"{m['subcodigo']} - {m['descripcion']}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
+            modulo_seleccionado_full = c3.selectbox("Módulo", opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
+            modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
+
+            nivel_sugerido = ""
+            for m in modulos_filtrados:
+                if m["subcodigo"] == modulo_codigo_actual:
+                    nivel_sugerido = str(m["nivel_bloque"])
+                    break
+
             c4, c5 = st.columns(2)
-            nivel = c4.text_input("Nivel del Bloque", key=f"f_niv_{st.session_state.reset_todo}")
+            nivel = c4.text_input("Nivel del Bloque", value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
             alumno = c5.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.alumno_key}")
 
         criterios = [
@@ -302,27 +329,23 @@ elif opcion == "Evaluaciones":
         for i, crit in enumerate(criterios):
             with cols[i % 4]:
                 with st.container(border=True):
-                    # 1. Creamos dos columnas internas: 82% para el título y 18% para el botón de info
                     col_t, col_b = st.columns([0.82, 0.18])
                     
                     with col_t:
                         st.markdown(f"**{crit}**")
                         
                     with col_b:
-                        # Buscamos la descripción del criterio o ponemos una por defecto para evitar errores
                         info_crit = descripciones_rubrica.get(crit, {
                             "que_se_mide": "Información detallada en desarrollo.",
                             "nivel_rubrica": "Pendiente de definir rúbrica."
                         })
                         
-                        # 2. Desplegable tipo popover con el icono de información
                         with st.popover("ℹ️", help="Ver rúbrica"):
                             st.markdown(f"**¿Qué se mide aquí?**\n\n{info_crit['que_se_mide']}")
                             st.markdown("---")
                             st.markdown("**Nivel de Rúbrica:**")
                             st.markdown(info_crit['nivel_rubrica'])
 
-                    # 3. Tu selector de notas original idéntico al que ya usabas
                     notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
         if None not in notas.values() and alumno:
@@ -334,7 +357,7 @@ elif opcion == "Evaluaciones":
 
         if st.button("GUARDAR ALUMNO"):
             if nota_final is not None:
-                registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso, "Modulo": modulo, "Nivel": nivel, "Nota": nota_final, "Estado": res}
+                registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso_seleccionado_full, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
                 registro.update(notas)
                 st.session_state.lista_alumnos.append(registro)
                 st.session_state.alumno_key += 1
