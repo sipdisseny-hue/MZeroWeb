@@ -6,10 +6,86 @@ from io import StringIO
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
 
+# --- DICCIONARIO DE TRADUCCIONES (IDIOMAS) ---
+TEXTOS = {
+    "es": {
+        "nav_titulo": "Navegación",
+        "menu_docs": "Documentos",
+        "menu_eval": "Evaluaciones",
+        "sesion_iniciada": "Sesión iniciada:",
+        "cerrar_sesion": "CERRAR SESIÓN",
+        "usuario": "Usuario:",
+        "password": "Contraseña:",
+        "btn_acceder": "Acceder",
+        "error_login": "Usuario o contraseña incorrectos",
+        "error_cred": "Error al conectar con la hoja Credenciales",
+        "area_docs": "Área de Documentación y Consultas",
+        "asoc_colab": "Asociados y Colaboradores",
+        "asociados": "Asociados",
+        "colaboradores": "Colaboradores",
+        "funcionalidad": "Funcionalidad",
+        "contacto": "Contacto",
+        "como_participar": "Cómo participar",
+        "eslogan": "Conectando talento, transformando la industria",
+        "aviso_login_eval": "Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.",
+        "profesor": "Profesor",
+        "curso": "Curso",
+        "modulo": "Módulo",
+        "nivel_bloque": "Nivel del Bloque",
+        "alumno": "Nombre del Alumno",
+        "subt_puntuacion": "Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)",
+        "que_se_mide": "¿Qué se mide aquí?",
+        "nivel_rubrica": "Nivel de Rúbrica:",
+        "nota_final": "NOTA FINAL",
+        "guardar_alumno": "GUARDAR ALUMNO",
+        "resumen_alumnos": "Resumen de Alumnos",
+        "gestionar_alumnos": "Gestionar alumnos (Eliminar)",
+        "enviar_sheets": "ENVIAR TODO A GOOGLE SHEETS",
+        "exito_envio": "Enviado con éxito a Google Sheets",
+        "modo_edicion": "--- MODO EDICIÓN ---"
+    },
+    "ca": {
+        "nav_titulo": "Navegació",
+        "menu_docs": "Documents",
+        "menu_eval": "Avaluacions",
+        "sesion_iniciada": "Sessió iniciada:",
+        "cerrar_sesion": "TANCAR SESSIÓ",
+        "usuario": "Usuari:",
+        "password": "Contrasenya:",
+        "btn_acceder": "Accedir",
+        "error_login": "Usuari o contrasenya incorrectes",
+        "error_cred": "Error en connectar amb el full Credencials",
+        "area_docs": "Àrea de Documentació i Consultes",
+        "asoc_colab": "Associats i Col·laboradors",
+        "asociados": "Associats",
+        "colaboradores": "Col·laboradors",
+        "funcionalidad": "Funcionalitat",
+        "contacto": "Contacte",
+        "como_participar": "Com participar",
+        "eslogan": "Connectant talent, transformant la indústria",
+        "aviso_login_eval": "Has d'iniciar sessió al sidebar per accedir al mòdul d'avaluacions.",
+        "profesor": "Professor",
+        "curso": "Curs",
+        "modulo": "Mòdul",
+        "nivel_bloque": "Nivell del Bloc",
+        "alumno": "Nom de l'Alumne",
+        "subt_puntuacion": "Puntuació (1=Insuficient, 3=Suficient, 5=Excel·lent)",
+        "que_se_mide": "Què es mesura aquí?",
+        "nivel_rubrica": "Nivell de Rúbrica:",
+        "nota_final": "NOTA FINAL",
+        "guardar_alumno": "GUARDAR ALUMNE",
+        "resumen_alumnos": "Resum d'Alumnes",
+        "gestionar_alumnos": "Gestionar alumnes (Eliminar)",
+        "enviar_sheets": "ENVIAR TOT A GOOGLE SHEETS",
+        "exito_envio": "Enviat amb èxit a Google Sheets",
+        "modo_edicion": "--- MODE EDICIÓ ---"
+    }
+}
+
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=600)
 def cargar_catalogo_cursos_y_modulos():
-    # URL NUEVA ACTUALIZADA AQUÍ
+    # URL NUEVA ACTUALIZADA PARA CURSOS Y MÓDULOS
     url_script = "https://script.google.com/macros/s/AKfycbzAfnmO33bANwUsvDRkeMzLjLgLWZeSdzLNduleZ9UYDLEtIqe4YIb-gHSWmJaaFBYY/exec"
     try:
         response = requests.get(url_script, timeout=20)
@@ -82,25 +158,31 @@ def guardar_en_sheets(titulo, nuevo_contenido):
     except:
         return False
 
-# --- SIDEBAR: NAVEGACIÓN Y ACCESO ---
+# --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
     
-    opcion = st.radio("Navegación", ["Documentos", "Evaluaciones"])
+    # --- SELECTOR DE IDIOMA (BANDERA) ---
+    idioma_seleccionado = st.radio("Idioma", ["🇪🇸 Castellano", "🏴󠁥󠁮󠁧󠁿 Català"], horizontal=True, label_visibility="collapsed")
+    lang = "ca" if "Català" in idioma_seleccionado else "es"
+    
+    T = TEXTOS[lang] # Diccionario rápido para el idioma activo
+    
+    opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
     st.divider()
     
     if st.session_state.autenticado:
-        st.success(f"Sesión iniciada: {st.session_state.usuario_actual}")
-        if st.button("CERRAR SESIÓN"):
+        st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
+        if st.button(T["cerrar_sesion"]):
             st.session_state.autenticado = False
             st.session_state.usuario_actual = ""
             st.rerun()
     else:
-        usuario_in = st.text_input("Usuario:")
-        pass_in = st.text_input("Contraseña:", type="password")
+        usuario_in = st.text_input(T["usuario"])
+        pass_in = st.text_input(T["password"], type="password")
         
-        if st.button("Acceder"):
+        if st.button(T["btn_acceder"]):
             # URL original de credenciales
             url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
@@ -122,22 +204,22 @@ with st.sidebar:
                         st.session_state.usuario_actual = usuario_in.strip()
                         st.rerun()
                     else:
-                        st.error("Usuario o contraseña incorrectos")
+                        st.error(T["error_login"])
                 else:
-                    st.error("Error al conectar con la hoja Credenciales")
+                    st.error(T["error_cred"])
             except Exception as e:
                 st.error(f"Error de acceso: {e}")
 
 # --- LÓGICA DE PANTALLAS ---
-if opcion == "Documentos":
-    st.markdown("## Área de Documentación y Consultas")
+if opcion == T["menu_docs"]:
+    st.markdown(f"## {T['area_docs']}")
     
     with st.container(border=True):
-        st.markdown("<h3 style='color: #0066cc;'><b>Asociados y Colaboradores</b></h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
         
         # --- BLOQUE 1: ASOCIADOS ---
-        st.markdown("<h4 style='color: #0066cc; margin-top: 20px;'>Asociados</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns(3)
         columnas_asociados = [col1, col2, col3]
@@ -153,7 +235,7 @@ if opcion == "Documentos":
                 for titulo in titulos_asociados[i]:
                     with st.expander(titulo):
                         if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                            st.write("--- MODO EDICIÓN ---")
+                            st.write(T["modo_edicion"])
                             nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_{titulo}")
                             img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_{titulo}")
                             
@@ -167,7 +249,7 @@ if opcion == "Documentos":
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
-        st.markdown("<h4 style='color: #0066cc;'>Colaboradores</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
         
         col_c1, col_c2, col_c3 = st.columns(3)
         columnas_colaboradores = [col_c1, col_c2, col_c3]
@@ -183,7 +265,7 @@ if opcion == "Documentos":
                 titulo = titulos_colaboradores[i]
                 with st.expander(titulo):
                     if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                        st.write("--- MODO EDICIÓN ---")
+                        st.write(T["modo_edicion"])
                         nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_col_{titulo}")
                         img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_col_{titulo}")
                         
@@ -198,7 +280,7 @@ if opcion == "Documentos":
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
-    st.markdown("<h3 style='color: #0066cc;'><b>Funcionalidad</b></h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
     titulos_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
 
     for titulo in titulos_func:
@@ -219,7 +301,7 @@ if opcion == "Documentos":
             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
 
     # --- BLOQUE 3: CONTACTO ---
-    st.markdown("<h3 style='color: #0066cc;'><b>Contacto</b></h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
     titulos_cont = ["Móvil / WhatsApp", "Email"]
     for titulo in titulos_cont:
         with st.expander(titulo):
@@ -232,7 +314,7 @@ if opcion == "Documentos":
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE: CÓMO PARTICIPAR ---
-    st.markdown("## Cómo participar")
+    st.markdown(f"## {T['como_participar']}")
 
     cp1, cp2, cp3 = st.columns(3)
     columnas_participar = [
@@ -249,7 +331,7 @@ if opcion == "Documentos":
                     and st.session_state.usuario_actual == "mzerojc"
                 )
                 if sesion_ok:
-                    st.write("--- MODO EDICIÓN ---")
+                    st.write(T["modo_edicion"])
                     nuevo_text = st.text_area(
                         f"Editar {titulo}:", 
                         value=st.session_state.contenido_exp.get(
@@ -275,23 +357,23 @@ if opcion == "Documentos":
                 )
 
     # --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
-    st.markdown("<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>Conectando talento, transformando la industria</b></h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
-elif opcion == "Evaluaciones":
+elif opcion == T["menu_eval"]:
     if not st.session_state.autenticado:
-        st.warning("Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.")
+        st.warning(T["aviso_login_eval"])
     else:
         with st.container():
             c1, c2, c3 = st.columns(3)
-            profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
+            profesor = c1.text_input(T["profesor"], key=f"f_prof_{st.session_state.reset_todo}")
             
             opciones_cursos_display = [f"{c['codigo_curso']} - {c['nombre_curso']}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanizados"]
-            curso_seleccionado_full = c2.selectbox("Curso", opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
+            curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
             curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
 
             modulos_filtrados = [m for m in modulos_db if m["curso_asociado"] == curso_codigo_actual]
             opciones_modulos_display = [f"{m['subcodigo']} - {m['descripcion']}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
-            modulo_seleccionado_full = c3.selectbox("Módulo", opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
+            modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
             modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
 
             nivel_sugerido = ""
@@ -301,8 +383,8 @@ elif opcion == "Evaluaciones":
                     break
 
             c4, c5 = st.columns(2)
-            nivel = c4.text_input("Nivel del Bloque", value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
-            alumno = c5.text_input("Nombre del Alumno", key=f"f_alu_{st.session_state.alumno_key}")
+            nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
+            alumno = c5.text_input(T["alumno"], key=f"f_alu_{st.session_state.alumno_key}")
 
         criterios = [
             "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
@@ -328,7 +410,7 @@ elif opcion == "Evaluaciones":
         except Exception:
             pass
 
-        st.subheader("Puntuación (1=Insuficiente, 3=Suficiente, 5=Excelente)")
+        st.subheader(T["subt_puntuacion"])
         cols = st.columns(4)
         notas = {}
         
@@ -347,9 +429,9 @@ elif opcion == "Evaluaciones":
                         })
                         
                         with st.popover("ℹ️", help="Ver rúbrica"):
-                            st.markdown(f"**¿Qué se mide aquí?**\n\n{info_crit['que_se_mide']}")
+                            st.markdown(f"**{T['que_se_mide']}**\n\n{info_crit['que_se_mide']}")
                             st.markdown("---")
-                            st.markdown("**Nivel de Rúbrica:**")
+                            st.markdown(f"**{T['nivel_rubrica']}**")
                             st.markdown(info_crit['nivel_rubrica'])
 
                     notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
@@ -357,11 +439,11 @@ elif opcion == "Evaluaciones":
         if None not in notas.values() and alumno:
             nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
             res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
-            st.metric("NOTA FINAL", f"{nota_final} - {res}")
+            st.metric(T["nota_final"], f"{nota_final} - {res}")
         else:
             nota_final, res = None, None
 
-        if st.button("GUARDAR ALUMNO"):
+        if st.button(T["guardar_alumno"]):
             if nota_final is not None:
                 registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso_seleccionado_full, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
                 registro.update(notas)
@@ -370,23 +452,23 @@ elif opcion == "Evaluaciones":
                 st.rerun()
 
         if st.session_state.lista_alumnos:
-            st.subheader("Resumen de Alumnos")
+            st.subheader(T["resumen_alumnos"])
             df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
             st.table(df_resumen)
             
-            with st.expander("Gestionar alumnos (Eliminar)"):
+            with st.expander(T["gestionar_alumnos"]):
                 for i, reg in enumerate(st.session_state.lista_alumnos):
                     if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
                         st.session_state.lista_alumnos.pop(i)
                         st.rerun()
 
-            if st.button("ENVIAR TODO A GOOGLE SHEETS", type="primary"):
+            if st.button(T["enviar_sheets"], type="primary"):
                 # URL original para enviar las evaluaciones
                 url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
                 try:
                     response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
                     if response.status_code == 200:
-                        st.success("Enviado con éxito a Google Sheets")
+                        st.success(T["exito_envio"])
                         st.session_state.lista_alumnos = []
                         st.session_state.reset_todo += 1
                         st.rerun()
