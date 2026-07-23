@@ -160,13 +160,17 @@ with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
     
-    # Selector limpio sin caracteres ocultos
+    lang_temp = "es"
+    T_temp = TEXTOS[lang_temp]
+    
+    opcion = st.radio(T_temp["nav_titulo"], [T_temp["menu_docs"], T_temp["menu_eval"]])
+    
+    # Selector de idioma limpio en su posición original exacta
     idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     
-    T = TEXTOS[lang] 
+    T = TEXTOS[lang]
     
-    opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
     st.divider()
     
     if st.session_state.autenticado:
