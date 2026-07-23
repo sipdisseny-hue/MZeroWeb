@@ -9,19 +9,24 @@ st.set_page_config(page_title="MZero Web", layout="wide")
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=600)
 def cargar_catalogo_cursos_y_modulos():
-    url_script = "https://script.google.com/macros/s/AKfycbxEJ01lFU4PXwTqxAONwDDlDnzJTbZrSMktE2kr68nI93NJFwpJn8ZKZRfSGmIhh5H9cw/exec"
+    # URL NUEVA ACTUALIZADA AQUÍ
+    url_script = "https://script.google.com/macros/s/AKfycbzAfnmO33bANwUsvDRkeMzLjLgLWZeSdzLNduleZ9UYDLEtIqe4YIb-gHSWmJaaFBYY/exec"
     try:
         response = requests.get(url_script, timeout=20)
         if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, dict):
-                return data.get("cursos", []), data.get("modulos", [])
+            try:
+                data = response.json()
+                if isinstance(data, dict):
+                    return data.get("cursos", []), data.get("modulos", [])
+            except Exception:
+                st.error(f"El script no devolvió un JSON válido. Respuesta recibida: {response.text[:200]}")
     except Exception as e:
-        st.error(f"Error al cargar cursos y módulos: {e}")
+        st.error(f"Error de conexión al cargar cursos y módulos: {e}")
     return [], []
 
 @st.cache_data(ttl=600)
 def cargar_datos_de_google():
+    # URL original de textos / datos del sistema
     url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
     try:
         response = requests.get(url_script, timeout=20)
@@ -96,6 +101,7 @@ with st.sidebar:
         pass_in = st.text_input("Contraseña:", type="password")
         
         if st.button("Acceder"):
+            # URL original de credenciales
             url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
                 headers = {'User-Agent': 'Mozilla/5.0'}
@@ -279,7 +285,6 @@ elif opcion == "Evaluaciones":
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input("Profesor", key=f"f_prof_{st.session_state.reset_todo}")
             
-            # --- CAMPOS ACTUALIZADOS A DESPLEGABLES EN CASCADA ---
             opciones_cursos_display = [f"{c['codigo_curso']} - {c['nombre_curso']}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanizados"]
             curso_seleccionado_full = c2.selectbox("Curso", opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
             curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
@@ -310,6 +315,7 @@ elif opcion == "Evaluaciones":
 
         descripciones_rubrica = {}
         try:
+            # URL original de la rúbrica
             url_apps_script = "https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec"
             resp_rubrica = requests.get(url_apps_script, timeout=10)
             if resp_rubrica.status_code == 200:
@@ -375,6 +381,7 @@ elif opcion == "Evaluaciones":
                         st.rerun()
 
             if st.button("ENVIAR TODO A GOOGLE SHEETS", type="primary"):
+                # URL original para enviar las evaluaciones
                 url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
                 try:
                     response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
