@@ -85,7 +85,6 @@ TEXTOS = {
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=600)
 def cargar_catalogo_cursos_y_modulos():
-    # URL NUEVA ACTUALIZADA PARA CURSOS Y MÓDULOS
     url_script = "https://script.google.com/macros/s/AKfycbzAfnmO33bANwUsvDRkeMzLjLgLWZeSdzLNduleZ9UYDLEtIqe4YIb-gHSWmJaaFBYY/exec"
     try:
         response = requests.get(url_script, timeout=20)
@@ -102,7 +101,6 @@ def cargar_catalogo_cursos_y_modulos():
 
 @st.cache_data(ttl=600)
 def cargar_datos_de_google():
-    # URL original de textos / datos del sistema
     url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
     try:
         response = requests.get(url_script, timeout=20)
@@ -116,7 +114,6 @@ def cargar_datos_de_google():
         return {}
 
 def refrescar_app():
-    """Limpia caché, recarga los datos de Sheets y actualiza el estado"""
     st.cache_data.clear()
     nuevos_datos = cargar_datos_de_google()
     
@@ -163,11 +160,11 @@ with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
     
-    # --- SELECTOR DE IDIOMA (BANDERA) ---
-    idioma_seleccionado = st.radio("Idioma", ["🇪🇸 Castellano", "🏴󠁥󠁮󠁧󠁿 Català"], horizontal=True, label_visibility="collapsed")
-    lang = "ca" if "Català" in idioma_seleccionado else "es"
+    # Selector limpio sin caracteres ocultos
+    idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
+    lang = "ca" if idioma_seleccionado == "Català" else "es"
     
-    T = TEXTOS[lang] # Diccionario rápido para el idioma activo
+    T = TEXTOS[lang] 
     
     opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
     st.divider()
@@ -183,7 +180,6 @@ with st.sidebar:
         pass_in = st.text_input(T["password"], type="password")
         
         if st.button(T["btn_acceder"]):
-            # URL original de credenciales
             url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
                 headers = {'User-Agent': 'Mozilla/5.0'}
@@ -397,7 +393,6 @@ elif opcion == T["menu_eval"]:
 
         descripciones_rubrica = {}
         try:
-            # URL original de la rúbrica
             url_apps_script = "https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec"
             resp_rubrica = requests.get(url_apps_script, timeout=10)
             if resp_rubrica.status_code == 200:
@@ -463,7 +458,6 @@ elif opcion == T["menu_eval"]:
                         st.rerun()
 
             if st.button(T["enviar_sheets"], type="primary"):
-                # URL original para enviar las evaluaciones
                 url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
                 try:
                     response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
