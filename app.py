@@ -151,7 +151,12 @@ with st.sidebar:
 # --- SELECCIÓN DE PESTAÑA SEGÚN IDIOMA ---
 pestana_activa = "Text" if lang == "ca" else "Textos"
 datos_iniciales = cargar_datos_de_google(pestana_activa)
-cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
+cursos_db_raw, modulos_db_raw = cargar_catalogo_cursos_y_modulos()
+
+# FILTRAR CURSOS Y MÓDULOS SEGÚN EL IDIOMA ACTIVO ("Es" o "Ca")
+idioma_filtro = "Ca" if lang == "ca" else "Es"
+cursos_db = [c for c in cursos_db_raw if str(c.get("idioma", "")).strip() == idioma_filtro]
+modulos_db = [m for m in modulos_db_raw if str(m.get("idioma", "")).strip() == idioma_filtro]
 
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
@@ -323,6 +328,7 @@ elif opcion == T["menu_docs"] and lang == "ca":
             st.markdown(datos_iniciales.get(titulo, st.session_state.contenido_funcionalidad.get(titulo, "")), unsafe_allow_html=True)
 
     st.markdown("<h3 style='color: #0066cc;'><b>Contacte</b></h3>", unsafe_allow_html=True)
+    # CORREGIDO: Se usa "Mòbil / WhatsApp" que es como está guardado en la hoja en catalán
     titulos_cont_ca = ["Mòbil / WhatsApp", "Email"]
     for titulo in titulos_cont_ca:
         with st.expander(titulo):
@@ -419,7 +425,7 @@ elif opcion == T["menu_eval"]:
                             st.markdown(f"**{T['nivel_rubrica']}**")
                             st.markdown(info_crit['nivel_rubrica'])
 
-                    notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
+                notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
         if None not in notas.values() and alumno:
             suma_notas = sum(notas[c] for c in criterios)
