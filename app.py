@@ -66,19 +66,37 @@ TEXTOS = {
     }
 }
 
-# --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
+# --- LECTURA DE DATOS Y SINCRONIZACIÓN BLINDADA ---
 @st.cache_data(ttl=600)
 def cargar_catalogo_cursos_y_modulos(sufijo_pestana):
-    # Carga los datos del catálogo dependiendo de la pestaña/sufijo correspondiente al idioma
     url_script = f"https://script.google.com/macros/s/AKfycbzAfnmO33bANwUsvDRkeMzLjLgLWZeSdzLNduleZ9UYDLEtIqe4YIb-gHSWmJaaFBYY/exec?sheet={sufijo_pestana}"
     try:
         response = requests.get(url_script, timeout=20)
         if response.status_code == 200:
             data = response.json()
             if isinstance(data, dict):
+                cursos = data.get("cursos", [])
+                modulos = data.get("modulos", [])
+                if cursos or modulos:
+                    return cursos, modulos
+            elif isinstance(data, list):
+                # Si devuelve una lista genérica
+                return data, []
+    except Exception:
+        pass
+    
+    # RESPALDO DE SEGURIDAD GENERAL
+    url_script_fallback = "https://script.google.com/macros/s/AKfycbzAfnmO33bANwUsvDRkeMzLjLgLWZeSdzLNduleZ9UYDLEtIqe4YIb-gHSWmJaaFBYY/exec"
+    try:
+        response = requests.get(url_script_fallback, timeout=20)
+        if response.status_code == 200:
+            data = response.json()
+            if isinstance(data, dict):
                 return data.get("cursos", []), data.get("modulos", [])
-    except Exception as e:
-        st.error(f"Error de conexión: {e}")
+            elif isinstance(data, list):
+                return data, []
+    except Exception:
+        pass
     return [], []
 
 @st.cache_data(ttl=600)
@@ -97,7 +115,7 @@ def cargar_datos_de_google(nombre_pestana):
                         resultado[str(t).strip()] = str(c) if c else ""
                 return resultado
         return {}
-    except Exception as e:
+    except Exception:
         return {}
 
 def refrescar_app():
@@ -153,7 +171,6 @@ with st.sidebar:
 pestana_activa = "Text" if lang == "ca" else "Textos"
 datos_iniciales = cargar_datos_de_google(pestana_activa)
 
-# Carga de catálogos limpia por pestaña de idioma (ej: Català / Castellano o sufijo correspondiente)
 sufijo_catalogo = "Ca" if lang == "ca" else "Es"
 cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos(sufijo_catalogo)
 
@@ -375,7 +392,6 @@ elif opcion == T["menu_eval"]:
             curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
             curso_codigo_actual = curso_seleccionado_full.split(" - ")[0].strip() if " - " in curso_seleccionado_full else curso_seleccionado_full.strip()
 
-            # Filtrado directo por curso asociado utilizando los datos de la pestaña correspondiente
             modulos_filtrados = [
                 m for m in modulos_db 
                 if str(m.get("Curso asociado", "")).strip().lower() == curso_codigo_actual.lower() 
@@ -393,7 +409,6 @@ elif opcion == T["menu_eval"]:
             modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
             modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0].strip() if " - " in modulo_seleccionado_full else modulo_seleccionado_full.strip()
 
-            # Extraer nivel de bloque del módulo seleccionado de forma limpia
             nivel_sugerido = next((str(m.get("Nivel bloque", "")) for m in modulos_filtrados if str(m.get("Subcodigo", "")).strip() == modulo_codigo_actual), "")
 
             c4, c5 = st.columns(2)
@@ -441,7 +456,7 @@ elif opcion == T["menu_eval"]:
                             st.markdown(f"**{T['nivel_rubrica']}**")
                             st.markdown(info_crit['nivel_rubrica'])
 
-                notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
+            notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
         if None not in notas.values() and alumno:
             suma_notas = sum(notas[c] for c in criterios)
