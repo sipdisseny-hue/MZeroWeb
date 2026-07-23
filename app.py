@@ -66,9 +66,22 @@ TEXTOS = {
     }
 }
 
-# --- LECTURA DE DATOS Y SINCRONIZACIÓN ACTUALIZADA PARA FILTRAR POR IDIOMA ---
+# --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=600)
-def cargar_datos_de_google(nombre_pestana, idioma_buscado):
+def cargar_catalogo_cursos_y_modulos():
+    url_script = "https://script.google.com/macros/s/AKfycbzAfnmO33bANwUsvDRkeMzLjLgLWZeSdzLNduleZ9UYDLEtIqe4YIb-gHSWmJaaFBYY/exec"
+    try:
+        response = requests.get(url_script, timeout=20)
+        if response.status_code == 200:
+            data = response.json()
+            if isinstance(data, dict):
+                return data.get("cursos", []), data.get("modulos", [])
+    except Exception as e:
+        st.error(f"Error de conexión: {e}")
+    return [], []
+
+@st.cache_data(ttl=600)
+def cargar_datos_de_google(nombre_pestana):
     url_script = f"https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec?sheet={nombre_pestana}"
     try:
         response = requests.get(url_script, timeout=20)
@@ -77,11 +90,6 @@ def cargar_datos_de_google(nombre_pestana, idioma_buscado):
             if isinstance(data, list):
                 resultado = {}
                 for item in data:
-                    # Comprobamos si la fila coincide con el idioma de la pestaña (si existe la columna Idioma)
-                    idioma_fila = item.get("Idioma") or item.get("idioma")
-                    if idioma_fila and str(idioma_fila).strip().lower() != idioma_buscado.lower():
-                        continue
-                        
                     t = item.get("Titulo") or item.get("Títul") or item.get("título") or item.get("títul")
                     c = item.get("Contenido") or item.get("Contingut") or item.get("contenido") or item.get("contingut")
                     if t:
@@ -90,6 +98,10 @@ def cargar_datos_de_google(nombre_pestana, idioma_buscado):
         return {}
     except Exception as e:
         return {}
+
+def refrescar_app():
+    st.cache_data.clear()
+    st.rerun()
 
 # --- SIDEBAR ORIGINAL ---
 with st.sidebar:
@@ -138,8 +150,8 @@ with st.sidebar:
 
 # --- SELECCIÓN DE PESTAÑA SEGÚN IDIOMA ---
 pestana_activa = "Text" if lang == "ca" else "Textos"
-idioma_filtro = "Ca" if lang == "ca" else "Es"
-datos_iniciales = cargar_datos_de_google(pestana_activa, idioma_filtro)
+datos_iniciales = cargar_datos_de_google(pestana_activa)
+cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
 
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
@@ -251,7 +263,7 @@ if opcion == T["menu_docs"] and lang == "es":
 
 
 # ==========================================
-# PANTALLA 2: DOCUMENTOS EN CATALÁN (CON LAS CLAVES EXACTAS DE LA PESTAÑA TEXT)
+# PANTALLA 2: DOCUMENTOS EN CATALÁN
 # ==========================================
 elif opcion == T["menu_docs"] and lang == "ca":
     st.markdown("## Àrea de Documentació i Consultes")
