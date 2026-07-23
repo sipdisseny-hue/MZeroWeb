@@ -283,7 +283,7 @@ elif opcion == "Evaluaciones":
 
         descripciones_rubrica = {}
         try:
-            url_apps_script = "https://script.google.com/macros/s/AKfycbzEu5rRR3cqHPyVlWJh2c3uX5giOUp6x4D2RR4lMr5euPPBjSpBwHmvJj2ltRpNC9O9cQ/exec"
+            url_apps_script = "https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec"
             resp_rubrica = requests.get(url_apps_script, timeout=10)
             if resp_rubrica.status_code == 200:
                 data_json = resp_rubrica.json()
