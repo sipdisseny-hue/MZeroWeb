@@ -153,10 +153,10 @@ pestana_activa = "Text" if lang == "ca" else "Textos"
 datos_iniciales = cargar_datos_de_google(pestana_activa)
 cursos_db_raw, modulos_db_raw = cargar_catalogo_cursos_y_modulos()
 
-# FILTRAR CURSOS Y MÓDULOS SEGÚN EL IDIOMA ACTIVO Y ORDENAR
+# FILTRAR CATÁLOGOS ESTRICTAMENTE POR EL IDIOMA ACTIVO (Es / Ca)
 idioma_filtro = "Ca" if lang == "ca" else "Es"
-cursos_db = sorted([c for c in cursos_db_raw if str(c.get("idioma", "")).strip() == idioma_filtro], key=lambda x: str(x.get("codigo_curso", "")))
-modulos_db = sorted([m for m in modulos_db_raw if str(m.get("idioma", "")).strip() == idioma_filtro], key=lambda x: str(x.get("subcodigo", "")))
+cursos_db = sorted([c for c in cursos_db_raw if str(c.get("Idioma", "")).strip() == idioma_filtro], key=lambda x: str(x.get("Código Curso", "")))
+modulos_db = sorted([m for m in modulos_db_raw if str(m.get("Idioma", "")).strip() == idioma_filtro], key=lambda x: str(x.get("Subcodigo", "")))
 
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
@@ -368,16 +368,31 @@ elif opcion == T["menu_eval"]:
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input(T["profesor"], key=f"f_prof_{st.session_state.reset_todo}")
             
-            opciones_cursos_display = [f"{c['codigo_curso']} - {c['nombre_curso']}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanitzats"]
+            # Cursos filtrados estrictamente por el idioma actual (Es/Ca) usando las columnas de la hoja
+            opciones_cursos_display = [
+                f"{c.get('Código Curso', '')} - {c.get('Nombre del Curso', '')}" 
+                for c in cursos_db
+            ] if cursos_db else ["MZ-M - Mecanizados"]
+            
             curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
-            curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
+            curso_codigo_actual = curso_seleccionado_full.split(" - ")[0].strip() if " - " in curso_seleccionado_full else curso_seleccionado_full.strip()
 
-            modulos_filtrados = [m for m in modulos_db if str(m.get("curso_asociado", "")).strip() == str(curso_codigo_actual).strip()]
-            opciones_modulos_display = [f"{m['subcodigo']} - {m['descripcion']}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
+            # Filtrar módulos asociados basándose en el código del curso seleccionado y el idioma activo
+            modulos_filtrados = [
+                m for m in modulos_db 
+                if str(m.get("Curso asociado", "")).strip().lower() == curso_codigo_actual.lower()
+            ]
+            
+            opciones_modulos_display = [
+                f"{m.get('Subcodigo', '')} - {m.get('Descripción', '')}" 
+                for m in modulos_filtrados
+            ] if modulos_filtrados else ["No hay módulos disponibles"]
+            
             modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
-            modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
+            modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0].strip() if " - " in modulo_seleccionado_full else modulo_seleccionado_full.strip()
 
-            nivel_sugerido = next((str(m["nivel_bloque"]) for m in modulos_filtrados if str(m.get("subcodigo", "")).strip() == str(modulo_codigo_actual).strip()), "")
+            # Extraer nivel de bloque del módulo seleccionado
+            nivel_sugerido = next((str(m.get("Nivel bloque", "")) for m in modulos_filtrados if str(m.get("Subcodigo", "")).strip() == modulo_codigo_actual), "")
 
             c4, c5 = st.columns(2)
             nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
@@ -399,9 +414,9 @@ elif opcion == T["menu_eval"]:
             resp_rubrica = requests.get(url_apps_script, timeout=10)
             if resp_rubrica.status_code == 200:
                 for item in resp_rubrica.json():
-                    descripciones_rubrica[item["criterio"].strip()] = {
-                        "que_se_mide": item["que_se_mide"],
-                        "nivel_rubrica": item["nivel_rubrica"]
+                    descripciones_rubrica[str(item.get("criterio", "")).strip()] = {
+                        "que_se_mide": item.get("que_se_mide", ""),
+                        "nivel_rubrica": item.get("nivel_rubrica", "")
                     }
         except Exception:
             pass
