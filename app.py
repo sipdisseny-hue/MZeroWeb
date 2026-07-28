@@ -309,7 +309,7 @@ if opcion == T["menu_docs"]:
                 
                     st.rerun()
 
-            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
+            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 3: CONTACTO ---
     st.markdown(f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
