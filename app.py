@@ -1,4 +1,4 @@
-import streamlit as pd
+import streamlit as st
 import pandas as pd
 import requests
 from io import StringIO
@@ -176,7 +176,6 @@ with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
     
-    # Selector de idioma definido al inicio para cargar las claves correctas en la navegación
     idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     T = TEXTOS[lang]
@@ -288,7 +287,7 @@ if opcion == T["menu_docs"]:
                     
                     st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
 
-    # --- BLOQUE 2: FUNCIONALIDAD (MODIFICADO PARA USAR EL IDIOMA ACTIVO T['titulos_func']) ---
+    # --- BLOQUE 2: FUNCIONALIDAD ---
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
@@ -368,7 +367,6 @@ if opcion == T["menu_docs"]:
                     unsafe_allow_html=True
                 )
 
-    # --- ESLOGAN FUERA DE LAS COLUMNAS ---
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
 elif opcion == T["menu_eval"]:
