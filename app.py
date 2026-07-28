@@ -6,7 +6,7 @@ import streamlit as st
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
 
-# --- DICCIONARIO DE TRADUCCIONES (IDIOMAS) ---
+# --- DICCIONARIO DE TRADUCCIONES DE LA INTERFAZ ---
 TEXTOS = {
     "es": {
         "nav_titulo": "Navegación",
@@ -76,7 +76,7 @@ TEXTOS = {
         "modulo": "Mòdul",
         "nivel_bloque": "Nivell del Bloc",
         "alumno": "Nom de l'Alumne",
-        "subt_puntuacion": "Puntuació (1=Insuficient, 3=Suficient, 5=Excel·lent)",
+        "subt_puntuacion": "Puntuació (1=Insuficient, 3=Suficiente, 5=Excel·lent)",
         "que_se_mide": "Què es mesura aquí?",
         "nivel_rubrica": "Nivell de Rúbrica:",
         "nota_final": "NOTA FINAL",
@@ -109,8 +109,7 @@ def cargar_catalogo_cursos_y_modulos():
 
 
 @st.cache_data(ttl=600)
-def cargar_datos_de_google_castellano():
-  # CARGA DESDE LA PESTAÑA 'Textos' (Castellano) mediante Google Sheets GViz CSV
+def cargar_datos_castellano():
   url_gviz = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Textos"
   try:
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -129,8 +128,7 @@ def cargar_datos_de_google_castellano():
 
 
 @st.cache_data(ttl=600)
-def cargar_datos_de_google_catalan():
-  # CARGA DESDE LA PESTAÑA 'Text' (Catalán) mediante Google Sheets GViz CSV
+def cargar_datos_catalan():
   url_gviz = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Text"
   try:
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -154,8 +152,8 @@ def refrescar_app():
 
 
 # --- INICIALIZACIÓN DE ESTADOS ---
-datos_es = cargar_datos_de_google_castellano()
-datos_ca = cargar_datos_de_google_catalan()
+datos_es = cargar_datos_castellano()
+datos_ca = cargar_datos_catalan()
 cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
 
 if "autenticado" not in st.session_state:
@@ -169,38 +167,6 @@ if "reset_todo" not in st.session_state:
 if "usuario_actual" not in st.session_state:
   st.session_state.usuario_actual = ""
 
-if "contenido_funcionalidad" not in st.session_state:
-  st.session_state.contenido_funcionalidad = {
-      key: datos_es.get(key, "")
-      for key in [
-          "Argumentos M-Zero",
-          "¿Por qué ser Asociado o Colaborador?",
-          "Metodología M0",
-          "El sello M-Zero 'Certificación de calidad'",
-      ]
-  }
-
-if "contenido_exp" not in st.session_state:
-  st.session_state.contenido_exp = {
-      key: datos_es.get(key, "")
-      for key in [
-          "Mecanizado",
-          "Climatización",
-          "Fontanería",
-          "Electricidad",
-          "Obra",
-          "Electromecánica",
-          "Hidráulica",
-          "Construcción Mecánica",
-          "Asociaciones y Gremios",
-      ]
-  }
-
-if "contenido_contacto" not in st.session_state:
-  st.session_state.contenido_contacto = {
-      key: datos_es.get(key, "") for key in ["Móvil / WhatsApp", "Email"]
-  }
-
 
 # --- FUNCIÓN GUARDAR ---
 def guardar_en_sheets(titulo, nuevo_contenido):
@@ -210,7 +176,7 @@ def guardar_en_sheets(titulo, nuevo_contenido):
     response = requests.post(url_script, json=payload, timeout=20)
     return response.status_code == 200
   except:
-    return false
+    return False
 
 
 # --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
@@ -223,9 +189,6 @@ with st.sidebar:
   )
   lang = "ca" if idioma_seleccionado == "Català" else "es"
   T = TEXTOS[lang]
-
-  # SELECCIÓN DINÁMICA DE LA FUENTE DE DATOS SEGÚN EL IDIOMA
-  current_datos = datos_ca if lang == "ca" else datos_es
 
   opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
 
@@ -275,36 +238,66 @@ with st.sidebar:
 if opcion == T["menu_docs"]:
   st.markdown(f"## {T['area_docs']}")
 
-  with st.container(border=True):
-    st.markdown(
-        f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>",
-        unsafe_allow_html=True,
-    )
-    st.image("Asociados y colaboradores.png", width=300)
+  # ==========================================
+  # BLOQUE CASTELLANO (Pestaña 'Textos')
+  # ==========================================
+  if lang == "es":
+    with st.container(border=True):
+      st.markdown(
+          f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>",
+          unsafe_allow_html=True,
+      )
+      st.image("Asociados y colaboradores.png", width=300)
 
-    # --- BLOQUE 1: ASOCIADOS ---
-    st.markdown(
-        f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>",
-        unsafe_allow_html=True,
-    )
+      st.markdown(
+          f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>",
+          unsafe_allow_html=True,
+      )
+      col1, col2, col3 = st.columns(3)
 
-    col1, col2, col3 = st.columns(3)
-    columnas_asociados = [col1, col2, col3]
+      titulos_asociados_es = [
+          [
+              "Mecanizado",
+              "Climatización",
+              "Fontanería",
+              "Empresas de trabajo temporal",
+          ],
+          ["Electricidad", "Obra", "Electromecánica", "Renovables"],
+          ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"],
+      ]
 
-    titulos_asociados = [
-        [
-            "Mecanizado",
-            "Climatización",
-            "Fontanería",
-            "Empresas de trabajo temporal",
-        ],
-        ["Electricidad", "Obra", "Electromecánica", "Renovables"],
-        ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"],
-    ]
+      for i, col in enumerate([col1, col2, col3]):
+        with col:
+          for titulo in titulos_asociados_es[i]:
+            with st.expander(titulo):
+              if (
+                  st.session_state.autenticado
+                  and st.session_state.usuario_actual == "mzerojc"
+              ):
+                st.write(T["modo_edicion"])
+                nuevo_text = st.text_area(
+                    f"Editar {titulo}:",
+                    value=datos_es.get(titulo, ""),
+                    height=150,
+                    key=f"edit_es_{titulo}",
+                )
+                if st.button(f"Guardar {titulo}", key=f"btn_es_{titulo}"):
+                  if guardar_en_sheets(titulo, nuevo_text):
+                    refrescar_app()
+              st.markdown(datos_es.get(titulo, ""), unsafe_allow_html=True)
 
-    for i, col in enumerate(columnas_asociados):
-      with col:
-        for titulo in titulos_asociados[i]:
+      st.divider()
+
+      st.markdown(
+          f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>",
+          unsafe_allow_html=True,
+      )
+      col_c1, col_c2, col_c3 = st.columns(3)
+      titulos_colab_es = ["Centros de formación", "Gremios", "Asociaciones"]
+
+      for i, col in enumerate([col_c1, col_c2, col_c3]):
+        with col:
+          titulo = titulos_colab_es[i]
           with st.expander(titulo):
             if (
                 st.session_state.autenticado
@@ -313,36 +306,67 @@ if opcion == T["menu_docs"]:
               st.write(T["modo_edicion"])
               nuevo_text = st.text_area(
                   f"Editar {titulo}:",
-                  value=st.session_state.contenido_exp.get(titulo, ""),
+                  value=datos_es.get(titulo, ""),
                   height=150,
-                  key=f"edit_{titulo}_{lang}",
+                  key=f"edit_col_es_{titulo}",
               )
-              if st.button(f"Guardar {titulo}", key=f"btn_{titulo}_{lang}"):
+              if st.button(f"Guardar {titulo}", key=f"btn_col_es_{titulo}"):
                 if guardar_en_sheets(titulo, nuevo_text):
-                  st.session_state.contenido_exp[titulo] = nuevo_text
                   refrescar_app()
+            st.markdown(datos_es.get(titulo, ""), unsafe_allow_html=True)
 
-            contenido_mostrado = current_datos.get(
-                titulo, st.session_state.contenido_exp.get(titulo, "")
-            )
-            st.markdown(contenido_mostrado, unsafe_allow_html=True)
-
-    st.divider()
-
-    # --- BLOQUE 2: COLABORADORES ---
     st.markdown(
-        f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>",
+        f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>",
         unsafe_allow_html=True,
     )
+    titulos_func_es = [
+        "Argumentos M-Zero",
+        "¿Por qué ser Asociado o Colaborador?",
+        "Metodología M0",
+        "El sello M-Zero 'Certificación de calidad'",
+    ]
+    for titulo in titulos_func_es:
+      with st.expander(titulo):
+        if (
+            st.session_state.autenticado
+            and st.session_state.usuario_actual == "mzerojc"
+        ):
+          temp_text = st.text_area(
+              f"Editar {titulo}:",
+              value=datos_es.get(titulo, ""),
+              height=150,
+              key=f"input_es_{titulo}",
+          )
+          if st.button(f"Guardar {titulo}", key=f"btn_save_es_{titulo}"):
+            if guardar_en_sheets(titulo, temp_text):
+              refrescar_app()
+        st.markdown(datos_es.get(titulo, ""), unsafe_allow_html=True)
 
-    col_c1, col_c2, col_c3 = st.columns(3)
-    columnas_colaboradores = [col_c1, col_c2, col_c3]
+    st.markdown(
+        f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>",
+        unsafe_allow_html=True,
+    )
+    for titulo in ["Móvil / WhatsApp", "Email"]:
+      with st.expander(titulo):
+        if (
+            st.session_state.autenticado
+            and st.session_state.usuario_actual == "mzerojc"
+        ):
+          nuevo_cont = st.text_area(
+              f"Editar {titulo}:",
+              value=datos_es.get(titulo, ""),
+              height=70,
+              key=f"cont_es_{titulo}",
+          )
+          if st.button(f"Guardar {titulo}", key=f"btn_save_cont_es_{titulo}"):
+            if guardar_en_sheets(titulo, nuevo_cont):
+              refrescar_app()
+        st.markdown(datos_es.get(titulo, ""), unsafe_allow_html=True)
 
-    titulos_colaboradores = ["Centros de formación", "Gremios", "Asociaciones"]
-
-    for i, col in enumerate(columnas_colaboradores):
+    st.markdown(f"## {T['como_participar']}")
+    cp1, cp2, cp3 = st.columns(3)
+    for col, titulo in zip([cp1, cp2, cp3], ["Asociados", "Colaboradores", "Candidatos"]):
       with col:
-        titulo = titulos_colaboradores[i]
         with st.expander(titulo):
           if (
               st.session_state.autenticado
@@ -351,115 +375,160 @@ if opcion == T["menu_docs"]:
             st.write(T["modo_edicion"])
             nuevo_text = st.text_area(
                 f"Editar {titulo}:",
-                value=st.session_state.contenido_exp.get(titulo, ""),
+                value=datos_es.get(titulo, ""),
                 height=150,
-                key=f"edit_col_{titulo}_{lang}",
+                key=f"edit_part_es_{titulo}",
             )
-            if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}_{lang}"):
+            if st.button(f"Guardar {titulo}", key=f"btn_part_es_{titulo}"):
               if guardar_en_sheets(titulo, nuevo_text):
-                st.session_state.contenido_exp[titulo] = nuevo_text
                 refrescar_app()
+          st.markdown(datos_es.get(titulo, ""), unsafe_allow_html=True)
 
-          contenido_mostrado = current_datos.get(
-              titulo, st.session_state.contenido_exp.get(titulo, "")
-          )
-          st.markdown(contenido_mostrado, unsafe_allow_html=True)
-
-  # --- BLOQUE 2: FUNCIONALIDAD ---
-  st.markdown(
-      f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>",
-      unsafe_allow_html=True,
-  )
-  titulos_func = [
-      "Argumentos M-Zero",
-      "¿Por qué ser Asociado o Colaborador?",
-      "Metodología M0",
-      "El sello M-Zero 'Certificación de calidad'",
-  ]
-
-  for titulo in titulos_func:
-    with st.expander(titulo):
-      if (
-          st.session_state.autenticado
-          and st.session_state.usuario_actual == "mzerojc"
-      ):
-        temp_text = st.text_area(
-            f"Editar {titulo}:",
-            value=st.session_state.contenido_funcionalidad.get(titulo, ""),
-            height=150,
-            key=f"input_{titulo}_{lang}",
-        )
-
-        if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}_{lang}"):
-          st.session_state.contenido_funcionalidad[titulo] = temp_text
-          if guardar_en_sheets(titulo, temp_text):
-            st.success("Guardado en Google y localmente")
-          else:
-            st.warning("Guardado solo localmente (Error en Sheets)")
-          st.rerun()
-
-      contenido_mostrado = current_datos.get(
-          titulo, st.session_state.contenido_funcionalidad.get(titulo, "")
+  # ==========================================
+  # BLOQUE CATALÁN (Pestaña 'Text')
+  # ==========================================
+  elif lang == "ca":
+    with st.container(border=True):
+      st.markdown(
+          f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>",
+          unsafe_allow_html=True,
       )
-      st.markdown(contenido_mostrado, unsafe_allow_html=True)
+      st.image("Asociados y colaboradores.png", width=300)
 
-  # --- BLOQUE 3: CONTACTO ---
-  st.markdown(
-      f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>",
-      unsafe_allow_html=True,
-  )
-  titulos_cont = ["Móvil / WhatsApp", "Email"]
-  for titulo in titulos_cont:
-    with st.expander(titulo):
-      if (
-          st.session_state.autenticado
-          and st.session_state.usuario_actual == "mzerojc"
-      ):
-        nuevo_cont = st.text_area(
-            f"Editar {titulo}:",
-            value=st.session_state.contenido_contacto.get(titulo, ""),
-            height=70,
-            key=f"cont_{titulo}_{lang}",
-        )
-        if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}_{lang}"):
-          if guardar_en_sheets(titulo, nuevo_cont):
-            st.session_state.contenido_contacto[titulo] = nuevo_cont
-            refrescar_app()
-      contenido_mostrado = current_datos.get(
-          titulo, st.session_state.contenido_contacto.get(titulo, "")
+      st.markdown(
+          f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>",
+          unsafe_allow_html=True,
       )
-      st.markdown(contenido_mostrado, unsafe_allow_html=True)
+      col1, col2, col3 = st.columns(3)
 
-  # --- BLOQUE: CÓMO PARTICIPAR ---
-  st.markdown(f"## {T['como_participar']}")
+      titulos_asociados_ca = [
+          [
+              "Mecanitzat",
+              "Climatització",
+              "Fontaneria",
+              "Empreses de treball temporal",
+          ],
+          ["Electricitat", "Obra", "Electromecànica", "Renovables"],
+          ["Hidràulica", "Construcció Mecànica", "Associacions i Gremis"],
+      ]
 
-  cp1, cp2, cp3 = st.columns(3)
-  columnas_participar = [(cp1, "Asociados"), (cp2, "Colaboradores"), (cp3, "Candidatos")]
+      for i, col in enumerate([col1, col2, col3]):
+        with col:
+          for titulo in titulos_asociados_ca[i]:
+            with st.expander(titulo):
+              if (
+                  st.session_state.autenticado
+                  and st.session_state.usuario_actual == "mzerojc"
+              ):
+                st.write(T["modo_edicion"])
+                nuevo_text = st.text_area(
+                    f"Editar {titulo}:",
+                    value=datos_ca.get(titulo, ""),
+                    height=150,
+                    key=f"edit_ca_{titulo}",
+                )
+                if st.button(f"Guardar {titulo}", key=f"btn_ca_{titulo}"):
+                  if guardar_en_sheets(titulo, nuevo_text):
+                    refrescar_app()
+              st.markdown(datos_ca.get(titulo, ""), unsafe_allow_html=True)
 
-  for col, titulo in columnas_participar:
-    with col:
+      st.divider()
+
+      st.markdown(
+          f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>",
+          unsafe_allow_html=True,
+      )
+      col_c1, col_c2, col_c3 = st.columns(3)
+      titulos_colab_ca = ["Centres de formació", "Gremis", "Associacions"]
+
+      for i, col in enumerate([col_c1, col_c2, col_c3]):
+        with col:
+          titulo = titulos_colab_ca[i]
+          with st.expander(titulo):
+            if (
+                st.session_state.autenticado
+                and st.session_state.usuario_actual == "mzerojc"
+            ):
+              st.write(T["modo_edicion"])
+              nuevo_text = st.text_area(
+                  f"Editar {titulo}:",
+                  value=datos_ca.get(titulo, ""),
+                  height=150,
+                  key=f"edit_col_ca_{titulo}",
+              )
+              if st.button(f"Guardar {titulo}", key=f"btn_col_ca_{titulo}"):
+                if guardar_en_sheets(titulo, nuevo_text):
+                  refrescar_app()
+            st.markdown(datos_ca.get(titulo, ""), unsafe_allow_html=True)
+
+    st.markdown(
+        f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>",
+        unsafe_allow_html=True,
+    )
+    titulos_func_ca = [
+        "Arguments M-Zero",
+        "Per què ser Associat o Col·laborador?",
+        "Metodologia M0",
+        "El segell M-Zero 'Certificació de qualitat'",
+    ]
+    for titulo in titulos_func_ca:
       with st.expander(titulo):
-        sesion_ok = (
+        if (
             st.session_state.autenticado
             and st.session_state.usuario_actual == "mzerojc"
-        )
-        if sesion_ok:
-          st.write(T["modo_edicion"])
-          nuevo_text = st.text_area(
+        ):
+          temp_text = st.text_area(
               f"Editar {titulo}:",
-              value=st.session_state.contenido_exp.get(titulo, ""),
+              value=datos_ca.get(titulo, ""),
               height=150,
-              key=f"edit_part_{titulo}_{lang}",
+              key=f"input_ca_{titulo}",
           )
-          if st.button(f"Guardar {titulo}", key=f"btn_part_{titulo}_{lang}"):
-            if guardar_en_sheets(titulo, nuevo_text):
-              st.session_state.contenido_exp[titulo] = nuevo_text
+          if st.button(f"Guardar {titulo}", key=f"btn_save_ca_{titulo}"):
+            if guardar_en_sheets(titulo, temp_text):
               refrescar_app()
+        st.markdown(datos_ca.get(titulo, ""), unsafe_allow_html=True)
 
-        contenido_mostrado = current_datos.get(
-            titulo, st.session_state.contenido_exp.get(titulo, "")
-        )
-        st.markdown(contenido_mostrado, unsafe_allow_html=True)
+    st.markdown(
+        f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>",
+        unsafe_allow_html=True,
+    )
+    for titulo in ["Mòbil / WhatsApp", "Email"]:
+      with st.expander(titulo):
+        if (
+            st.session_state.autenticado
+            and st.session_state.usuario_actual == "mzerojc"
+        ):
+          nuevo_cont = st.text_area(
+              f"Editar {titulo}:",
+              value=datos_ca.get(titulo, ""),
+              height=70,
+              key=f"cont_ca_{titulo}",
+          )
+          if st.button(f"Guardar {titulo}", key=f"btn_save_cont_ca_{titulo}"):
+            if guardar_en_sheets(titulo, nuevo_cont):
+              refrescar_app()
+        st.markdown(datos_ca.get(titulo, ""), unsafe_allow_html=True)
+
+    st.markdown(f"## {T['como_participar']}")
+    cp1, cp2, cp3 = st.columns(3)
+    for col, titulo in zip([cp1, cp2, cp3], ["Associats", "Col·laboradors", "Candidats"]):
+      with col:
+        with st.expander(titulo):
+          if (
+              st.session_state.autenticado
+              and st.session_state.usuario_actual == "mzerojc"
+          ):
+            st.write(T["modo_edicion"])
+            nuevo_text = st.text_area(
+                f"Editar {titulo}:",
+                value=datos_ca.get(titulo, ""),
+                height=150,
+                key=f"edit_part_ca_{titulo}",
+            )
+            if st.button(f"Guardar {titulo}", key=f"btn_part_ca_{titulo}"):
+              if guardar_en_sheets(titulo, nuevo_text):
+                refrescar_app()
+          st.markdown(datos_ca.get(titulo, ""), unsafe_allow_html=True)
 
   # --- ESLOGAN ---
   st.markdown(
