@@ -109,10 +109,10 @@ def cargar_datos_de_google():
             if isinstance(data, list):
                 resultado = {}
                 for item in data:
-                    t = item.get("Titulo") if item.get("Titulo") is not None else item.get("Títul")
-                    c = item.get("Contenido") if item.get("Contenido") is not None else item.get("Contingut")
+                    t = item.get("Títul")
+                    c = item.get("Contingut")
                     if t is not None:
-                        resultado[t] = c if c is not None else ""
+                        resultado[str(t).strip()] = str(c) if c is not None else ""
                 return resultado
         return {}
     except Exception as e:
@@ -123,8 +123,8 @@ def refrescar_app():
     st.cache_data.clear()
     nuevos_datos = cargar_datos_de_google()
     
-    st.session_state.texto_documentos = nuevos_datos.get("Información del sistema", "Bienvenido al área de consulta.")
-    st.session_state.contenido_funcionalidad = {key: nuevos_datos.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
+    st.session_state.texto_documentos = nuevos_datos.get("Informació del sistema", "Benvingut a l'àrea de consulta.")
+    st.session_state.contenido_funcionalidad = {key: nuevos_datos.get(key, "") for key in ["Argumentos M-Zero", "Per què ser Associat o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
     st.session_state.contenido_exp = {key: nuevos_datos.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
     st.session_state.contenido_contacto = {key: nuevos_datos.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
     st.rerun()
