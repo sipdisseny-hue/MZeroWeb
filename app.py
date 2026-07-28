@@ -115,7 +115,6 @@ def cargar_datos_castellano():
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(url_gviz, headers=headers, timeout=10)
     if response.status_code == 200:
-      # Leemos el CSV dejando que coja la cabecera y usando las columnas por posición (0 para clave, 1 para contenido)
       df = pd.read_csv(StringIO(response.text))
       resultados = {}
       for i in range(len(df)):
@@ -123,8 +122,7 @@ def cargar_datos_castellano():
         if pd.notna(clave):
           clave_str = str(clave).strip()
           valor = df.iloc[i, 1] if len(df.columns) > 1 else ""
-          valor_str = "" if pd.isna(valor) else str(valor)
-          resultados[clave_str] = valor_str
+          resultados[clave_str] = "" if pd.isna(valor) else str(valor)
       return resultados
     return {}
   except Exception:
@@ -138,7 +136,6 @@ def cargar_datos_catalan():
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(url_gviz, headers=headers, timeout=10)
     if response.status_code == 200:
-      # Exactamente igual para la pestaña Text en catalán
       df = pd.read_csv(StringIO(response.text))
       resultados = {}
       for i in range(len(df)):
@@ -146,8 +143,7 @@ def cargar_datos_catalan():
         if pd.notna(clave):
           clave_str = str(clave).strip()
           valor = df.iloc[i, 1] if len(df.columns) > 1 else ""
-          valor_str = "" if pd.isna(valor) else str(valor)
-          resultados[clave_str] = valor_str
+          resultados[clave_str] = "" if pd.isna(valor) else str(valor)
       return resultados
     return {}
   except Exception:
