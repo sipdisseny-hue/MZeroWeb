@@ -109,15 +109,20 @@ def cargar_catalogo_cursos_y_modulos():
 
 
 @st.cache_data(ttl=600)
-def cargar_datos_de_google():
-  # CARGA CASTELLANO (INALTERADA)
-  url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
+def cargar_datos_de_google_castellano():
+  # CARGA DESDE LA PESTAÑA 'Textos' (Castellano) mediante Google Sheets GViz CSV
+  url_gviz = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Textos"
   try:
-    response = requests.get(url_script, timeout=20)
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url_gviz, headers=headers, timeout=10)
     if response.status_code == 200:
-      data = response.json()
-      if isinstance(data, list):
-        return {item["Titulo"]: item["Contenido"] for item in data}
+      df = pd.read_csv(StringIO(response.text))
+      if len(df.columns) >= 2:
+        return {
+            str(df.iloc[i, 0]).strip(): str(df.iloc[i, 1])
+            for i in range(len(df))
+            if pd.notna(df.iloc[i, 0])
+        }
     return {}
   except Exception:
     return {}
@@ -125,7 +130,7 @@ def cargar_datos_de_google():
 
 @st.cache_data(ttl=600)
 def cargar_datos_de_google_catalan():
-  # CARGA CATALÁN DESDE LA PESTAÑA 'Text' DEL EXCEL
+  # CARGA DESDE LA PESTAÑA 'Text' (Catalán) mediante Google Sheets GViz CSV
   url_gviz = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Text"
   try:
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -133,7 +138,6 @@ def cargar_datos_de_google_catalan():
     if response.status_code == 200:
       df = pd.read_csv(StringIO(response.text))
       if len(df.columns) >= 2:
-        # Mapea la primera columna como Título y la segunda como Contenido (según la estructura de la pestaña Text)
         return {
             str(df.iloc[i, 0]).strip(): str(df.iloc[i, 1])
             for i in range(len(df))
@@ -150,8 +154,8 @@ def refrescar_app():
 
 
 # --- INICIALIZACIÓN DE ESTADOS ---
-datos_iniciales = cargar_datos_de_google()
-datos_iniciales_ca = cargar_datos_de_google_catalan()
+datos_es = cargar_datos_de_google_castellano()
+datos_ca = cargar_datos_de_google_catalan()
 cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
 
 if "autenticado" not in st.session_state:
@@ -167,7 +171,7 @@ if "usuario_actual" not in st.session_state:
 
 if "contenido_funcionalidad" not in st.session_state:
   st.session_state.contenido_funcionalidad = {
-      key: datos_iniciales.get(key, "")
+      key: datos_es.get(key, "")
       for key in [
           "Argumentos M-Zero",
           "¿Por qué ser Asociado o Colaborador?",
@@ -178,7 +182,7 @@ if "contenido_funcionalidad" not in st.session_state:
 
 if "contenido_exp" not in st.session_state:
   st.session_state.contenido_exp = {
-      key: datos_iniciales.get(key, "")
+      key: datos_es.get(key, "")
       for key in [
           "Mecanizado",
           "Climatización",
@@ -194,7 +198,7 @@ if "contenido_exp" not in st.session_state:
 
 if "contenido_contacto" not in st.session_state:
   st.session_state.contenido_contacto = {
-      key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]
+      key: datos_es.get(key, "") for key in ["Móvil / WhatsApp", "Email"]
   }
 
 
@@ -206,7 +210,7 @@ def guardar_en_sheets(titulo, nuevo_contenido):
     response = requests.post(url_script, json=payload, timeout=20)
     return response.status_code == 200
   except:
-    return False
+    return false
 
 
 # --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
@@ -220,8 +224,8 @@ with st.sidebar:
   lang = "ca" if idioma_seleccionado == "Català" else "es"
   T = TEXTOS[lang]
 
-  # Selección de la fuente de datos activa según el idioma elegido
-  current_datos = datos_iniciales_ca if lang == "ca" else datos_iniciales
+  # SELECCIÓN DINÁMICA DE LA FUENTE DE DATOS SEGÚN EL IDIOMA
+  current_datos = datos_ca if lang == "ca" else datos_es
 
   opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
 
@@ -311,14 +315,13 @@ if opcion == T["menu_docs"]:
                   f"Editar {titulo}:",
                   value=st.session_state.contenido_exp.get(titulo, ""),
                   height=150,
-                  key=f"edit_{titulo}",
+                  key=f"edit_{titulo}_{lang}",
               )
-              if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
+              if st.button(f"Guardar {titulo}", key=f"btn_{titulo}_{lang}"):
                 if guardar_en_sheets(titulo, nuevo_text):
                   st.session_state.contenido_exp[titulo] = nuevo_text
                   refrescar_app()
 
-            # Extrae el texto dinámicamente de la pestaña correspondiente (Textos o Text)
             contenido_mostrado = current_datos.get(
                 titulo, st.session_state.contenido_exp.get(titulo, "")
             )
@@ -350,9 +353,9 @@ if opcion == T["menu_docs"]:
                 f"Editar {titulo}:",
                 value=st.session_state.contenido_exp.get(titulo, ""),
                 height=150,
-                key=f"edit_col_{titulo}",
+                key=f"edit_col_{titulo}_{lang}",
             )
-            if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}"):
+            if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}_{lang}"):
               if guardar_en_sheets(titulo, nuevo_text):
                 st.session_state.contenido_exp[titulo] = nuevo_text
                 refrescar_app()
@@ -384,10 +387,10 @@ if opcion == T["menu_docs"]:
             f"Editar {titulo}:",
             value=st.session_state.contenido_funcionalidad.get(titulo, ""),
             height=150,
-            key=f"input_{titulo}",
+            key=f"input_{titulo}_{lang}",
         )
 
-        if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+        if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}_{lang}"):
           st.session_state.contenido_funcionalidad[titulo] = temp_text
           if guardar_en_sheets(titulo, temp_text):
             st.success("Guardado en Google y localmente")
@@ -416,9 +419,9 @@ if opcion == T["menu_docs"]:
             f"Editar {titulo}:",
             value=st.session_state.contenido_contacto.get(titulo, ""),
             height=70,
-            key=f"cont_{titulo}",
+            key=f"cont_{titulo}_{lang}",
         )
-        if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
+        if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}_{lang}"):
           if guardar_en_sheets(titulo, nuevo_cont):
             st.session_state.contenido_contacto[titulo] = nuevo_cont
             refrescar_app()
@@ -446,9 +449,9 @@ if opcion == T["menu_docs"]:
               f"Editar {titulo}:",
               value=st.session_state.contenido_exp.get(titulo, ""),
               height=150,
-              key=f"edit_part_{titulo}",
+              key=f"edit_part_{titulo}_{lang}",
           )
-          if st.button(f"Guardar {titulo}", key=f"btn_part_{titulo}"):
+          if st.button(f"Guardar {titulo}", key=f"btn_part_{titulo}_{lang}"):
             if guardar_en_sheets(titulo, nuevo_text):
               st.session_state.contenido_exp[titulo] = nuevo_text
               refrescar_app()
