@@ -60,7 +60,7 @@ TEXTOS = {
         "btn_acceder": "Accedir",
         "error_login": "Usuari o contrasenya incorrectes",
         "error_cred": "En connectar amb el full Credencials",
-        "area_docs": "Àrea de Documentació i Consultas",  # Se mantiene o adapta
+        "area_docs": "Àrea de Documentació i Consultes",
         "asoc_colab": "Associats i Col·laboradors",
         "asociados": "Associats",
         "colaboradores": "Col·laboradors",
@@ -102,12 +102,9 @@ def cargar_catalogo_cursos_y_modulos():
         if isinstance(data, dict):
           return data.get("cursos", []), data.get("modulos", [])
       except Exception:
-        st.error(
-            "El script no devolvió un JSON válido. Respuesta recibida:"
-            f" {response.text[:200]}"
-        )
-  except Exception as e:
-    st.error(f"Error de conexión al cargar cursos y módulos: {e}")
+        pass
+  except Exception:
+    pass
   return [], []
 
 
@@ -122,71 +119,33 @@ def cargar_datos_de_google():
       if isinstance(data, list):
         return {item["Titulo"]: item["Contenido"] for item in data}
     return {}
-  except Exception as e:
-    st.error(f"Error de lectura: {e}")
+  except Exception:
     return {}
 
 
 @st.cache_data(ttl=600)
 def cargar_datos_de_google_catalan():
-  # CARGA CATALÁN DESDE LA PESTAÑA 'Text' (Mediante enlace gviz o adaptando la llamada)
-  # Usamos el enlace gviz para leer directamente la pestaña 'Text' asegurando independencia
+  # CARGA CATALÁN DESDE LA PESTAÑA 'Text' DEL EXCEL
   url_gviz = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Text"
   try:
     headers = {"User-Agent": "Mozilla/5.0"}
     response = requests.get(url_gviz, headers=headers, timeout=10)
     if response.status_code == 200:
       df = pd.read_csv(StringIO(response.text))
-      # Suponiendo columnas 'Titulo' y 'Contenido' en la pestaña Text
-      if "Titulo" in df.columns and "Contenido" in df.columns:
+      if len(df.columns) >= 2:
+        # Mapea la primera columna como Título y la segunda como Contenido (según la estructura de la pestaña Text)
         return {
-            str(row["Titulo"]): str(row["Contenido"]) for _, row in df.iterrows()
-        }
-      elif len(df.columns) >= 2:
-        return {
-            str(df.iloc[i, 0]): str(df.iloc[i, 1]) for i in range(len(df))
+            str(df.iloc[i, 0]).strip(): str(df.iloc[i, 1])
+            for i in range(len(df))
+            if pd.notna(df.iloc[i, 0])
         }
     return {}
-  except Exception as e:
-    # Fallback silencioso o aviso si falla la pestaña Text
+  except Exception:
     return {}
 
 
 def refrescar_app():
   st.cache_data.clear()
-  nuevos_datos = cargar_datos_de_google()
-  nuevos_datos_ca = cargar_datos_de_google_catalan()
-
-  # Dependiendo del idioma activo o actualizando ambos estados:
-  st.session_state.texto_documentos = nuevos_datos.get(
-      "Información del sistema", "Bienvenido al área de consulta."
-  )
-  st.session_state.contenido_funcionalidad = {
-      key: nuevos_datos.get(key, "")
-      for key in [
-          "Argumentos M-Zero",
-          "¿Por qué ser Asociado o Colaborador?",
-          "Metodología M0",
-          "El sello M-Zero 'Certificación de calidad'",
-      ]
-  }
-  st.session_state.contenido_exp = {
-      key: nuevos_datos.get(key, "")
-      for key in [
-          "Mecanizado",
-          "Climatización",
-          "Fontanería",
-          "Electricidad",
-          "Obra",
-          "Electromecánica",
-          "Hidráulica",
-          "Construcción Mecánica",
-          "Asociaciones y Gremios",
-      ]
-  }
-  st.session_state.contenido_contacto = {
-      key: nuevos_datos.get(key, "") for key in ["Móvil / WhatsApp", "Email"]
-  }
   st.rerun()
 
 
@@ -205,11 +164,6 @@ if "reset_todo" not in st.session_state:
   st.session_state.reset_todo = 0
 if "usuario_actual" not in st.session_state:
   st.session_state.usuario_actual = ""
-
-if "texto_documentos" not in st.session_state:
-  st.session_state.texto_documentos = datos_iniciales.get(
-      "Información del sistema", "Bienvenido al área de consulta."
-  )
 
 if "contenido_funcionalidad" not in st.session_state:
   st.session_state.contenido_funcionalidad = {
@@ -266,7 +220,7 @@ with st.sidebar:
   lang = "ca" if idioma_seleccionado == "Català" else "es"
   T = TEXTOS[lang]
 
-  # Selección de datos dinámicos según el idioma activo (Pestaña Textos vs Text)
+  # Selección de la fuente de datos activa según el idioma elegido
   current_datos = datos_iniciales_ca if lang == "ca" else datos_iniciales
 
   opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
@@ -359,24 +313,16 @@ if opcion == T["menu_docs"]:
                   height=150,
                   key=f"edit_{titulo}",
               )
-              img_file = st.file_uploader(
-                  f"Subir imagen para {titulo}",
-                  type=["png", "jpg"],
-                  key=f"img_{titulo}",
-              )
-
               if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
                 if guardar_en_sheets(titulo, nuevo_text):
                   st.session_state.contenido_exp[titulo] = nuevo_text
                   refrescar_app()
 
-            # Renderiza el contenido según el idioma actual (Pestaña Textos vs Text)
-            st.markdown(
-                current_datos.get(
-                    titulo, st.session_state.contenido_exp.get(titulo, "")
-                ),
-                unsafe_allow_html=True,
+            # Extrae el texto dinámicamente de la pestaña correspondiente (Textos o Text)
+            contenido_mostrado = current_datos.get(
+                titulo, st.session_state.contenido_exp.get(titulo, "")
             )
+            st.markdown(contenido_mostrado, unsafe_allow_html=True)
 
     st.divider()
 
@@ -406,23 +352,15 @@ if opcion == T["menu_docs"]:
                 height=150,
                 key=f"edit_col_{titulo}",
             )
-            img_file = st.file_uploader(
-                f"Subir imagen para {titulo}",
-                type=["png", "jpg"],
-                key=f"img_col_{titulo}",
-            )
-
             if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}"):
               if guardar_en_sheets(titulo, nuevo_text):
                 st.session_state.contenido_exp[titulo] = nuevo_text
                 refrescar_app()
 
-          st.markdown(
-              current_datos.get(
-                  titulo, st.session_state.contenido_exp.get(titulo, "")
-              ),
-              unsafe_allow_html=True,
+          contenido_mostrado = current_datos.get(
+              titulo, st.session_state.contenido_exp.get(titulo, "")
           )
+          st.markdown(contenido_mostrado, unsafe_allow_html=True)
 
   # --- BLOQUE 2: FUNCIONALIDAD ---
   st.markdown(
@@ -451,20 +389,16 @@ if opcion == T["menu_docs"]:
 
         if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
           st.session_state.contenido_funcionalidad[titulo] = temp_text
-
           if guardar_en_sheets(titulo, temp_text):
             st.success("Guardado en Google y localmente")
           else:
             st.warning("Guardado solo localmente (Error en Sheets)")
-
           st.rerun()
 
-      st.markdown(
-          current_datos.get(
-              titulo,
-              st.session_state.contenido_funcionalidad.get(titulo, ""),
-          )
+      contenido_mostrado = current_datos.get(
+          titulo, st.session_state.contenido_funcionalidad.get(titulo, "")
       )
+      st.markdown(contenido_mostrado, unsafe_allow_html=True)
 
   # --- BLOQUE 3: CONTACTO ---
   st.markdown(
@@ -488,12 +422,10 @@ if opcion == T["menu_docs"]:
           if guardar_en_sheets(titulo, nuevo_cont):
             st.session_state.contenido_contacto[titulo] = nuevo_cont
             refrescar_app()
-      st.markdown(
-          current_datos.get(
-              titulo, st.session_state.contenido_contacto.get(titulo, "")
-          ),
-          unsafe_allow_html=True,
+      contenido_mostrado = current_datos.get(
+          titulo, st.session_state.contenido_contacto.get(titulo, "")
       )
+      st.markdown(contenido_mostrado, unsafe_allow_html=True)
 
   # --- BLOQUE: CÓMO PARTICIPAR ---
   st.markdown(f"## {T['como_participar']}")
@@ -516,20 +448,17 @@ if opcion == T["menu_docs"]:
               height=150,
               key=f"edit_part_{titulo}",
           )
-          btn_guardar = st.button(f"Guardar {titulo}", key=f"btn_part_{titulo}")
-          if btn_guardar:
+          if st.button(f"Guardar {titulo}", key=f"btn_part_{titulo}"):
             if guardar_en_sheets(titulo, nuevo_text):
               st.session_state.contenido_exp[titulo] = nuevo_text
               refrescar_app()
 
-        st.markdown(
-            current_datos.get(
-                titulo, st.session_state.contenido_exp.get(titulo, "")
-            ),
-            unsafe_allow_html=True,
+        contenido_mostrado = current_datos.get(
+            titulo, st.session_state.contenido_exp.get(titulo, "")
         )
+        st.markdown(contenido_mostrado, unsafe_allow_html=True)
 
-  # --- ESLOGAN FUERA DE LAS COLUMNAS ---
+  # --- ESLOGAN ---
   st.markdown(
       f"<h3 align='center' style='color: #0066cc; margin-top:"
       f" 30px;'><b>{T['eslogan']}</b></h3>",
