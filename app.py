@@ -107,7 +107,8 @@ def cargar_datos_de_google():
         if response.status_code == 200:
             data = response.json()
             if isinstance(data, list):
-                return {item["Titulo"]: item["Contenido"] for item in data}
+                # Aquí le decimos que lea exactamente de las columnas Títul y Contingut de tu imagen
+                return {item.get("Títul", ""): item.get("Contingut", "") for item in data if item.get("Títul")}
         return {}
     except Exception as e:
         st.error(f"Error de lectura: {e}")
