@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as pd
 import pandas as pd
 import requests
 from io import StringIO
@@ -42,7 +42,8 @@ TEXTOS = {
         "gestionar_alumnos": "Gestionar alumnos (Eliminar)",
         "enviar_sheets": "ENVIAR TODO A GOOGLE SHEETS",
         "exito_envio": "Enviado con éxito a Google Sheets",
-        "modo_edicion": "--- MODO EDICIÓN ---"
+        "modo_edicion": "--- MODO EDICIÓN ---",
+        "titulos_func": ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
     },
     "ca": {
         "nav_titulo": "Navegació",
@@ -78,7 +79,8 @@ TEXTOS = {
         "gestionar_alumnos": "Gestionar alumnes (Eliminar)",
         "enviar_sheets": "ENVIAR TOT A GOOGLE SHEETS",
         "exito_envio": "Enviat amb èxit a Google Sheets",
-        "modo_edicion": "--- MODE EDICIÓ ---"
+        "modo_edicion": "--- MODE EDICIÓ ---",
+        "titulos_func": ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
     }
 }
 
@@ -151,7 +153,7 @@ if 'texto_documentos' not in st.session_state:
     st.session_state.texto_documentos = datos_iniciales.get("Información del sistema", "Bienvenido al área de consulta.")
 
 if 'contenido_funcionalidad' not in st.session_state:
-    st.session_state.contenido_funcionalidad = {key: datos_iniciales.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]}
+    st.session_state.contenido_funcionalidad = {key: datos_iniciales.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'", "Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]}
 
 if 'contenido_exp' not in st.session_state:
     st.session_state.contenido_exp = {key: datos_iniciales.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
@@ -286,12 +288,12 @@ if opcion == T["menu_docs"]:
                     
                     st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
 
-    # --- BLOQUE 2: FUNCIONALIDAD ---
+    # --- BLOQUE 2: FUNCIONALIDAD (MODIFICADO PARA USAR EL IDIOMA ACTIVO T['titulos_func']) ---
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
     st.markdown(f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
-    titulos_func = ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
+    titulos_func = T["titulos_func"]
 
     for titulo in titulos_func:
         with st.expander(titulo):
@@ -443,7 +445,7 @@ elif opcion == T["menu_eval"]:
                             st.markdown(f"**{T['nivel_rubrica']}**")
                             st.markdown(info_crit['nivel_rubrica'])
 
-                notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
+            notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
         if None not in notas.values() and alumno:
             nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
