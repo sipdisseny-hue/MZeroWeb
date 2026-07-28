@@ -54,7 +54,7 @@ TEXTOS = {
         "password": "Contrasenya:",
         "btn_acceder": "Accedir",
         "error_login": "Usuari o contrasenya incorrectes",
-        "error_cred": "Error en connectar amb el full Credencials",
+        "error_cred": "En connectar amb el full Credencials",
         "area_docs": "Àrea de Documentació i Consultes",
         "asoc_colab": "Associats i Col·laboradors",
         "asociados": "Associats",
@@ -160,16 +160,12 @@ with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
     
-    lang_temp = "es"
-    T_temp = TEXTOS[lang_temp]
-    
-    opcion = st.radio(T_temp["nav_titulo"], [T_temp["menu_docs"], T_temp["menu_eval"]])
-    
-    # Selector de idioma limpio en su posición original exacta
+    # Selector de idioma definido al inicio para cargar las claves correctas en la navegación
     idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
-    
     T = TEXTOS[lang]
+    
+    opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
     
     st.divider()
     
@@ -356,7 +352,7 @@ if opcion == T["menu_docs"]:
                     unsafe_allow_html=True
                 )
 
-    # --- ESLOGAN FUERA DE LAS COLUMNAS (VISIBLE SIEMPRE) ---
+    # --- ESLOGAN FUERA DE LAS COLUMNAS ---
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
 elif opcion == T["menu_eval"]:
