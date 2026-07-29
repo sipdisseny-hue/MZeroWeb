@@ -124,9 +124,9 @@ def cargar_datos_de_google():
 def refrescar_app():
     st.cache_data.clear()
     nuevos_datos = cargar_datos_de_google()
-    
+     
     es_catalan = any(k in nuevos_datos for k in ["Arguments M-Zero", "Per què ser Associat o Colaborador?"])
-    
+     
     if es_catalan:
         st.session_state.texto_documentos = nuevos_datos.get("Informació del sistema", "Benvingut a l'àrea de consulta.")
         claves_funcionalidad = ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
@@ -175,15 +175,15 @@ def guardar_en_sheets(titulo, nuevo_contenido):
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
-    
+     
     idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     T = TEXTOS[lang]
-    
+     
     opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
-    
+     
     st.divider()
-    
+     
     if st.session_state.autenticado:
         st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
         if st.button(T["cerrar_sesion"]):
@@ -193,7 +193,7 @@ with st.sidebar:
     else:
         usuario_in = st.text_input(T["usuario"])
         pass_in = st.text_input(T["password"], type="password")
-        
+         
         if st.button(T["btn_acceder"]):
             url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
             try:
@@ -201,7 +201,7 @@ with st.sidebar:
                 response = requests.get(url, headers=headers, timeout=10)
                 if response.status_code == 200:
                     df = pd.read_csv(StringIO(response.text), header=None)
-                    
+                     
                     login_ok = False
                     for i in range(1, len(df)):
                         u_excel = str(df.iloc[i, 0]).strip()
@@ -209,7 +209,7 @@ with st.sidebar:
                         if u_excel == usuario_in.strip() and p_excel == pass_in.strip():
                             login_ok = True
                             break
-                            
+                             
                     if login_ok:
                         st.session_state.autenticado = True
                         st.session_state.usuario_actual = usuario_in.strip()
@@ -224,17 +224,17 @@ with st.sidebar:
 # --- LÓGICA DE PANTALLAS ---
 if opcion == T["menu_docs"]:
     st.markdown(f"## {T['area_docs']}")
-    
+     
     with st.container(border=True):
         st.markdown(f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
-        
+         
         # --- BLOQUE 1: ASOCIADOS ---
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
-        
+         
         col1, col2, col3 = st.columns(3)
         columnas_asociados = [col1, col2, col3]
-        
+         
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
             ["Electricidad", "Obra", "Electromecánica", "Renovables"],
@@ -249,28 +249,28 @@ if opcion == T["menu_docs"]:
                             st.write(T["modo_edicion"])
                             nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_{titulo}")
                             img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_{titulo}")
-                            
+                             
                             if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
                                 if guardar_en_sheets(titulo, nuevo_text):
                                     st.session_state.contenido_exp[titulo] = nuevo_text
                                     refrescar_app()
-                        
+                         
                         st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
 
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
         st.markdown(f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
-        
+         
         col_c1, col_c2, col_c3 = st.columns(3)
         columnas_colaboradores = [col_c1, col_c2, col_c3]
-        
+         
         titulos_colaboradores = [
             "Centros de formación", 
             "Gremios", 
             "Asociaciones"
         ]
-        
+         
         for i, col in enumerate(columnas_colaboradores):
             with col:
                 titulo = titulos_colaboradores[i]
@@ -279,12 +279,12 @@ if opcion == T["menu_docs"]:
                         st.write(T["modo_edicion"])
                         nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_col_{titulo}")
                         img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_col_{titulo}")
-                        
+                         
                         if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}"):
                             if guardar_en_sheets(titulo, nuevo_text):
                                 st.session_state.contenido_exp[titulo] = nuevo_text
                                 refrescar_app()
-                    
+                     
                     st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 2: FUNCIONALIDAD ---
@@ -298,15 +298,15 @@ if opcion == T["menu_docs"]:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                 temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
-            
+             
                 if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
                     st.session_state.contenido_funcionalidad[titulo] = temp_text
-                
+                 
                     if guardar_en_sheets(titulo, temp_text):
                         st.success("Guardado en Google y localmente")
                     else:
                         st.warning("Guardado solo localmente (Error en Sheets)")
-                
+                 
                     st.rerun()
 
             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
@@ -359,7 +359,7 @@ if opcion == T["menu_docs"]:
                         if guardar_en_sheets(titulo, nuevo_text):
                             st.session_state.contenido_exp[titulo] = nuevo_text
                             refrescar_app()
-                
+                 
                 st.markdown(
                     st.session_state.contenido_exp.get(
                         titulo, ""
@@ -376,7 +376,7 @@ elif opcion == T["menu_eval"]:
         with st.container():
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input(T["profesor"], key=f"f_prof_{st.session_state.reset_todo}")
-            
+             
             opciones_cursos_display = [f"{c['codigo_curso']} - {c['nombre_curso']}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanizados"]
             curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
             curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
@@ -422,30 +422,28 @@ elif opcion == T["menu_eval"]:
         st.subheader(T["subt_puntuacion"])
         cols = st.columns(4)
         notas = {}
-        
+         
         for i, crit in enumerate(criterios):
             with cols[i % 4]:
                 with st.container(border=True):
                     col_t, col_b = st.columns([0.82, 0.18])
-                    
+                     
                     with col_t:
                         st.markdown(f"**{crit}**")
-                        
+                         
                     with col_b:
                         info_crit = descripciones_rubrica.get(crit, {
                             "que_se_mide": "Información detallada en desarrollo.",
                             "nivel_rubrica": "Pendiente de definir rúbrica."
                         })
-                        
+                         
                         with st.popover("ℹ️", help="Ver rúbrica"):
                             st.markdown(f"**{T['que_se_mide']}**\n\n{info_crit['que_se_mide']}")
                             st.markdown("---")
                             st.markdown(f"**{T['nivel_rubrica']}**")
                             st.markdown(info_crit['nivel_rubrica'])
 
-                    # Mantenemos el radio button limpio asegurando que su estado se lea directamente del session_state sin forzar reenvíos
-                    widget_key = f"rad_{crit}_{st.session_state.alumno_key}"
-                    notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=widget_key, index=None, label_visibility="collapsed")
+                    notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
         if None not in notas.values() and alumno:
             nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
@@ -466,7 +464,7 @@ elif opcion == T["menu_eval"]:
             st.subheader(T["resumen_alumnos"])
             df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
             st.table(df_resumen)
-            
+             
             with st.expander(T["gestionar_alumnos"]):
                 for i, reg in enumerate(st.session_state.lista_alumnos):
                     if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
