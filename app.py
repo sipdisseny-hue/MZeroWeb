@@ -121,6 +121,30 @@ def cargar_datos_de_google():
         st.error(f"Error de lectura: {e}")
         return {}
 
+# --- NUEVO: RÚBRICA CACHEADA ---
+# Antes esta petición se hacía en CADA rerun (es decir, en cada clic de puntuación
+# dentro del módulo de Evaluaciones), lo que causaba la sensación de "envío" y la
+# espera al puntuar. Al envolverla en @st.cache_data, solo se pide una vez cada
+# ttl segundos (aquí 3600 = 1 hora); los siguientes clics usan el valor en caché
+# y son instantáneos. Ajusta el ttl a tu gusto (ver conversación: 60=1min,
+# 1800=30min, 3600=1h, 86400=1día, o quita el ttl para que no caduque nunca).
+@st.cache_data(ttl=3600)
+def cargar_rubrica():
+    descripciones_rubrica = {}
+    try:
+        url_apps_script = "https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec"
+        resp_rubrica = requests.get(url_apps_script, timeout=10)
+        if resp_rubrica.status_code == 200:
+            data_json = resp_rubrica.json()
+            for item in data_json:
+                descripciones_rubrica[item["criterio"].strip()] = {
+                    "que_se_mide": item["que_se_mide"],
+                    "nivel_rubrica": item["nivel_rubrica"]
+                }
+    except Exception:
+        pass
+    return descripciones_rubrica
+
 def refrescar_app():
     st.cache_data.clear()
     nuevos_datos = cargar_datos_de_google()
@@ -405,19 +429,10 @@ elif opcion == T["menu_eval"]:
             "13. Comunicación y respeto al superior"
         ]
 
-        descripciones_rubrica = {}
-        try:
-            url_apps_script = "https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec"
-            resp_rubrica = requests.get(url_apps_script, timeout=10)
-            if resp_rubrica.status_code == 200:
-                data_json = resp_rubrica.json()
-                for item in data_json:
-                    descripciones_rubrica[item["criterio"].strip()] = {
-                        "que_se_mide": item["que_se_mide"],
-                        "nivel_rubrica": item["nivel_rubrica"]
-                    }
-        except Exception:
-            pass
+        # --- ANTES: la petición GET a la rúbrica se hacía aquí, sin caché, ---
+        # --- así que se repetía en cada rerun (cada clic de puntuación).   ---
+        # --- AHORA: se usa la versión cacheada, se pide una vez por hora.  ---
+        descripciones_rubrica = cargar_rubrica()
 
         st.subheader(T["subt_puntuacion"])
         cols = st.columns(4)
