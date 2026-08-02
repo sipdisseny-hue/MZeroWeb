@@ -43,6 +43,14 @@ TEXTOS = {
         "enviar_sheets": "ENVIAR TODO A GOOGLE SHEETS",
         "exito_envio": "Enviado con éxito a Google Sheets",
         "modo_edicion": "--- MODO EDICIÓN ---",
+        "candidatos": "Candidatos",
+        "escribir_peticion": "Escribe tu petición:",
+        "enviar": "Enviar",
+        "peticion_enviada": "Petición enviada correctamente.",
+        "error_peticion": "No se pudo enviar la petición. Inténtalo de nuevo.",
+        "campo_vacio_peticion": "Escribe algo antes de enviar.",
+        "acceso_concedido": "Acceso concedido:",
+        "error_acceso_participar": "Usuario o contraseña incorrectos, o no estás inscrito.",
         "titulos_func": ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
     },
     "ca": {
@@ -80,6 +88,14 @@ TEXTOS = {
         "enviar_sheets": "ENVIAR TOT A GOOGLE SHEETS",
         "exito_envio": "Enviat amb èxit a Google Sheets",
         "modo_edicion": "--- MODE EDICIÓ ---",
+        "candidatos": "Candidats",
+        "escribir_peticion": "Escriu la teva petició:",
+        "enviar": "Enviar",
+        "peticion_enviada": "Petició enviada correctament.",
+        "error_peticion": "No s'ha pogut enviar la petició. Torna-ho a provar.",
+        "campo_vacio_peticion": "Escriu alguna cosa abans d'enviar.",
+        "acceso_concedido": "Accés concedit:",
+        "error_acceso_participar": "Usuari o contrasenya incorrectes, o no estàs inscrit.",
         "titulos_func": ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
     }
 }
@@ -136,6 +152,54 @@ def cargar_asociados_colaboradores():
     except Exception as e:
         st.error(f"Error al cargar Asociados y Colaboradores: {e}")
     return [], []
+
+# --- NUEVO: TEXTOS DE "CÓMO PARTICIPAR" (Asociados / Colaboradores / Candidato) ---
+@st.cache_data(ttl=600)
+def cargar_instrucciones_participar():
+    # PEGA AQUÍ TU URL: la que te da Apps Script al implementar
+    # Code_InstruccionesParticipar.gs (bound a "Textos M-Zero").
+    url_script = "https://script.google.com/macros/s/PEGA_AQUI_TU_URL_DE_INSTRUCCIONES/exec"
+    try:
+        response = requests.get(url_script, timeout=20)
+        if response.status_code == 200:
+            return response.json()
+    except Exception as e:
+        st.error(f"Error al cargar instrucciones de participación: {e}")
+    return {}
+
+# --- NUEVO: LOGIN INDEPENDIENTE DE ASOCIADO / COLABORADOR ---
+# Reutiliza la misma técnica que ya usa el login general (CSV público de
+# Google Sheets), pero apuntando a "Credenciales Asociados" o
+# "Credenciales Colaboradores" en vez de a "Credenciales". Solo puede
+# acceder quien tú hayas dado de alta manualmente en esas hojas.
+def verificar_credencial_participar(usuario, contrasena, nombre_hoja):
+    url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq"
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(url, params={"tqx": "out:csv", "sheet": nombre_hoja}, headers=headers, timeout=10)
+        if response.status_code == 200:
+            df = pd.read_csv(StringIO(response.text))
+            df.columns = [str(c).strip() for c in df.columns]
+            for _, fila in df.iterrows():
+                u_hoja = str(fila.get("Usuario", "")).strip()
+                p_hoja = str(fila.get("Contraseña", "")).strip()
+                if u_hoja == usuario.strip() and p_hoja == contrasena.strip():
+                    return fila.to_dict()
+    except Exception:
+        pass
+    return None
+
+# --- NUEVO: ENVÍO DE PETICIÓN (Asociado o Colaborador) ---
+def enviar_peticion_participar(tipo, id_empresa, texto):
+    # PEGA AQUÍ TU URL: la que te da Apps Script al implementar
+    # Code_PeticionesParticipar.gs (bound a "Hoja de cálculo M-Zero").
+    url_script = "https://script.google.com/macros/s/PEGA_AQUI_TU_URL_DE_PETICIONES/exec"
+    payload = {"tipo": tipo, "id_empresa": id_empresa, "texto": texto}
+    try:
+        response = requests.post(url_script, json=payload, timeout=20)
+        return response.status_code == 200
+    except Exception:
+        return False
 
 # --- NUEVO: RÚBRICA CACHEADA ---
 # Antes esta petición se hacía en CADA rerun (es decir, en cada clic de puntuación
@@ -395,45 +459,69 @@ if opcion == T["menu_docs"]:
     # --- BLOQUE: CÓMO PARTICIPAR ---
     st.markdown(f"## {T['como_participar']}")
 
-    cp1, cp2, cp3 = st.columns(3)
-    columnas_participar = [
-        (cp1, "Asociados"),
-        (cp2, "Colaboradores"),
-        (cp3, "Candidatos")
-    ]
+    instrucciones_participar = cargar_instrucciones_participar()
 
-    for col, titulo in columnas_participar:
-        with col:
-            with st.expander(titulo):
-                sesion_ok = (
-                    st.session_state.autenticado 
-                    and st.session_state.usuario_actual == "mzerojc"
-                )
-                if sesion_ok:
-                    st.write(T["modo_edicion"])
-                    nuevo_text = st.text_area(
-                        f"Editar {titulo}:", 
-                        value=st.session_state.contenido_exp.get(
-                            titulo, ""
-                        ), 
-                        height=150, 
-                        key=f"edit_part_{titulo}"
-                    )
-                    btn_guardar = st.button(
-                        f"Guardar {titulo}", 
-                        key=f"btn_part_{titulo}"
-                    )
-                    if btn_guardar:
-                        if guardar_en_sheets(titulo, nuevo_text):
-                            st.session_state.contenido_exp[titulo] = nuevo_text
-                            refrescar_app()
-                
-                st.markdown(
-                    st.session_state.contenido_exp.get(
-                        titulo, ""
-                    ), 
-                    unsafe_allow_html=True
-                )
+    def texto_instruccion(clave):
+        bloque = instrucciones_participar.get(clave, {})
+        return bloque.get(lang, "")
+
+    def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix):
+        """Login independiente contra 'Credenciales Asociados' / 'Credenciales
+        Colaboradores' + formulario de petición una vez autenticado."""
+        login_key = f"{key_prefix}_login_ok"
+        id_key = f"{key_prefix}_id_empresa"
+        nombre_key = f"{key_prefix}_nombre_empresa"
+        peticion_version_key = f"{key_prefix}_peticion_version"
+
+        st.markdown("---")
+
+        if not st.session_state.get(login_key):
+            usuario_in = st.text_input(T["usuario"], key=f"{key_prefix}_user_in")
+            pass_in = st.text_input(T["password"], type="password", key=f"{key_prefix}_pass_in")
+            if st.button(T["btn_acceder"], key=f"{key_prefix}_btn_acceder"):
+                fila = verificar_credencial_participar(usuario_in, pass_in, nombre_hoja_credenciales)
+                if fila:
+                    st.session_state[login_key] = True
+                    st.session_state[id_key] = str(fila.get("Id. Empresa", "")).strip()
+                    st.session_state[nombre_key] = str(fila.get("Nombre Empresa", "")).strip()
+                    st.rerun()
+                else:
+                    st.error(T["error_acceso_participar"])
+        else:
+            nombre_empresa = st.session_state.get(nombre_key, "")
+            st.success(f"{T['acceso_concedido']} {nombre_empresa}")
+
+            version = st.session_state.get(peticion_version_key, 0)
+            texto_peticion = st.text_area(
+                T["escribir_peticion"], key=f"{key_prefix}_peticion_{version}"
+            )
+            if st.button(T["enviar"], key=f"{key_prefix}_btn_enviar"):
+                if texto_peticion.strip():
+                    id_empresa = st.session_state.get(id_key, "")
+                    if enviar_peticion_participar(tipo, id_empresa, texto_peticion.strip()):
+                        st.success(T["peticion_enviada"])
+                        st.session_state[peticion_version_key] = version + 1
+                        st.rerun()
+                    else:
+                        st.error(T["error_peticion"])
+                else:
+                    st.warning(T["campo_vacio_peticion"])
+
+    cp1, cp2, cp3 = st.columns(3)
+
+    with cp1:
+        with st.expander(T["asociados"]):
+            st.markdown(texto_instruccion("asociados"))
+            bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
+
+    with cp2:
+        with st.expander(T["colaboradores"]):
+            st.markdown(texto_instruccion("colaboradores"))
+            bloque_acceso_y_peticion("colaborador", "Credenciales Colaboradores", "colab_part")
+
+    with cp3:
+        with st.expander(T["candidatos"]):
+            st.markdown(texto_instruccion("candidato"))
 
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
