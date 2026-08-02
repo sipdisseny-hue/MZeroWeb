@@ -271,29 +271,26 @@ if opcion == T["menu_docs"]:
 
         asociados_db, colaboradores_db = cargar_asociados_colaboradores()
 
-        def mostrar_directorio(titulo_seccion, datos, key_prefix):
-            """Desplegable en cascada: Provincia -> Población -> Empresa."""
-            st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{titulo_seccion}</h4>", unsafe_allow_html=True)
-
-            if not datos:
-                st.info("Todavía no hay datos cargados en esta sección.")
+        def mostrar_provincia_poblacion_empresa(datos_categoria, key_prefix):
+            """Desplegable en cascada Provincia -> Población -> Empresa,
+            ya filtrado de antemano por la categoría que lo llama."""
+            if not datos_categoria:
+                st.info("Todavía no hay datos cargados para esta categoría.")
                 return
 
             provincias = sorted({
-                d.get("provincia", "").strip() for d in datos if d.get("provincia", "").strip()
+                d.get("provincia", "").strip() for d in datos_categoria if d.get("provincia", "").strip()
             })
-
             if not provincias:
-                st.info("No hay provincias registradas todavía.")
+                st.info("No hay provincias registradas todavía para esta categoría.")
                 return
 
             provincia_sel = st.selectbox("Provincia", provincias, key=f"{key_prefix}_prov")
 
             poblaciones = sorted({
-                d.get("poblacion", "").strip() for d in datos
+                d.get("poblacion", "").strip() for d in datos_categoria
                 if d.get("provincia", "").strip() == provincia_sel and d.get("poblacion", "").strip()
             })
-
             if not poblaciones:
                 st.info("No hay poblaciones registradas para esta provincia.")
                 return
@@ -301,16 +298,15 @@ if opcion == T["menu_docs"]:
             poblacion_sel = st.selectbox("Población", poblaciones, key=f"{key_prefix}_pob")
 
             empresas = [
-                d for d in datos
+                d for d in datos_categoria
                 if d.get("provincia", "").strip() == provincia_sel
                 and d.get("poblacion", "").strip() == poblacion_sel
             ]
-
             if not empresas:
                 st.info("No hay empresas registradas en esta población.")
                 return
 
-            for idx, emp in enumerate(empresas):
+            for emp in empresas:
                 nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
                 with st.expander(nombre):
                     descripcion = emp.get("descripcion", "").strip()
@@ -320,13 +316,44 @@ if opcion == T["menu_docs"]:
                     if enlace:
                         st.markdown(f"🔗 [Visitar web]({enlace})")
 
+        def mostrar_bloque_categorias(datos, titulos_por_columna, key_prefix):
+            """Pinta los títulos de categoría en columnas (como antes) y,
+            al desplegar cada uno, muestra el buscador Provincia/Población/Empresa
+            filtrado a esa categoría."""
+            columnas = st.columns(len(titulos_por_columna))
+            for i, col in enumerate(columnas):
+                with col:
+                    for titulo in titulos_por_columna[i]:
+                        with st.expander(titulo):
+                            datos_categoria = [
+                                d for d in datos
+                                if d.get("categoria", "").strip().lower() == titulo.strip().lower()
+                            ]
+                            mostrar_provincia_poblacion_empresa(datos_categoria, f"{key_prefix}_{titulo}")
+
         # --- BLOQUE 1: ASOCIADOS ---
-        mostrar_directorio(T["asociados"], asociados_db, "asoc")
+        st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
+
+        titulos_asociados = [
+            ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
+            ["Electricidad", "Obra", "Electromecánica", "Renovables"],
+            ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]
+        ]
+
+        mostrar_bloque_categorias(asociados_db, titulos_asociados, "asoc")
 
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
-        mostrar_directorio(T["colaboradores"], colaboradores_db, "colab")
+        st.markdown(f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
+
+        titulos_colaboradores = [
+            ["Centros de formación"],
+            ["Gremios"],
+            ["Asociaciones"]
+        ]
+
+        mostrar_bloque_categorias(colaboradores_db, titulos_colaboradores, "colab")
 
     # --- BLOQUE 2: FUNCIONALIDAD ---
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
