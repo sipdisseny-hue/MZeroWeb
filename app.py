@@ -121,6 +121,22 @@ def cargar_datos_de_google():
         st.error(f"Error de lectura: {e}")
         return {}
 
+# --- NUEVO: ASOCIADOS Y COLABORADORES (Provincia -> Población -> Empresa) ---
+# Lee las pestañas "Asociados" y "Colaboradores" del Excel a través del Apps
+# Script de Code_AsociadosColaboradores.gs. Cada fila debe traer:
+# provincia, poblacion, empresa, descripcion, enlace.
+@st.cache_data(ttl=600)
+def cargar_asociados_colaboradores():
+    url_script = "https://script.google.com/macros/s/AKfycbyD03Ix8JF6jx8wbiu8_imQoNXDwYVGhjEvMlXTV5NaeC5fWZ-0ysRRssmlfv5YCb95tg/exec"
+    try:
+        response = requests.get(url_script, timeout=20)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("asociados", []), data.get("colaboradores", [])
+    except Exception as e:
+        st.error(f"Error al cargar Asociados y Colaboradores: {e}")
+    return [], []
+
 # --- NUEVO: RÚBRICA CACHEADA ---
 # Antes esta petición se hacía en CADA rerun (es decir, en cada clic de puntuación
 # dentro del módulo de Evaluaciones), lo que causaba la sensación de "envío" y la
@@ -252,64 +268,65 @@ if opcion == T["menu_docs"]:
     with st.container(border=True):
         st.markdown(f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
-        
-        # --- BLOQUE 1: ASOCIADOS ---
-        st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
-        
-        col1, col2, col3 = st.columns(3)
-        columnas_asociados = [col1, col2, col3]
-        
-        titulos_asociados = [
-            ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
-            ["Electricidad", "Obra", "Electromecánica", "Renovables"],
-            ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]
-        ]
 
-        for i, col in enumerate(columnas_asociados):
-            with col:
-                for titulo in titulos_asociados[i]:
-                    with st.expander(titulo):
-                        if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                            st.write(T["modo_edicion"])
-                            nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_{titulo}")
-                            img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_{titulo}")
-                            
-                            if st.button(f"Guardar {titulo}", key=f"btn_{titulo}"):
-                                if guardar_en_sheets(titulo, nuevo_text):
-                                    st.session_state.contenido_exp[titulo] = nuevo_text
-                                    refrescar_app()
-                        
-                        st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+        asociados_db, colaboradores_db = cargar_asociados_colaboradores()
+
+        def mostrar_directorio(titulo_seccion, datos, key_prefix):
+            """Desplegable en cascada: Provincia -> Población -> Empresa."""
+            st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{titulo_seccion}</h4>", unsafe_allow_html=True)
+
+            if not datos:
+                st.info("Todavía no hay datos cargados en esta sección.")
+                return
+
+            provincias = sorted({
+                d.get("provincia", "").strip() for d in datos if d.get("provincia", "").strip()
+            })
+
+            if not provincias:
+                st.info("No hay provincias registradas todavía.")
+                return
+
+            provincia_sel = st.selectbox("Provincia", provincias, key=f"{key_prefix}_prov")
+
+            poblaciones = sorted({
+                d.get("poblacion", "").strip() for d in datos
+                if d.get("provincia", "").strip() == provincia_sel and d.get("poblacion", "").strip()
+            })
+
+            if not poblaciones:
+                st.info("No hay poblaciones registradas para esta provincia.")
+                return
+
+            poblacion_sel = st.selectbox("Población", poblaciones, key=f"{key_prefix}_pob")
+
+            empresas = [
+                d for d in datos
+                if d.get("provincia", "").strip() == provincia_sel
+                and d.get("poblacion", "").strip() == poblacion_sel
+            ]
+
+            if not empresas:
+                st.info("No hay empresas registradas en esta población.")
+                return
+
+            for idx, emp in enumerate(empresas):
+                nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
+                with st.expander(nombre):
+                    descripcion = emp.get("descripcion", "").strip()
+                    if descripcion:
+                        st.markdown(descripcion)
+                    enlace = emp.get("enlace", "").strip()
+                    if enlace:
+                        st.markdown(f"🔗 [Visitar web]({enlace})")
+
+        # --- BLOQUE 1: ASOCIADOS ---
+        mostrar_directorio(T["asociados"], asociados_db, "asoc")
 
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
-        st.markdown(f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
-        
-        col_c1, col_c2, col_c3 = st.columns(3)
-        columnas_colaboradores = [col_c1, col_c2, col_c3]
-        
-        titulos_colaboradores = [
-            "Centros de formación", 
-            "Gremios", 
-            "Asociaciones"
-        ]
-        
-        for i, col in enumerate(columnas_colaboradores):
-            with col:
-                titulo = titulos_colaboradores[i]
-                with st.expander(titulo):
-                    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                        st.write(T["modo_edicion"])
-                        nuevo_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_exp.get(titulo, ""), height=150, key=f"edit_col_{titulo}")
-                        img_file = st.file_uploader(f"Subir imagen para {titulo}", type=['png', 'jpg'], key=f"img_col_{titulo}")
-                        
-                        if st.button(f"Guardar {titulo}", key=f"btn_col_{titulo}"):
-                            if guardar_en_sheets(titulo, nuevo_text):
-                                st.session_state.contenido_exp[titulo] = nuevo_text
-                                refrescar_app()
-                    
-                    st.markdown(st.session_state.contenido_exp.get(titulo, ""), unsafe_allow_html=True)
+        mostrar_directorio(T["colaboradores"], colaboradores_db, "colab")
 
     # --- BLOQUE 2: FUNCIONALIDAD ---
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
