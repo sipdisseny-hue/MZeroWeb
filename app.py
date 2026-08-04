@@ -520,6 +520,8 @@ if opcion == T["menu_docs"]:
             email = c7.text_input("Email", key=f"{key_prefix}_reg_email_{version}")
             nombre_contacto = c8.text_input("Nombre Contacto", key=f"{key_prefix}_reg_contacto_{version}")
 
+            web = st.text_input("Web", key=f"{key_prefix}_reg_web_{version}")
+
             if st.button(T["enviar_solicitud"], key=f"{key_prefix}_reg_btn_enviar"):
                 if nombre_empresa.strip():
                     campos = {
@@ -533,6 +535,7 @@ if opcion == T["menu_docs"]:
                         "Telefono": telefono.strip(),
                         "Email": email.strip(),
                         "Nombre Contacto": nombre_contacto.strip(),
+                        "Web": web.strip(),
                     }
                     if incluir_centro:
                         campos["Nombre del Centro"] = nombre_centro.strip()
