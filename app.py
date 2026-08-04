@@ -398,9 +398,17 @@ if opcion == T["menu_docs"]:
             for emp in empresas:
                 nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
                 with st.expander(nombre):
+                    logo_url = emp.get("logo", "").strip()
+                    if logo_url:
+                        st.image(logo_url, width=150)
+
+                    empresa_html = emp.get("empresa_html", "").strip()
+                    if empresa_html:
+                        st.markdown(f"#### {empresa_html}", unsafe_allow_html=True)
+
                     descripcion = emp.get("descripcion", "").strip()
                     if descripcion:
-                        st.markdown(descripcion)
+                        st.markdown(descripcion, unsafe_allow_html=True)
                     enlace = emp.get("enlace", "").strip()
                     if enlace:
                         st.markdown(f"🔗 [Visitar web]({enlace})")
@@ -466,7 +474,7 @@ if opcion == T["menu_docs"]:
                 
                     st.rerun()
 
-            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""))
+            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 3: CONTACTO ---
     st.markdown(f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
@@ -597,17 +605,17 @@ if opcion == T["menu_docs"]:
 
     with cp1:
         with st.expander(T["asociados"]):
-            st.markdown(texto_instruccion("asociados"))
+            st.markdown(texto_instruccion("asociados"), unsafe_allow_html=True)
             bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
 
     with cp2:
         with st.expander(T["colaboradores"]):
-            st.markdown(texto_instruccion("colaboradores"))
+            st.markdown(texto_instruccion("colaboradores"), unsafe_allow_html=True)
             bloque_acceso_y_peticion("colaborador", "Credenciales Colaboradores", "colab_part", incluir_centro_registro=True)
 
     with cp3:
         with st.expander(T["candidatos"]):
-            st.markdown(texto_instruccion("candidato"))
+            st.markdown(texto_instruccion("candidato"), unsafe_allow_html=True)
 
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
