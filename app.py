@@ -51,6 +51,11 @@ TEXTOS = {
         "campo_vacio_peticion": "Escribe algo antes de enviar.",
         "acceso_concedido": "Acceso concedido:",
         "error_acceso_participar": "Usuario o contraseña incorrectos, o no estás inscrito.",
+        "solicitar_alta": "¿Todavía no estás dado de alta? Solicita el registro",
+        "enviar_solicitud": "Enviar solicitud",
+        "solicitud_enviada": "Solicitud enviada correctamente.",
+        "error_solicitud": "No se pudo enviar la solicitud. Inténtalo de nuevo.",
+        "campo_vacio_empresa": "Escribe al menos el nombre de la empresa.",
         "titulos_func": ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
     },
     "ca": {
@@ -96,6 +101,11 @@ TEXTOS = {
         "campo_vacio_peticion": "Escriu alguna cosa abans d'enviar.",
         "acceso_concedido": "Accés concedit:",
         "error_acceso_participar": "Usuari o contrasenya incorrectes, o no estàs inscrit.",
+        "solicitar_alta": "Encara no estàs donat d'alta? Sol·licita el registre",
+        "enviar_solicitud": "Enviar sol·licitud",
+        "solicitud_enviada": "Sol·licitud enviada correctament.",
+        "error_solicitud": "No s'ha pogut enviar la sol·licitud. Torna-ho a provar.",
+        "campo_vacio_empresa": "Escriu com a mínim el nom de l'empresa.",
         "titulos_func": ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
     }
 }
@@ -197,6 +207,19 @@ def enviar_peticion_participar(tipo, id_empresa, texto):
     # peticiones de Asociado/Colaborador gracias al campo "tipo".
     url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
     payload = {"tipo": tipo, "id_empresa": id_empresa, "texto": texto}
+    try:
+        response = requests.post(url_script, json=payload, timeout=20)
+        return response.status_code == 200
+    except Exception:
+        return False
+
+# --- NUEVO: PETICIÓN DE REGISTRO (alta de nuevo Asociado o Colaborador) ---
+# Usa la MISMA URL que ya usa cargar_asociados_colaboradores() (el script de
+# "Asociados y Colaboradores"), con accion="registro" para distinguirlo de
+# las peticiones normales de datos (doGet).
+def enviar_peticion_registro(tipo, campos):
+    url_script = "https://script.google.com/macros/s/AKfycbyD03Ix8JF6jx8wbiu8_imQoNXDwYVGhjEvMlXTV5NaeC5fWZ-0ysRRssmlfv5YCb95tg/exec"
+    payload = {"accion": "registro", "tipo": tipo, "campos": campos}
     try:
         response = requests.post(url_script, json=payload, timeout=20)
         return response.status_code == 200
@@ -467,7 +490,63 @@ if opcion == T["menu_docs"]:
         bloque = instrucciones_participar.get(clave, {})
         return bloque.get(lang, "")
 
-    def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix):
+    def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False):
+        """Formulario para pedir el alta como Asociado o Colaborador nuevo
+        (usuario todavía no inscrito en Credenciales Asociados/Colaboradores)."""
+        version = st.session_state.get(f"{key_prefix}_reg_version", 0)
+
+        with st.expander(T["solicitar_alta"]):
+            nombre_empresa = st.text_input("Nombre Empresa", key=f"{key_prefix}_reg_empresa_{version}")
+
+            nombre_centro = ""
+            if incluir_centro:
+                nombre_centro = st.text_input("Nombre del Centro", key=f"{key_prefix}_reg_centro_{version}")
+
+            sector = st.text_input("Sector", key=f"{key_prefix}_reg_sector_{version}")
+
+            c1, c2 = st.columns(2)
+            provincia = c1.text_input("Provincia", key=f"{key_prefix}_reg_prov_{version}")
+            poblacion = c2.text_input("Población", key=f"{key_prefix}_reg_pob_{version}")
+
+            c3, c4 = st.columns(2)
+            cp = c3.text_input("CP", key=f"{key_prefix}_reg_cp_{version}")
+            razon_social = c4.text_input("Razón Social", key=f"{key_prefix}_reg_razon_{version}")
+
+            c5, c6 = st.columns(2)
+            cif_nif = c5.text_input("CIF/NIF", key=f"{key_prefix}_reg_cif_{version}")
+            telefono = c6.text_input("Teléfono", key=f"{key_prefix}_reg_tel_{version}")
+
+            c7, c8 = st.columns(2)
+            email = c7.text_input("Email", key=f"{key_prefix}_reg_email_{version}")
+            nombre_contacto = c8.text_input("Nombre Contacto", key=f"{key_prefix}_reg_contacto_{version}")
+
+            if st.button(T["enviar_solicitud"], key=f"{key_prefix}_reg_btn_enviar"):
+                if nombre_empresa.strip():
+                    campos = {
+                        "Nombre empresa": nombre_empresa.strip(),
+                        "Sector": sector.strip(),
+                        "Provincia": provincia.strip(),
+                        "Población": poblacion.strip(),
+                        "CP": cp.strip(),
+                        "Razón Social": razon_social.strip(),
+                        "CIF/NIF": cif_nif.strip(),
+                        "Telefono": telefono.strip(),
+                        "Email": email.strip(),
+                        "Nombre Contacto": nombre_contacto.strip(),
+                    }
+                    if incluir_centro:
+                        campos["Nombre del Centro"] = nombre_centro.strip()
+
+                    if enviar_peticion_registro(tipo, campos):
+                        st.success(T["solicitud_enviada"])
+                        st.session_state[f"{key_prefix}_reg_version"] = version + 1
+                        st.rerun()
+                    else:
+                        st.error(T["error_solicitud"])
+                else:
+                    st.warning(T["campo_vacio_empresa"])
+
+    def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir_centro_registro=False):
         """Login independiente contra 'Credenciales Asociados' / 'Credenciales
         Colaboradores' + formulario de petición una vez autenticado."""
         login_key = f"{key_prefix}_login_ok"
@@ -489,6 +568,8 @@ if opcion == T["menu_docs"]:
                     st.rerun()
                 else:
                     st.error(T["error_acceso_participar"])
+
+            bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro)
         else:
             nombre_empresa = st.session_state.get(nombre_key, "")
             st.success(f"{T['acceso_concedido']} {nombre_empresa}")
@@ -519,7 +600,7 @@ if opcion == T["menu_docs"]:
     with cp2:
         with st.expander(T["colaboradores"]):
             st.markdown(texto_instruccion("colaboradores"))
-            bloque_acceso_y_peticion("colaborador", "Credenciales Colaboradores", "colab_part")
+            bloque_acceso_y_peticion("colaborador", "Credenciales Colaboradores", "colab_part", incluir_centro_registro=True)
 
     with cp3:
         with st.expander(T["candidatos"]):
