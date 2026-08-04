@@ -154,13 +154,14 @@ def cargar_asociados_colaboradores():
     return [], []
 
 # --- NUEVO: TEXTOS DE "CÓMO PARTICIPAR" (Asociados / Colaboradores / Candidato) ---
+# Usa la MISMA URL que ya usan cargar_datos_de_google() y guardar_en_sheets()
+# (el script de "Textos M-Zero"), simplemente con el parámetro ?tipo=participar
+# para activar la rama nueva de ese mismo doGet.
 @st.cache_data(ttl=600)
 def cargar_instrucciones_participar():
-    # PEGA AQUÍ TU URL: la que te da Apps Script al implementar
-    # Code_InstruccionesParticipar.gs (bound a "Textos M-Zero").
-    url_script = "https://script.google.com/macros/s/PEGA_AQUI_TU_URL_DE_INSTRUCCIONES/exec"
+    url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
     try:
-        response = requests.get(url_script, timeout=20)
+        response = requests.get(url_script, params={"tipo": "participar"}, timeout=20)
         if response.status_code == 200:
             return response.json()
     except Exception as e:
@@ -191,9 +192,10 @@ def verificar_credencial_participar(usuario, contrasena, nombre_hoja):
 
 # --- NUEVO: ENVÍO DE PETICIÓN (Asociado o Colaborador) ---
 def enviar_peticion_participar(tipo, id_empresa, texto):
-    # PEGA AQUÍ TU URL: la que te da Apps Script al implementar
-    # Code_PeticionesParticipar.gs (bound a "Hoja de cálculo M-Zero").
-    url_script = "https://script.google.com/macros/s/PEGA_AQUI_TU_URL_DE_PETICIONES/exec"
+    # Misma URL que ya usa el envío de Evaluaciones — es el mismo script
+    # (Code_HojaCalculoMZero_fusionado.gs), que ahora también sabe manejar
+    # peticiones de Asociado/Colaborador gracias al campo "tipo".
+    url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
     payload = {"tipo": tipo, "id_empresa": id_empresa, "texto": texto}
     try:
         response = requests.post(url_script, json=payload, timeout=20)
