@@ -202,10 +202,8 @@ def verificar_credencial_participar(usuario, contrasena, nombre_hoja):
 
 # --- NUEVO: ENVÍO DE PETICIÓN (Asociado o Colaborador) ---
 def enviar_peticion_participar(tipo, id_empresa, texto):
-    # Misma URL que ya usa el envío de Evaluaciones — es el mismo script
-    # (Code_HojaCalculoMZero_fusionado.gs), que ahora también sabe manejar
-    # peticiones de Asociado/Colaborador gracias al campo "tipo".
-    url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
+    # Nueva URL: script del Excel "Cómo participar" (Code_ComoParticipar_Peticiones.gs)
+    url_script = "https://script.google.com/macros/s/AKfycbwTg1YZU4jcfhZOvQEwUJzW8CusvQbmHzpyDen8FENx_iAIPhHV8OjAiwAGGvzIrvu0/exec"
     payload = {"tipo": tipo, "id_empresa": id_empresa, "texto": texto}
     try:
         response = requests.post(url_script, json=payload, timeout=20)
