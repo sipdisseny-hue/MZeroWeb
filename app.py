@@ -209,8 +209,20 @@ def enviar_peticion_participar(tipo, id_empresa, texto):
     payload = {"tipo": tipo, "id_empresa": id_empresa, "texto": texto}
     try:
         response = requests.post(url_script, json=payload, timeout=20)
-        return response.status_code == 200
-    except Exception:
+        if response.status_code != 200:
+            st.error(f"El servidor respondió con un error ({response.status_code}) al enviar la petición.")
+            return False
+        try:
+            data = response.json()
+        except Exception:
+            # El script devolvió texto plano (p. ej. "OK"), lo damos por válido
+            return True
+        if isinstance(data, dict) and data.get("ok") is False:
+            st.error(f"No se pudo guardar la petición: {data.get('error', 'error desconocido')}")
+            return False
+        return True
+    except Exception as e:
+        st.error(f"Error de conexión al enviar la petición: {e}")
         return False
 
 # --- NUEVO: PETICIÓN DE REGISTRO (alta de nuevo Asociado o Colaborador) ---
@@ -600,6 +612,12 @@ if opcion == T["menu_docs"]:
                         st.error(T["error_peticion"])
                 else:
                     st.warning(T["campo_vacio_peticion"])
+
+            if st.button(T["cerrar_sesion"], key=f"{key_prefix}_btn_cerrar_sesion"):
+                st.session_state[login_key] = False
+                st.session_state[id_key] = ""
+                st.session_state[nombre_key] = ""
+                st.rerun()
 
     cp1, cp2, cp3 = st.columns(3)
 
