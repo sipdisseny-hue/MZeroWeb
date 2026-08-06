@@ -171,7 +171,7 @@ def cargar_asociados_colaboradores():
 def cargar_instrucciones_participar():
     url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
     try:
-        response = requests.get(url_script, params={"tipo": "participar"}, timeout=20)
+        response = requests.get(url_script, params={"tipo": "participar"}, timeout=30)
         if response.status_code == 200:
             return response.json()
     except Exception as e:
