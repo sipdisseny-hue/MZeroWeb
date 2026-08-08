@@ -675,13 +675,13 @@ elif opcion == T["menu_eval"]:
             profesor = c1.text_input(T["profesor"], key=f"f_prof_{st.session_state.reset_todo}")
             
             campo_nombre_curso = "nombre_curso_ca" if lang == "ca" else "nombre_curso_es"
-            opciones_cursos_display = [f"{c['codigo_curso']} - {c.get(campo_nombre_curso) or c.get('nombre_curso_es', '')}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanizados"]
+            opciones_cursos_display = [f"{c['codigo_curso']} - {c.get(campo_nombre_curso) or c.get('nombre_curso_es') or c.get('nombre_curso') or ''}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanizados"]
             curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
             curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
 
             modulos_filtrados = [m for m in modulos_db if m["curso_asociado"] == curso_codigo_actual]
             campo_descripcion_modulo = "descripcion_ca" if lang == "ca" else "descripcion_es"
-            opciones_modulos_display = [f"{m['subcodigo']} - {m.get(campo_descripcion_modulo) or m.get('descripcion_es', '')}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
+            opciones_modulos_display = [f"{m['subcodigo']} - {m.get(campo_descripcion_modulo) or m.get('descripcion_es') or m.get('descripcion') or ''}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
             modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
             modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
 
