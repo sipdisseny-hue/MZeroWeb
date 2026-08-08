@@ -135,7 +135,7 @@ TEXTOS = {
 }
 
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
-@st.cache_data(ttl=600)
+@st.cache_data(ttl=120)
 def cargar_catalogo_cursos_y_modulos():
     url_script = "https://script.google.com/macros/s/AKfycbzAfnmO33bANwUsvDRkeMzLjLgLWZeSdzLNduleZ9UYDLEtIqe4YIb-gHSWmJaaFBYY/exec"
     try:
