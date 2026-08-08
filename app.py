@@ -56,6 +56,18 @@ TEXTOS = {
         "solicitud_enviada": "Solicitud enviada correctamente.",
         "error_solicitud": "No se pudo enviar la solicitud. Inténtalo de nuevo.",
         "campo_vacio_empresa": "Escribe al menos el nombre de la empresa.",
+        "campo_nombre_empresa": "Nombre Empresa",
+        "campo_nombre_centro": "Nombre del Centro",
+        "campo_sector": "Sector",
+        "campo_provincia": "Provincia",
+        "campo_poblacion": "Población",
+        "campo_cp": "CP",
+        "campo_razon_social": "Razón Social",
+        "campo_cif_nif": "CIF/NIF",
+        "campo_telefono": "Teléfono",
+        "campo_email": "Email",
+        "campo_nombre_contacto": "Nombre Contacto",
+        "campo_web": "Web",
         "titulos_func": ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
     },
     "ca": {
@@ -106,6 +118,18 @@ TEXTOS = {
         "solicitud_enviada": "Sol·licitud enviada correctament.",
         "error_solicitud": "No s'ha pogut enviar la sol·licitud. Torna-ho a provar.",
         "campo_vacio_empresa": "Escriu com a mínim el nom de l'empresa.",
+        "campo_nombre_empresa": "Nom Empresa",
+        "campo_nombre_centro": "Nom del Centre",
+        "campo_sector": "Sector",
+        "campo_provincia": "Província",
+        "campo_poblacion": "Població",
+        "campo_cp": "CP",
+        "campo_razon_social": "Raó Social",
+        "campo_cif_nif": "CIF/NIF",
+        "campo_telefono": "Telèfon",
+        "campo_email": "Email",
+        "campo_nombre_contacto": "Nom Contacte",
+        "campo_web": "Web",
         "titulos_func": ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
     }
 }
@@ -279,26 +303,11 @@ def refrescar_app():
     st.rerun()
 
 # --- INICIALIZACIÓN DE ESTADOS ---
-datos_iniciales = cargar_datos_de_google()
-cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
-
 if 'autenticado' not in st.session_state: st.session_state.autenticado = False
 if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
-
-if 'texto_documentos' not in st.session_state: 
-    st.session_state.texto_documentos = datos_iniciales.get("Información del sistema", "Bienvenido al área de consulta.")
-
-if 'contenido_funcionalidad' not in st.session_state:
-    st.session_state.contenido_funcionalidad = {key: datos_iniciales.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'", "Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]}
-
-if 'contenido_exp' not in st.session_state:
-    st.session_state.contenido_exp = {key: datos_iniciales.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
-
-if 'contenido_contacto' not in st.session_state:
-    st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
 
 # --- FUNCIÓN GUARDAR ---
 def guardar_en_sheets(titulo, nuevo_contenido):
@@ -362,6 +371,24 @@ with st.sidebar:
 
 # --- LÓGICA DE PANTALLAS ---
 if opcion == T["menu_docs"]:
+    # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
+    # (y solo una vez por sesión) en vez de en cada carga de la app, para no
+    # frenar la pestaña de Evaluaciones cuando no se necesitan.
+    if 'texto_documentos' not in st.session_state or 'contenido_funcionalidad' not in st.session_state:
+        datos_iniciales = cargar_datos_de_google()
+
+        if 'texto_documentos' not in st.session_state:
+            st.session_state.texto_documentos = datos_iniciales.get("Información del sistema", "Bienvenido al área de consulta.")
+
+        if 'contenido_funcionalidad' not in st.session_state:
+            st.session_state.contenido_funcionalidad = {key: datos_iniciales.get(key, "") for key in ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'", "Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]}
+
+        if 'contenido_exp' not in st.session_state:
+            st.session_state.contenido_exp = {key: datos_iniciales.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
+
+        if 'contenido_contacto' not in st.session_state:
+            st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
+
     st.markdown(f"## {T['area_docs']}")
     
     with st.container(border=True):
@@ -514,31 +541,31 @@ if opcion == T["menu_docs"]:
         version = st.session_state.get(f"{key_prefix}_reg_version", 0)
 
         with st.expander(T["solicitar_alta"]):
-            nombre_empresa = st.text_input("Nombre Empresa", key=f"{key_prefix}_reg_empresa_{version}")
+            nombre_empresa = st.text_input(T["campo_nombre_empresa"], key=f"{key_prefix}_reg_empresa_{version}")
 
             nombre_centro = ""
             if incluir_centro:
-                nombre_centro = st.text_input("Nombre del Centro", key=f"{key_prefix}_reg_centro_{version}")
+                nombre_centro = st.text_input(T["campo_nombre_centro"], key=f"{key_prefix}_reg_centro_{version}")
 
-            sector = st.text_input("Sector", key=f"{key_prefix}_reg_sector_{version}")
+            sector = st.text_input(T["campo_sector"], key=f"{key_prefix}_reg_sector_{version}")
 
             c1, c2 = st.columns(2)
-            provincia = c1.text_input("Provincia", key=f"{key_prefix}_reg_prov_{version}")
-            poblacion = c2.text_input("Población", key=f"{key_prefix}_reg_pob_{version}")
+            provincia = c1.text_input(T["campo_provincia"], key=f"{key_prefix}_reg_prov_{version}")
+            poblacion = c2.text_input(T["campo_poblacion"], key=f"{key_prefix}_reg_pob_{version}")
 
             c3, c4 = st.columns(2)
-            cp = c3.text_input("CP", key=f"{key_prefix}_reg_cp_{version}")
-            razon_social = c4.text_input("Razón Social", key=f"{key_prefix}_reg_razon_{version}")
+            cp = c3.text_input(T["campo_cp"], key=f"{key_prefix}_reg_cp_{version}")
+            razon_social = c4.text_input(T["campo_razon_social"], key=f"{key_prefix}_reg_razon_{version}")
 
             c5, c6 = st.columns(2)
-            cif_nif = c5.text_input("CIF/NIF", key=f"{key_prefix}_reg_cif_{version}")
-            telefono = c6.text_input("Teléfono", key=f"{key_prefix}_reg_tel_{version}")
+            cif_nif = c5.text_input(T["campo_cif_nif"], key=f"{key_prefix}_reg_cif_{version}")
+            telefono = c6.text_input(T["campo_telefono"], key=f"{key_prefix}_reg_tel_{version}")
 
             c7, c8 = st.columns(2)
-            email = c7.text_input("Email", key=f"{key_prefix}_reg_email_{version}")
-            nombre_contacto = c8.text_input("Nombre Contacto", key=f"{key_prefix}_reg_contacto_{version}")
+            email = c7.text_input(T["campo_email"], key=f"{key_prefix}_reg_email_{version}")
+            nombre_contacto = c8.text_input(T["campo_nombre_contacto"], key=f"{key_prefix}_reg_contacto_{version}")
 
-            web = st.text_input("Web", key=f"{key_prefix}_reg_web_{version}")
+            web = st.text_input(T["campo_web"], key=f"{key_prefix}_reg_web_{version}")
 
             if st.button(T["enviar_solicitud"], key=f"{key_prefix}_reg_btn_enviar"):
                 if nombre_empresa.strip():
@@ -639,6 +666,8 @@ elif opcion == T["menu_eval"]:
     if not st.session_state.autenticado:
         st.warning(T["aviso_login_eval"])
     else:
+        cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
+
         with st.container():
             c1, c2, c3 = st.columns(3)
             profesor = c1.text_input(T["profesor"], key=f"f_prof_{st.session_state.reset_todo}")
