@@ -668,13 +668,6 @@ elif opcion == T["menu_eval"]:
     if not st.session_state.autenticado:
         st.warning(T["aviso_login_eval"])
     else:
-        if 'envio_resultado' in st.session_state:
-            tipo_msg, texto_msg = st.session_state.pop('envio_resultado')
-            if tipo_msg == "success":
-                st.success(texto_msg)
-            else:
-                st.error(texto_msg)
-
         cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
 
         with st.container():
@@ -751,11 +744,7 @@ elif opcion == T["menu_eval"]:
 
         if st.button(T["guardar_alumno"]):
             if nota_final is not None:
-                curso_obj_actual = next((c for c in cursos_db if c.get("codigo_curso") == curso_codigo_actual), None)
-                nombre_curso_es_actual = (curso_obj_actual.get("nombre_curso_es") if curso_obj_actual else "") or curso_codigo_actual
-                curso_hoja = f"{curso_codigo_actual} {nombre_curso_es_actual}".strip()
-
-                registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso_seleccionado_full, "CursoHoja": curso_hoja, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
+                registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso_seleccionado_full, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
                 registro.update(notas)
                 st.session_state.lista_alumnos.append(registro)
                 st.session_state.alumno_key += 1
@@ -763,7 +752,7 @@ elif opcion == T["menu_eval"]:
 
         if st.session_state.lista_alumnos:
             st.subheader(T["resumen_alumnos"])
-            df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoHoja"], errors="ignore")
+            df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
             st.table(df_resumen)
             
             with st.expander(T["gestionar_alumnos"]):
@@ -777,24 +766,11 @@ elif opcion == T["menu_eval"]:
                 try:
                     response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
                     if response.status_code == 200:
-                        try:
-                            resultado = response.json()
-                        except Exception:
-                            resultado = None
-
-                        no_encontrados = resultado.get("no_encontrados", []) if isinstance(resultado, dict) else []
-
-                        if no_encontrados:
-                            nombres = ", ".join(sorted(set(no_encontrados)))
-                            st.session_state.envio_resultado = ("error", f"No se encontró la pestaña del curso en el Excel para: {nombres}. Revisa que el nombre de esa pestaña coincida exactamente.")
-                        else:
-                            st.session_state.envio_resultado = ("success", T["exito_envio"])
-                            st.session_state.lista_alumnos = []
-                            st.session_state.reset_todo += 1
+                        st.success(T["exito_envio"])
+                        st.session_state.lista_alumnos = []
+                        st.session_state.reset_todo += 1
                         st.rerun()
                     else:
-                        st.session_state.envio_resultado = ("error", f"Error en el servidor: {response.status_code}")
-                        st.rerun()
-                except Exception as e:
-                    st.session_state.envio_resultado = ("error", f"Error crítico de conexión: {e}")
-                    st.rerun()
+                        st.error(f"Error en el servidor: {response.status_code}")
+                except Exception as e: 
+                    st.error(f"Error crítico de conexión: {e}")
