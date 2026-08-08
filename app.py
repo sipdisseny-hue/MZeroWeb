@@ -154,22 +154,24 @@ def cargar_catalogo_cursos_y_modulos():
 @st.cache_data(ttl=600)
 def cargar_datos_de_google():
     url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
-    try:
-        response = requests.get(url_script, timeout=20)
-        if response.status_code == 200:
-            data = response.json()
-            if isinstance(data, list):
-                resultado = {}
-                for item in data:
-                    t = item.get("Títul") if item.get("Títul") is not None else item.get("Titulo")
-                    c = item.get("Contingut") if item.get("Contingut") is not None else item.get("Contenido")
-                    if t is not None:
-                        resultado[str(t).strip()] = str(c) if c is not None else ""
-                return resultado
-        return {}
-    except Exception as e:
-        st.error(f"Error de lectura: {e}")
-        return {}
+    resultado = {}
+    # Pedimos las dos pestañas (Textos=es, Text=ca) y las fusionamos en un
+    # único diccionario. Antes solo se pedía la de castellano (por defecto),
+    # así que los títulos en catalán ("Arguments M-Zero", etc.) nunca llegaban.
+    for idioma_param in ["es", "ca"]:
+        try:
+            response = requests.get(url_script, params={"lang": idioma_param}, timeout=20)
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    for item in data:
+                        t = item.get("Títul") if item.get("Títul") is not None else item.get("Titulo")
+                        c = item.get("Contingut") if item.get("Contingut") is not None else item.get("Contenido")
+                        if t is not None:
+                            resultado[str(t).strip()] = str(c) if c is not None else ""
+        except Exception as e:
+            st.error(f"Error de lectura ({idioma_param}): {e}")
+    return resultado
 
 # --- NUEVO: ASOCIADOS Y COLABORADORES (Provincia -> Población -> Empresa) ---
 # Lee las pestañas "Asociados" y "Colaboradores" del Excel a través del Apps
