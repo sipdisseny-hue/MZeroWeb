@@ -744,7 +744,11 @@ elif opcion == T["menu_eval"]:
 
         if st.button(T["guardar_alumno"]):
             if nota_final is not None:
-                registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso_seleccionado_full, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
+                curso_obj_actual = next((c for c in cursos_db if c.get("codigo_curso") == curso_codigo_actual), None)
+                nombre_curso_es_actual = (curso_obj_actual.get("nombre_curso_es") if curso_obj_actual else "") or curso_codigo_actual
+                curso_hoja = f"{curso_codigo_actual} {nombre_curso_es_actual}".strip()
+
+                registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso_seleccionado_full, "CursoHoja": curso_hoja, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
                 registro.update(notas)
                 st.session_state.lista_alumnos.append(registro)
                 st.session_state.alumno_key += 1
@@ -752,7 +756,7 @@ elif opcion == T["menu_eval"]:
 
         if st.session_state.lista_alumnos:
             st.subheader(T["resumen_alumnos"])
-            df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
+            df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoHoja"], errors="ignore")
             st.table(df_resumen)
             
             with st.expander(T["gestionar_alumnos"]):
