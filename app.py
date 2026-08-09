@@ -273,6 +273,13 @@ def enviar_peticion_registro(tipo, campos):
         return False
 
 # --- NUEVO: PDF DEL RESUMEN DE ALUMNOS (antes de enviar) ---
+def _pdf_texto_seguro(valor):
+    """Los tipos de letra base de fpdf2 solo soportan Latin-1. Cualquier
+    carácter fuera de ese rango (comillas curvas, guiones largos, emojis...)
+    se sustituye por el más parecido en vez de romper la generación del PDF."""
+    return str(valor).encode("latin-1", "replace").decode("latin-1")
+
+
 def generar_pdf_resumen(lista_alumnos):
     criterios = [
         "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
@@ -305,10 +312,10 @@ def generar_pdf_resumen(lista_alumnos):
     pdf.set_font("Helvetica", "", 9)
     for reg in lista_alumnos:
         valores = {
-            "Alumno": reg.get("Alumno", ""), "Curso": reg.get("Curso", ""),
-            "Modulo": reg.get("Modulo", ""), "Nivel": str(reg.get("Nivel", "")),
-            "Nota": str(reg.get("Nota", "")), "Estado": reg.get("Estado", ""),
-            "Usuario": reg.get("Usuario", "")
+            "Alumno": _pdf_texto_seguro(reg.get("Alumno", "")), "Curso": _pdf_texto_seguro(reg.get("Curso", "")),
+            "Modulo": _pdf_texto_seguro(reg.get("Modulo", "")), "Nivel": _pdf_texto_seguro(reg.get("Nivel", "")),
+            "Nota": _pdf_texto_seguro(reg.get("Nota", "")), "Estado": _pdf_texto_seguro(reg.get("Estado", "")),
+            "Usuario": _pdf_texto_seguro(reg.get("Usuario", ""))
         }
         for etiqueta, ancho in columnas_resumen:
             texto = valores.get(etiqueta, "")
@@ -344,7 +351,8 @@ def generar_pdf_resumen(lista_alumnos):
         pdf.set_font("Helvetica", "", 10)
         for crit in criterios:
             valor = str(reg.get(crit, ""))
-            pdf.multi_cell(0, 6, f"{crit}: {valor}")
+            texto_criterio = f"{crit}: {valor}"
+            pdf.cell(0, 6, texto_criterio[:110], ln=True)
 
         if idx < len(lista_alumnos) - 1:
             pdf.ln(2)
