@@ -282,7 +282,7 @@ def generar_pdf_resumen(lista_alumnos):
         "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje",
         "13. Comunicación y respeto al superior"
     ]
-    columnas = ["Alumno", "Profesor", "Curso", "Modulo", "Nivel", "Nota", "Estado"] + criterios
+    columnas = ["Alumno", "Profesor", "Usuario", "Curso", "Modulo", "Nivel", "Nota", "Estado"] + criterios
 
     pdf = FPDF(orientation="L", unit="mm", format="A4")
     pdf.add_page()
@@ -800,7 +800,7 @@ elif opcion == T["menu_eval"]:
                 nombre_curso_es_actual = (curso_obj_actual.get("nombre_curso_es") if curso_obj_actual else "") or curso_codigo_actual
                 curso_hoja = f"{curso_codigo_actual} {nombre_curso_es_actual}".strip()
 
-                registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso_seleccionado_full, "CursoHoja": curso_hoja, "CursoCodigo": curso_codigo_actual, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
+                registro = {"Alumno": alumno, "Profesor": profesor, "Usuario": st.session_state.usuario_actual, "Curso": curso_seleccionado_full, "CursoHoja": curso_hoja, "CursoCodigo": curso_codigo_actual, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
                 registro.update(notas)
                 st.session_state.lista_alumnos.append(registro)
                 st.session_state.alumno_key += 1
