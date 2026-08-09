@@ -144,6 +144,29 @@ TEXTOS = {
     }
 }
 
+# --- TRADUCCIÓN SOLO VISUAL (Català) de campos y criterios de Evaluaciones ---
+# No afecta a los datos que se envían al Excel ni a las claves internas
+# (Alumno, Curso, "1. Tasa de eficiencia"...); solo se usa para mostrar en
+# pantalla (tabla resumen) y en el PDF descargable.
+TRADUCCION_EVAL_CA = {
+    "Alumno": "Alumne", "Profesor": "Professor", "Usuario": "Usuari",
+    "Curso": "Curs", "Modulo": "Mòdul", "Nivel": "Nivell",
+    "Nota": "Nota", "Estado": "Estat",
+    "1. Tasa de eficiencia": "1. Taxa d'eficiència",
+    "2. Precisión geométrica y mecánica": "2. Precisió geomètrica i mecànica",
+    "3. Autonomía ejecutiva": "3. Autonomia executiva",
+    "4. Índice de mermas": "4. Índex de minves",
+    "5. Mantenimiento de utillaje y entorno": "5. Manteniment de l'utillatge i l'entorn",
+    "6. Factor de desempeño temporal": "6. Factor d'acompliment temporal",
+    "7. Resolución escenarios de prácticas": "7. Resolució d'escenaris de pràctiques",
+    "8. Resolución escenarios de averías": "8. Resolució d'escenaris d'avaries",
+    "9. Precisión conceptual y terminología": "9. Precisió conceptual i terminologia",
+    "10. Seguridad y normativas": "10. Seguretat i normatives",
+    "11. Fiabilidad y compromiso operativo": "11. Fiabilitat i compromís operatiu",
+    "12. Capacidad de aprendizaje": "12. Capacitat d'aprenentatge",
+    "13. Comunicación y respeto al superior": "13. Comunicació i respecte al superior"
+}
+
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=120)
 def cargar_catalogo_cursos_y_modulos():
@@ -280,7 +303,7 @@ def _pdf_texto_seguro(valor):
     return str(valor).encode("latin-1", "replace").decode("latin-1")
 
 
-def generar_pdf_resumen(lista_alumnos):
+def generar_pdf_resumen(lista_alumnos, lang="es"):
     criterios = [
         "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
         "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
@@ -290,12 +313,19 @@ def generar_pdf_resumen(lista_alumnos):
         "13. Comunicación y respeto al superior"
     ]
 
+    # Etiquetas visibles: en catalán si corresponde, siempre buscando los
+    # VALORES con la clave original en castellano (eso no cambia).
+    def etiqueta(clave):
+        return TRADUCCION_EVAL_CA.get(clave, clave) if lang == "ca" else clave
+
+    titulo_pdf = "Resum d'Avaluacions - M-Zero" if lang == "ca" else "Resumen de Evaluaciones - M-Zero"
+
     pdf = FPDF(orientation="P", unit="mm", format="A4")
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
 
     pdf.set_font("Helvetica", "B", 14)
-    pdf.cell(0, 10, "Resumen de Evaluaciones - M-Zero", ln=True, align="C")
+    pdf.cell(0, 10, titulo_pdf, ln=True, align="C")
     pdf.ln(4)
 
     ancho_pagina = pdf.w - pdf.l_margin - pdf.r_margin
@@ -320,15 +350,18 @@ def generar_pdf_resumen(lista_alumnos):
         pdf.cell(0, 7, f"{alumno} - {curso} / {modulo}"[:100], ln=True)
 
         pdf.set_font("Helvetica", "", 9)
-        linea_datos = f"Profesor: {profesor}    Usuario: {usuario}    Nivel: {nivel}    Nota: {nota}    Estado: {estado}"
-        pdf.cell(0, 6, linea_datos[:130], ln=True)
+        linea_datos = (
+            f"{etiqueta('Profesor')}: {profesor}    {etiqueta('Usuario')}: {usuario}    "
+            f"{etiqueta('Nivel')}: {nivel}    {etiqueta('Nota')}: {nota}    {etiqueta('Estado')}: {estado}"
+        )
+        pdf.cell(0, 6, linea_datos[:150], ln=True)
         pdf.ln(1)
 
         pdf.set_font("Helvetica", "", 8)
         for i, crit in enumerate(criterios):
             valor = _pdf_texto_seguro(reg.get(crit, ""))
-            texto = f"{crit}: {valor}"
-            pdf.cell(ancho_criterio, 5.5, texto[:60], border=1)
+            texto = f"{etiqueta(crit)}: {valor}"
+            pdf.cell(ancho_criterio, 5.5, texto[:70], border=1)
             if i % 2 == 1:
                 pdf.ln()
         if len(criterios) % 2 == 1:
@@ -793,24 +826,7 @@ elif opcion == T["menu_eval"]:
         # No afecta a lo que se envía al Excel/PDF: esas partes siguen usando
         # las claves originales (Alumno, Curso, "1. Tasa de eficiencia"...).
         # Aquí solo se renombran las columnas de la tabla que se ve en pantalla.
-        traduccion_columnas_ca = {
-            "Alumno": "Alumne", "Profesor": "Professor", "Usuario": "Usuari",
-            "Curso": "Curs", "Modulo": "Mòdul", "Nivel": "Nivell",
-            "Nota": "Nota", "Estado": "Estat",
-            "1. Tasa de eficiencia": "1. Taxa d'eficiència",
-            "2. Precisión geométrica y mecánica": "2. Precisió geomètrica i mecànica",
-            "3. Autonomía ejecutiva": "3. Autonomia executiva",
-            "4. Índice de mermas": "4. Índex de minves",
-            "5. Mantenimiento de utillaje y entorno": "5. Manteniment de l'utillatge i l'entorn",
-            "6. Factor de desempeño temporal": "6. Factor d'acompliment temporal",
-            "7. Resolución escenarios de prácticas": "7. Resolució d'escenaris de pràctiques",
-            "8. Resolución escenarios de averías": "8. Resolució d'escenaris d'avaries",
-            "9. Precisión conceptual y terminología": "9. Precisió conceptual i terminologia",
-            "10. Seguridad y normativas": "10. Seguretat i normatives",
-            "11. Fiabilidad y compromiso operativo": "11. Fiabilitat i compromís operatiu",
-            "12. Capacidad de aprendizaje": "12. Capacitat d'aprenentatge",
-            "13. Comunicación y respeto al superior": "13. Comunicació i respecte al superior"
-        }
+        traduccion_columnas_ca = TRADUCCION_EVAL_CA
 
         # --- ANTES: la petición GET a la rúbrica se hacía aquí, sin caché, ---
         # --- así que se repetía en cada rerun (cada clic de puntuación).   ---
@@ -870,7 +886,7 @@ elif opcion == T["menu_eval"]:
             st.table(df_resumen)
 
             if FPDF_DISPONIBLE:
-                pdf_bytes = generar_pdf_resumen(st.session_state.lista_alumnos)
+                pdf_bytes = generar_pdf_resumen(st.session_state.lista_alumnos, lang=lang)
                 st.download_button(
                     label=T["descargar_pdf"],
                     data=pdf_bytes,
