@@ -789,6 +789,29 @@ elif opcion == T["menu_eval"]:
             "13. Comunicación y respeto al superior"
         ]
 
+        # --- NUEVO: traducción SOLO VISUAL de las cabeceras de la tabla resumen ---
+        # No afecta a lo que se envía al Excel/PDF: esas partes siguen usando
+        # las claves originales (Alumno, Curso, "1. Tasa de eficiencia"...).
+        # Aquí solo se renombran las columnas de la tabla que se ve en pantalla.
+        traduccion_columnas_ca = {
+            "Alumno": "Alumne", "Profesor": "Professor", "Usuario": "Usuari",
+            "Curso": "Curs", "Modulo": "Mòdul", "Nivel": "Nivell",
+            "Nota": "Nota", "Estado": "Estat",
+            "1. Tasa de eficiencia": "1. Taxa d'eficiència",
+            "2. Precisión geométrica y mecánica": "2. Precisió geomètrica i mecànica",
+            "3. Autonomía ejecutiva": "3. Autonomia executiva",
+            "4. Índice de mermas": "4. Índex de minves",
+            "5. Mantenimiento de utillaje y entorno": "5. Manteniment de l'utillatge i l'entorn",
+            "6. Factor de desempeño temporal": "6. Factor d'acompliment temporal",
+            "7. Resolución escenarios de prácticas": "7. Resolució d'escenaris de pràctiques",
+            "8. Resolución escenarios de averías": "8. Resolució d'escenaris d'avaries",
+            "9. Precisión conceptual y terminología": "9. Precisió conceptual i terminologia",
+            "10. Seguridad y normativas": "10. Seguretat i normatives",
+            "11. Fiabilidad y compromiso operativo": "11. Fiabilitat i compromís operatiu",
+            "12. Capacidad de aprendizaje": "12. Capacitat d'aprenentatge",
+            "13. Comunicación y respeto al superior": "13. Comunicació i respecte al superior"
+        }
+
         # --- ANTES: la petición GET a la rúbrica se hacía aquí, sin caché, ---
         # --- así que se repetía en cada rerun (cada clic de puntuación).   ---
         # --- AHORA: se usa la versión cacheada, se pide una vez por hora.  ---
@@ -842,6 +865,8 @@ elif opcion == T["menu_eval"]:
         if st.session_state.lista_alumnos:
             st.subheader(T["resumen_alumnos"])
             df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoHoja", "CursoCodigo"], errors="ignore")
+            if lang == "ca":
+                df_resumen = df_resumen.rename(columns=traduccion_columnas_ca)
             st.table(df_resumen)
 
             if FPDF_DISPONIBLE:
