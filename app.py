@@ -282,27 +282,72 @@ def generar_pdf_resumen(lista_alumnos):
         "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje",
         "13. Comunicación y respeto al superior"
     ]
-    columnas = ["Alumno", "Profesor", "Usuario", "Curso", "Modulo", "Nivel", "Nota", "Estado"] + criterios
 
-    pdf = FPDF(orientation="L", unit="mm", format="A4")
+    pdf = FPDF(orientation="P", unit="mm", format="A4")
+    pdf.set_auto_page_break(auto=True, margin=15)
+
+    # --- Página 1: resumen compacto de todos los alumnos ---
     pdf.add_page()
-    pdf.set_font("Helvetica", "B", 12)
-    pdf.cell(0, 8, "Resumen de Evaluaciones - M-Zero", ln=True, align="C")
-    pdf.ln(2)
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.cell(0, 10, "Resumen de Evaluaciones - M-Zero", ln=True, align="C")
+    pdf.ln(4)
 
-    ancho_col = 277 / len(columnas)
-    pdf.set_font("Helvetica", "B", 6)
-    for col in columnas:
-        etiqueta = col.split(". ")[-1] if ". " in col else col
-        pdf.cell(ancho_col, 6, etiqueta[:20], border=1)
+    columnas_resumen = [
+        ("Alumno", 35), ("Curso", 38), ("Modulo", 26),
+        ("Nivel", 14), ("Nota", 16), ("Estado", 25), ("Usuario", 22)
+    ]
+
+    pdf.set_font("Helvetica", "B", 9)
+    for etiqueta, ancho in columnas_resumen:
+        pdf.cell(ancho, 7, etiqueta, border=1)
     pdf.ln()
 
-    pdf.set_font("Helvetica", "", 6)
+    pdf.set_font("Helvetica", "", 9)
     for reg in lista_alumnos:
-        for col in columnas:
-            valor = str(reg.get(col, ""))
-            pdf.cell(ancho_col, 6, valor[:20], border=1)
+        valores = {
+            "Alumno": reg.get("Alumno", ""), "Curso": reg.get("Curso", ""),
+            "Modulo": reg.get("Modulo", ""), "Nivel": str(reg.get("Nivel", "")),
+            "Nota": str(reg.get("Nota", "")), "Estado": reg.get("Estado", ""),
+            "Usuario": reg.get("Usuario", "")
+        }
+        for etiqueta, ancho in columnas_resumen:
+            texto = valores.get(etiqueta, "")
+            max_chars = max(int(ancho / 1.8), 4)
+            pdf.cell(ancho, 7, texto[:max_chars], border=1)
         pdf.ln()
+
+    # --- Una página de detalle por cada alumno ---
+    for idx, reg in enumerate(lista_alumnos):
+        pdf.add_page()
+
+        pdf.set_font("Helvetica", "B", 14)
+        pdf.cell(0, 10, "Resumen de Evaluación - M-Zero", ln=True, align="C")
+        pdf.ln(4)
+
+        pdf.set_font("Helvetica", "B", 12)
+        pdf.cell(0, 8, f"Alumno: {reg.get('Alumno', '')}", ln=True)
+
+        pdf.set_font("Helvetica", "", 10)
+        pdf.cell(0, 6, f"Profesor: {reg.get('Profesor', '')}", ln=True)
+        pdf.cell(0, 6, f"Usuario: {reg.get('Usuario', '')}", ln=True)
+        pdf.cell(0, 6, f"Curso: {reg.get('Curso', '')}", ln=True)
+        pdf.cell(0, 6, f"Modulo: {reg.get('Modulo', '')}    Nivel: {reg.get('Nivel', '')}", ln=True)
+
+        pdf.set_font("Helvetica", "B", 11)
+        pdf.cell(0, 8, f"Nota: {reg.get('Nota', '')}    Estado: {reg.get('Estado', '')}", ln=True)
+
+        pdf.ln(4)
+        pdf.set_font("Helvetica", "B", 11)
+        pdf.cell(0, 7, "Puntuación por criterio:", ln=True)
+        pdf.ln(1)
+
+        pdf.set_font("Helvetica", "", 10)
+        for crit in criterios:
+            valor = str(reg.get(crit, ""))
+            pdf.multi_cell(0, 6, f"{crit}: {valor}")
+
+        if idx < len(lista_alumnos) - 1:
+            pdf.ln(2)
 
     salida = pdf.output()
     return bytes(salida)
