@@ -292,70 +292,50 @@ def generar_pdf_resumen(lista_alumnos):
 
     pdf = FPDF(orientation="P", unit="mm", format="A4")
     pdf.set_auto_page_break(auto=True, margin=15)
-
-    # --- Página 1: resumen compacto de todos los alumnos ---
     pdf.add_page()
+
     pdf.set_font("Helvetica", "B", 14)
     pdf.cell(0, 10, "Resumen de Evaluaciones - M-Zero", ln=True, align="C")
     pdf.ln(4)
 
-    columnas_resumen = [
-        ("Alumno", 35), ("Curso", 38), ("Modulo", 26),
-        ("Nivel", 14), ("Nota", 16), ("Estado", 25), ("Usuario", 22)
-    ]
+    ancho_pagina = pdf.w - pdf.l_margin - pdf.r_margin
+    ancho_criterio = ancho_pagina / 2
 
-    pdf.set_font("Helvetica", "B", 9)
-    for etiqueta, ancho in columnas_resumen:
-        pdf.cell(ancho, 7, etiqueta, border=1)
-    pdf.ln()
-
-    pdf.set_font("Helvetica", "", 9)
-    for reg in lista_alumnos:
-        valores = {
-            "Alumno": _pdf_texto_seguro(reg.get("Alumno", "")), "Curso": _pdf_texto_seguro(reg.get("Curso", "")),
-            "Modulo": _pdf_texto_seguro(reg.get("Modulo", "")), "Nivel": _pdf_texto_seguro(reg.get("Nivel", "")),
-            "Nota": _pdf_texto_seguro(reg.get("Nota", "")), "Estado": _pdf_texto_seguro(reg.get("Estado", "")),
-            "Usuario": _pdf_texto_seguro(reg.get("Usuario", ""))
-        }
-        for etiqueta, ancho in columnas_resumen:
-            texto = valores.get(etiqueta, "")
-            max_chars = max(int(ancho / 1.8), 4)
-            pdf.cell(ancho, 7, texto[:max_chars], border=1)
-        pdf.ln()
-
-    # --- Una página de detalle por cada alumno ---
     for idx, reg in enumerate(lista_alumnos):
-        pdf.add_page()
+        alumno = _pdf_texto_seguro(reg.get("Alumno", ""))
+        curso = _pdf_texto_seguro(reg.get("Curso", ""))
+        modulo = _pdf_texto_seguro(reg.get("Modulo", ""))
+        profesor = _pdf_texto_seguro(reg.get("Profesor", ""))
+        usuario = _pdf_texto_seguro(reg.get("Usuario", ""))
+        nivel = _pdf_texto_seguro(reg.get("Nivel", ""))
+        nota = _pdf_texto_seguro(reg.get("Nota", ""))
+        estado = _pdf_texto_seguro(reg.get("Estado", ""))
 
-        pdf.set_font("Helvetica", "B", 14)
-        pdf.cell(0, 10, "Resumen de Evaluación - M-Zero", ln=True, align="C")
-        pdf.ln(4)
-
-        pdf.set_font("Helvetica", "B", 12)
-        pdf.cell(0, 8, f"Alumno: {reg.get('Alumno', '')}", ln=True)
-
-        pdf.set_font("Helvetica", "", 10)
-        pdf.cell(0, 6, f"Profesor: {reg.get('Profesor', '')}", ln=True)
-        pdf.cell(0, 6, f"Usuario: {reg.get('Usuario', '')}", ln=True)
-        pdf.cell(0, 6, f"Curso: {reg.get('Curso', '')}", ln=True)
-        pdf.cell(0, 6, f"Modulo: {reg.get('Modulo', '')}    Nivel: {reg.get('Nivel', '')}", ln=True)
+        # Si a un alumno no le cabe ni la cabecera antes del margen inferior,
+        # saltamos de página nosotros mismos para no partirla a la mitad.
+        if pdf.get_y() > pdf.h - 60:
+            pdf.add_page()
 
         pdf.set_font("Helvetica", "B", 11)
-        pdf.cell(0, 8, f"Nota: {reg.get('Nota', '')}    Estado: {reg.get('Estado', '')}", ln=True)
+        pdf.cell(0, 7, f"{alumno} - {curso} / {modulo}"[:100], ln=True)
 
-        pdf.ln(4)
-        pdf.set_font("Helvetica", "B", 11)
-        pdf.cell(0, 7, "Puntuación por criterio:", ln=True)
+        pdf.set_font("Helvetica", "", 9)
+        linea_datos = f"Profesor: {profesor}    Usuario: {usuario}    Nivel: {nivel}    Nota: {nota}    Estado: {estado}"
+        pdf.cell(0, 6, linea_datos[:130], ln=True)
         pdf.ln(1)
 
-        pdf.set_font("Helvetica", "", 10)
-        for crit in criterios:
-            valor = str(reg.get(crit, ""))
-            texto_criterio = f"{crit}: {valor}"
-            pdf.cell(0, 6, texto_criterio[:110], ln=True)
+        pdf.set_font("Helvetica", "", 8)
+        for i, crit in enumerate(criterios):
+            valor = _pdf_texto_seguro(reg.get(crit, ""))
+            texto = f"{crit}: {valor}"
+            pdf.cell(ancho_criterio, 5.5, texto[:60], border=1)
+            if i % 2 == 1:
+                pdf.ln()
+        if len(criterios) % 2 == 1:
+            pdf.ln()
 
         if idx < len(lista_alumnos) - 1:
-            pdf.ln(2)
+            pdf.ln(5)
 
     salida = pdf.output()
     return bytes(salida)
