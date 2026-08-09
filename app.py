@@ -3,6 +3,12 @@ import pandas as pd
 import requests
 from io import StringIO
 
+try:
+    from fpdf import FPDF
+    FPDF_DISPONIBLE = True
+except ImportError:
+    FPDF_DISPONIBLE = False
+
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
 
@@ -68,6 +74,8 @@ TEXTOS = {
         "campo_email": "Email",
         "campo_nombre_contacto": "Nombre Contacto",
         "campo_web": "Web",
+        "descargar_pdf": "📄 Descargar PDF antes de enviar",
+        "fpdf_no_disponible": "Para poder descargar el PDF, añade 'fpdf2' al archivo requirements.txt de la app.",
         "titulos_func": ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
     },
     "ca": {
@@ -130,6 +138,8 @@ TEXTOS = {
         "campo_email": "Email",
         "campo_nombre_contacto": "Nom Contacte",
         "campo_web": "Web",
+        "descargar_pdf": "📄 Descarregar PDF abans d'enviar",
+        "fpdf_no_disponible": "Per poder descarregar el PDF, afegeix 'fpdf2' a l'arxiu requirements.txt de l'app.",
         "titulos_func": ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
     }
 }
@@ -261,6 +271,41 @@ def enviar_peticion_registro(tipo, campos):
         return response.status_code == 200
     except Exception:
         return False
+
+# --- NUEVO: PDF DEL RESUMEN DE ALUMNOS (antes de enviar) ---
+def generar_pdf_resumen(lista_alumnos):
+    criterios = [
+        "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
+        "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
+        "7. Resolución escenarios de prácticas", "8. Resolución escenarios de averías",
+        "9. Precisión conceptual y terminología", "10. Seguridad y normativas",
+        "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje",
+        "13. Comunicación y respeto al superior"
+    ]
+    columnas = ["Alumno", "Profesor", "Curso", "Modulo", "Nivel", "Nota", "Estado"] + criterios
+
+    pdf = FPDF(orientation="L", unit="mm", format="A4")
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 8, "Resumen de Evaluaciones - M-Zero", ln=True, align="C")
+    pdf.ln(2)
+
+    ancho_col = 277 / len(columnas)
+    pdf.set_font("Helvetica", "B", 6)
+    for col in columnas:
+        etiqueta = col.split(". ")[-1] if ". " in col else col
+        pdf.cell(ancho_col, 6, etiqueta[:20], border=1)
+    pdf.ln()
+
+    pdf.set_font("Helvetica", "", 6)
+    for reg in lista_alumnos:
+        for col in columnas:
+            valor = str(reg.get(col, ""))
+            pdf.cell(ancho_col, 6, valor[:20], border=1)
+        pdf.ln()
+
+    salida = pdf.output()
+    return bytes(salida)
 
 # --- NUEVO: RÚBRICA CACHEADA ---
 # Antes esta petición se hacía en CADA rerun (es decir, en cada clic de puntuación
@@ -668,6 +713,13 @@ elif opcion == T["menu_eval"]:
     if not st.session_state.autenticado:
         st.warning(T["aviso_login_eval"])
     else:
+        if 'envio_resultado' in st.session_state:
+            tipo_msg, texto_msg = st.session_state.pop('envio_resultado')
+            if tipo_msg == "success":
+                st.success(texto_msg)
+            else:
+                st.error(texto_msg)
+
         cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
 
         with st.container():
@@ -744,7 +796,11 @@ elif opcion == T["menu_eval"]:
 
         if st.button(T["guardar_alumno"]):
             if nota_final is not None:
-                registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso_seleccionado_full, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
+                curso_obj_actual = next((c for c in cursos_db if c.get("codigo_curso") == curso_codigo_actual), None)
+                nombre_curso_es_actual = (curso_obj_actual.get("nombre_curso_es") if curso_obj_actual else "") or curso_codigo_actual
+                curso_hoja = f"{curso_codigo_actual} {nombre_curso_es_actual}".strip()
+
+                registro = {"Alumno": alumno, "Profesor": profesor, "Curso": curso_seleccionado_full, "CursoHoja": curso_hoja, "CursoCodigo": curso_codigo_actual, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
                 registro.update(notas)
                 st.session_state.lista_alumnos.append(registro)
                 st.session_state.alumno_key += 1
@@ -752,9 +808,20 @@ elif opcion == T["menu_eval"]:
 
         if st.session_state.lista_alumnos:
             st.subheader(T["resumen_alumnos"])
-            df_resumen = pd.DataFrame(st.session_state.lista_alumnos)
+            df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoHoja", "CursoCodigo"], errors="ignore")
             st.table(df_resumen)
-            
+
+            if FPDF_DISPONIBLE:
+                pdf_bytes = generar_pdf_resumen(st.session_state.lista_alumnos)
+                st.download_button(
+                    label=T["descargar_pdf"],
+                    data=pdf_bytes,
+                    file_name="resumen_evaluaciones.pdf",
+                    mime="application/pdf"
+                )
+            else:
+                st.info(T["fpdf_no_disponible"])
+
             with st.expander(T["gestionar_alumnos"]):
                 for i, reg in enumerate(st.session_state.lista_alumnos):
                     if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
@@ -762,15 +829,28 @@ elif opcion == T["menu_eval"]:
                         st.rerun()
 
             if st.button(T["enviar_sheets"], type="primary"):
-                url_script = "https://script.google.com/macros/s/AKfycbw1PNXaXT23jXJdKPOO9vbwrx6tnBI-hvlJrJFMNKZiy7G1JsNkTY-C6Ql7Wym_l-GG-Q/exec"
+                url_script = "https://script.google.com/macros/s/AKfycbyzqCqO97fjqyuY-ntqKZJ9bekY_zDsHTK-bU_IvWfQYVbgzOgjWynkw1l0jlsB71lcSw/exec"
                 try:
                     response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
                     if response.status_code == 200:
-                        st.success(T["exito_envio"])
-                        st.session_state.lista_alumnos = []
-                        st.session_state.reset_todo += 1
+                        try:
+                            resultado = response.json()
+                        except Exception:
+                            resultado = None
+
+                        no_encontrados = resultado.get("no_encontrados", []) if isinstance(resultado, dict) else []
+
+                        if no_encontrados:
+                            nombres = ", ".join(sorted(set(no_encontrados)))
+                            st.session_state.envio_resultado = ("error", f"No se encontró la pestaña del curso en el Excel para: {nombres}. Revisa que el nombre de esa pestaña coincida exactamente.")
+                        else:
+                            st.session_state.envio_resultado = ("success", T["exito_envio"])
+                            st.session_state.lista_alumnos = []
+                            st.session_state.reset_todo += 1
                         st.rerun()
                     else:
-                        st.error(f"Error en el servidor: {response.status_code}")
-                except Exception as e: 
-                    st.error(f"Error crítico de conexión: {e}")
+                        st.session_state.envio_resultado = ("error", f"Error en el servidor: {response.status_code}")
+                        st.rerun()
+                except Exception as e:
+                    st.session_state.envio_resultado = ("error", f"Error crítico de conexión: {e}")
+                    st.rerun()
