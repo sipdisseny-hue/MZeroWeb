@@ -822,6 +822,15 @@ elif opcion == T["menu_eval"]:
                 st.info(T["aviso_id_docente"])
             elif not cursos_permitidos:
                 st.warning(T["aviso_sin_cursos_docente"])
+                with st.expander("🔧 Diagnóstico (temporal)"):
+                    st.write(f"Buscando: `{id_docente_normalizado}`")
+                    st.write(f"Cursos cargados desde el Excel: {len(cursos_db)}")
+                    if cursos_db:
+                        st.write("Id Docente disponibles por curso:")
+                        for c in cursos_db:
+                            st.write(f"- {c.get('codigo_curso', '?')}: `{c.get('id_docente', '')}`")
+                    else:
+                        st.write("No se ha cargado ningún curso — revisa que el script esté desplegado con la última versión.")
             else:
                 c2, c3 = st.columns(2)
 
