@@ -35,6 +35,9 @@ TEXTOS = {
         "eslogan": "Conectando talento, transformando la industria",
         "aviso_login_eval": "Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.",
         "profesor": "Profesor",
+        "id_docente": "Id Docente",
+        "aviso_id_docente": "Introduce tu Id Docente para ver los cursos asignados.",
+        "aviso_sin_cursos_docente": "No hay ningún curso asignado a este Id Docente.",
         "curso": "Curso",
         "modulo": "Módulo",
         "nivel_bloque": "Nivel del Bloque",
@@ -99,6 +102,9 @@ TEXTOS = {
         "eslogan": "Connectant talent, transformant la indústria",
         "aviso_login_eval": "Has d'iniciar sessió al sidebar per accedir al mòdul d'avaluacions.",
         "profesor": "Professor",
+        "id_docente": "Id Docent",
+        "aviso_id_docente": "Introdueix el teu Id Docent per veure els cursos assignats.",
+        "aviso_sin_cursos_docente": "No hi ha cap curs assignat a aquest Id Docent.",
         "curso": "Curs",
         "modulo": "Mòdul",
         "nivel_bloque": "Nivell del Bloc",
@@ -789,142 +795,170 @@ elif opcion == T["menu_eval"]:
         cursos_db, modulos_db = cargar_catalogo_cursos_y_modulos()
 
         with st.container():
-            c1, c2, c3 = st.columns(3)
+            c0, c1 = st.columns(2)
+            id_docente_input = c0.text_input(T["id_docente"], key=f"f_iddoc_{st.session_state.reset_todo}")
             profesor = c1.text_input(T["profesor"], key=f"f_prof_{st.session_state.reset_todo}")
-            
-            campo_nombre_curso = "nombre_curso_ca" if lang == "ca" else "nombre_curso_es"
-            opciones_cursos_display = [f"{c['codigo_curso']} - {c.get(campo_nombre_curso) or c.get('nombre_curso_es') or c.get('nombre_curso') or ''}" for c in cursos_db] if cursos_db else ["MZ-M - Mecanizados"]
-            curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
-            curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
 
-            modulos_filtrados = [m for m in modulos_db if m["curso_asociado"] == curso_codigo_actual]
-            campo_descripcion_modulo = "descripcion_ca" if lang == "ca" else "descripcion_es"
-            opciones_modulos_display = [f"{m['subcodigo']} - {m.get(campo_descripcion_modulo) or m.get('descripcion_es') or m.get('descripcion') or ''}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
-            modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
-            modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
+            # --- NUEVO: los cursos visibles dependen del Id Docente introducido ---
+            # Un mismo curso puede tener varios Id Docente autorizados separados
+            # por comas en la celda de "Id Docente" (columna A de "Cursos").
+            id_docente_normalizado = id_docente_input.strip().lower()
+            cursos_permitidos = []
+            if id_docente_normalizado:
+                for c in cursos_db:
+                    ids_curso = [x.strip().lower() for x in str(c.get("id_docente", "")).split(",") if x.strip()]
+                    if id_docente_normalizado in ids_curso:
+                        cursos_permitidos.append(c)
 
-            nivel_sugerido = ""
-            for m in modulos_filtrados:
-                if m["subcodigo"] == modulo_codigo_actual:
-                    nivel_sugerido = str(m["nivel_bloque"])
-                    break
+            curso_seleccionado_full = None
+            curso_codigo_actual = None
+            modulo_seleccionado_full = None
+            modulo_codigo_actual = None
+            modulos_filtrados = []
+            nivel = ""
+            alumno = ""
 
-            c4, c5 = st.columns(2)
-            nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
-            alumno = c5.text_input(T["alumno"], key=f"f_alu_{st.session_state.alumno_key}")
-
-        criterios = [
-            "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
-            "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
-            "7. Resolución escenarios de prácticas", "8. Resolución escenarios de averías",
-            "9. Precisión conceptual y terminología", "10. Seguridad y normativas",
-            "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje",
-            "13. Comunicación y respeto al superior"
-        ]
-
-        # --- NUEVO: traducción SOLO VISUAL de las cabeceras de la tabla resumen ---
-        # No afecta a lo que se envía al Excel/PDF: esas partes siguen usando
-        # las claves originales (Alumno, Curso, "1. Tasa de eficiencia"...).
-        # Aquí solo se renombran las columnas de la tabla que se ve en pantalla.
-        traduccion_columnas_ca = TRADUCCION_EVAL_CA
-
-        # --- ANTES: la petición GET a la rúbrica se hacía aquí, sin caché, ---
-        # --- así que se repetía en cada rerun (cada clic de puntuación).   ---
-        # --- AHORA: se usa la versión cacheada, se pide una vez por hora.  ---
-        descripciones_rubrica = cargar_rubrica()
-
-        st.subheader(T["subt_puntuacion"])
-        cols = st.columns(4)
-        notas = {}
-        
-        for i, crit in enumerate(criterios):
-            with cols[i % 4]:
-                with st.container(border=True):
-                    col_t, col_b = st.columns([0.82, 0.18])
-                    
-                    with col_t:
-                        st.markdown(f"**{crit}**")
-                        
-                    with col_b:
-                        info_crit = descripciones_rubrica.get(crit, {
-                            "que_se_mide": "Información detallada en desarrollo.",
-                            "nivel_rubrica": "Pendiente de definir rúbrica."
-                        })
-                        
-                        with st.popover("ℹ️", help="Ver rúbrica"):
-                            st.markdown(f"**{T['que_se_mide']}**\n\n{info_crit['que_se_mide']}")
-                            st.markdown("---")
-                            st.markdown(f"**{T['nivel_rubrica']}**")
-                            st.markdown(info_crit['nivel_rubrica'])
-
-                    notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
-
-        if None not in notas.values() and alumno:
-            nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
-            res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
-            st.metric(T["nota_final"], f"{nota_final} - {res}")
-        else:
-            nota_final, res = None, None
-
-        if st.button(T["guardar_alumno"]):
-            if nota_final is not None:
-                curso_obj_actual = next((c for c in cursos_db if c.get("codigo_curso") == curso_codigo_actual), None)
-                nombre_curso_es_actual = (curso_obj_actual.get("nombre_curso_es") if curso_obj_actual else "") or curso_codigo_actual
-                curso_hoja = f"{curso_codigo_actual} {nombre_curso_es_actual}".strip()
-
-                registro = {"Alumno": alumno, "Profesor": profesor, "Usuario": st.session_state.usuario_actual, "Curso": curso_seleccionado_full, "CursoHoja": curso_hoja, "CursoCodigo": curso_codigo_actual, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
-                registro.update(notas)
-                st.session_state.lista_alumnos.append(registro)
-                st.session_state.alumno_key += 1
-                st.rerun()
-
-        if st.session_state.lista_alumnos:
-            st.subheader(T["resumen_alumnos"])
-            df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoHoja", "CursoCodigo"], errors="ignore")
-            if lang == "ca":
-                df_resumen = df_resumen.rename(columns=traduccion_columnas_ca)
-            st.table(df_resumen)
-
-            if FPDF_DISPONIBLE:
-                pdf_bytes = generar_pdf_resumen(st.session_state.lista_alumnos, lang=lang)
-                st.download_button(
-                    label=T["descargar_pdf"],
-                    data=pdf_bytes,
-                    file_name="resumen_evaluaciones.pdf",
-                    mime="application/pdf"
-                )
+            if not id_docente_normalizado:
+                st.info(T["aviso_id_docente"])
+            elif not cursos_permitidos:
+                st.warning(T["aviso_sin_cursos_docente"])
             else:
-                st.info(T["fpdf_no_disponible"])
+                c2, c3 = st.columns(2)
 
-            with st.expander(T["gestionar_alumnos"]):
-                for i, reg in enumerate(st.session_state.lista_alumnos):
-                    if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
-                        st.session_state.lista_alumnos.pop(i)
-                        st.rerun()
+                campo_nombre_curso = "nombre_curso_ca" if lang == "ca" else "nombre_curso_es"
+                opciones_cursos_display = [f"{c['codigo_curso']} - {c.get(campo_nombre_curso) or c.get('nombre_curso_es') or c.get('nombre_curso') or ''}" for c in cursos_permitidos]
+                curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}_{id_docente_normalizado}")
+                curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
 
-            if st.button(T["enviar_sheets"], type="primary"):
-                url_script = "https://script.google.com/macros/s/AKfycbyzqCqO97fjqyuY-ntqKZJ9bekY_zDsHTK-bU_IvWfQYVbgzOgjWynkw1l0jlsB71lcSw/exec"
-                try:
-                    response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
-                    if response.status_code == 200:
-                        try:
-                            resultado = response.json()
-                        except Exception:
-                            resultado = None
+                modulos_filtrados = [m for m in modulos_db if m["curso_asociado"] == curso_codigo_actual]
+                campo_descripcion_modulo = "descripcion_ca" if lang == "ca" else "descripcion_es"
+                opciones_modulos_display = [f"{m['subcodigo']} - {m.get(campo_descripcion_modulo) or m.get('descripcion_es') or m.get('descripcion') or ''}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
+                modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}_{id_docente_normalizado}")
+                modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
 
-                        no_encontrados = resultado.get("no_encontrados", []) if isinstance(resultado, dict) else []
+                nivel_sugerido = ""
+                for m in modulos_filtrados:
+                    if m["subcodigo"] == modulo_codigo_actual:
+                        nivel_sugerido = str(m["nivel_bloque"])
+                        break
 
-                        if no_encontrados:
-                            nombres = ", ".join(sorted(set(no_encontrados)))
-                            st.session_state.envio_resultado = ("error", f"No se encontró la pestaña del curso en el Excel para: {nombres}. Revisa que el nombre de esa pestaña coincida exactamente.")
-                        else:
-                            st.session_state.envio_resultado = ("success", T["exito_envio"])
-                            st.session_state.lista_alumnos = []
-                            st.session_state.reset_todo += 1
-                        st.rerun()
-                    else:
-                        st.session_state.envio_resultado = ("error", f"Error en el servidor: {response.status_code}")
-                        st.rerun()
-                except Exception as e:
-                    st.session_state.envio_resultado = ("error", f"Error crítico de conexión: {e}")
+                c4, c5 = st.columns(2)
+                nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
+                alumno = c5.text_input(T["alumno"], key=f"f_alu_{st.session_state.alumno_key}")
+
+        if curso_codigo_actual is not None:
+            criterios = [
+                "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
+                "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
+                "7. Resolución escenarios de prácticas", "8. Resolución escenarios de averías",
+                "9. Precisión conceptual y terminología", "10. Seguridad y normativas",
+                "11. Fiabilidad y compromiso operativo", "12. Capacidad de aprendizaje",
+                "13. Comunicación y respeto al superior"
+            ]
+
+            # --- NUEVO: traducción SOLO VISUAL de las cabeceras de la tabla resumen ---
+            # No afecta a lo que se envía al Excel/PDF: esas partes siguen usando
+            # las claves originales (Alumno, Curso, "1. Tasa de eficiencia"...).
+            # Aquí solo se renombran las columnas de la tabla que se ve en pantalla.
+            traduccion_columnas_ca = TRADUCCION_EVAL_CA
+
+            # --- ANTES: la petición GET a la rúbrica se hacía aquí, sin caché, ---
+            # --- así que se repetía en cada rerun (cada clic de puntuación).   ---
+            # --- AHORA: se usa la versión cacheada, se pide una vez por hora.  ---
+            descripciones_rubrica = cargar_rubrica()
+
+            st.subheader(T["subt_puntuacion"])
+            cols = st.columns(4)
+            notas = {}
+            
+            for i, crit in enumerate(criterios):
+                with cols[i % 4]:
+                    with st.container(border=True):
+                        col_t, col_b = st.columns([0.82, 0.18])
+                        
+                        with col_t:
+                            st.markdown(f"**{crit}**")
+                            
+                        with col_b:
+                            info_crit = descripciones_rubrica.get(crit, {
+                                "que_se_mide": "Información detallada en desarrollo.",
+                                "nivel_rubrica": "Pendiente de definir rúbrica."
+                            })
+                            
+                            with st.popover("ℹ️", help="Ver rúbrica"):
+                                st.markdown(f"**{T['que_se_mide']}**\n\n{info_crit['que_se_mide']}")
+                                st.markdown("---")
+                                st.markdown(f"**{T['nivel_rubrica']}**")
+                                st.markdown(info_crit['nivel_rubrica'])
+
+                        notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
+
+            if None not in notas.values() and alumno:
+                nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
+                res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
+                st.metric(T["nota_final"], f"{nota_final} - {res}")
+            else:
+                nota_final, res = None, None
+
+            if st.button(T["guardar_alumno"]):
+                if nota_final is not None:
+                    curso_obj_actual = next((c for c in cursos_db if c.get("codigo_curso") == curso_codigo_actual), None)
+                    nombre_curso_es_actual = (curso_obj_actual.get("nombre_curso_es") if curso_obj_actual else "") or curso_codigo_actual
+                    curso_hoja = f"{curso_codigo_actual} {nombre_curso_es_actual}".strip()
+
+                    registro = {"Alumno": alumno, "Profesor": profesor, "Usuario": st.session_state.usuario_actual, "Curso": curso_seleccionado_full, "CursoHoja": curso_hoja, "CursoCodigo": curso_codigo_actual, "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res}
+                    registro.update(notas)
+                    st.session_state.lista_alumnos.append(registro)
+                    st.session_state.alumno_key += 1
                     st.rerun()
+
+            if st.session_state.lista_alumnos:
+                st.subheader(T["resumen_alumnos"])
+                df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoHoja", "CursoCodigo"], errors="ignore")
+                if lang == "ca":
+                    df_resumen = df_resumen.rename(columns=traduccion_columnas_ca)
+                st.table(df_resumen)
+
+                if FPDF_DISPONIBLE:
+                    pdf_bytes = generar_pdf_resumen(st.session_state.lista_alumnos, lang=lang)
+                    st.download_button(
+                        label=T["descargar_pdf"],
+                        data=pdf_bytes,
+                        file_name="resumen_evaluaciones.pdf",
+                        mime="application/pdf"
+                    )
+                else:
+                    st.info(T["fpdf_no_disponible"])
+
+                with st.expander(T["gestionar_alumnos"]):
+                    for i, reg in enumerate(st.session_state.lista_alumnos):
+                        if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
+                            st.session_state.lista_alumnos.pop(i)
+                            st.rerun()
+
+                if st.button(T["enviar_sheets"], type="primary"):
+                    url_script = "https://script.google.com/macros/s/AKfycbyzqCqO97fjqyuY-ntqKZJ9bekY_zDsHTK-bU_IvWfQYVbgzOgjWynkw1l0jlsB71lcSw/exec"
+                    try:
+                        response = requests.post(url_script, json={"evaluaciones": st.session_state.lista_alumnos}, timeout=20)
+                        if response.status_code == 200:
+                            try:
+                                resultado = response.json()
+                            except Exception:
+                                resultado = None
+
+                            no_encontrados = resultado.get("no_encontrados", []) if isinstance(resultado, dict) else []
+
+                            if no_encontrados:
+                                nombres = ", ".join(sorted(set(no_encontrados)))
+                                st.session_state.envio_resultado = ("error", f"No se encontró la pestaña del curso en el Excel para: {nombres}. Revisa que el nombre de esa pestaña coincida exactamente.")
+                            else:
+                                st.session_state.envio_resultado = ("success", T["exito_envio"])
+                                st.session_state.lista_alumnos = []
+                                st.session_state.reset_todo += 1
+                            st.rerun()
+                        else:
+                            st.session_state.envio_resultado = ("error", f"Error en el servidor: {response.status_code}")
+                            st.rerun()
+                    except Exception as e:
+                        st.session_state.envio_resultado = ("error", f"Error crítico de conexión: {e}")
+                        st.rerun()
