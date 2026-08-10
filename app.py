@@ -173,6 +173,26 @@ TRADUCCION_EVAL_CA = {
     "13. Comunicación y respeto al superior": "13. Comunicació i respecte al superior"
 }
 
+# --- TRADUCCIÓN SOLO VISUAL (Català) de las categorías de Asociados/Colaboradores ---
+# El filtrado sigue comparando contra el texto original en castellano (columna
+# Sector/Categoría del Excel); esto solo cambia la etiqueta que se ve en pantalla.
+TRADUCCION_CATEGORIAS_CA = {
+    "Mecanizado": "Mecanitzat",
+    "Climatización": "Climatització",
+    "Fontanería": "Fontaneria",
+    "Empresas de trabajo temporal": "Empreses de treball temporal",
+    "Electricidad": "Electricitat",
+    "Obra": "Obra",
+    "Electromecánica": "Electromecànica",
+    "Renovables": "Renovables",
+    "Hidráulica": "Hidràulica",
+    "Construcción Mecánica": "Construcció Mecànica",
+    "Asociaciones y Gremios": "Associacions i Gremis",
+    "Centros de formación": "Centres de formació",
+    "Gremios": "Gremis",
+    "Asociaciones": "Associacions"
+}
+
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=120)
 def cargar_catalogo_cursos_y_modulos():
@@ -577,7 +597,8 @@ if opcion == T["menu_docs"]:
             for i, col in enumerate(columnas):
                 with col:
                     for titulo in titulos_por_columna[i]:
-                        with st.expander(titulo):
+                        etiqueta_visible = TRADUCCION_CATEGORIAS_CA.get(titulo, titulo) if lang == "ca" else titulo
+                        with st.expander(etiqueta_visible):
                             datos_categoria = [
                                 d for d in datos
                                 if d.get("categoria", "").strip().lower() == titulo.strip().lower()
