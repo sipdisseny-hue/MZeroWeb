@@ -582,7 +582,10 @@ if opcion == T["menu_docs"]:
                     if empresa_html:
                         st.markdown(f"#### {empresa_html}", unsafe_allow_html=True)
 
-                    descripcion = emp.get("descripcion", "").strip()
+                    if lang == "ca":
+                        descripcion = emp.get("descripcion_ca", "").strip() or emp.get("descripcion", "").strip()
+                    else:
+                        descripcion = emp.get("descripcion", "").strip()
                     if descripcion:
                         st.markdown(descripcion, unsafe_allow_html=True)
                     enlace = emp.get("enlace", "").strip()
@@ -599,10 +602,21 @@ if opcion == T["menu_docs"]:
                     for titulo in titulos_por_columna[i]:
                         etiqueta_visible = TRADUCCION_CATEGORIAS_CA.get(titulo, titulo) if lang == "ca" else titulo
                         with st.expander(etiqueta_visible):
-                            datos_categoria = [
-                                d for d in datos
-                                if d.get("categoria", "").strip().lower() == titulo.strip().lower()
-                            ]
+                            if lang == "ca":
+                                # Filtramos por la columna "Sector cat" del Excel,
+                                # comparándola con la etiqueta catalana mostrada
+                                # (para que coincida, esa celda debe llevar el
+                                # mismo texto catalán que ves en el título).
+                                objetivo = etiqueta_visible.strip().lower()
+                                datos_categoria = [
+                                    d for d in datos
+                                    if d.get("categoria_ca", "").strip().lower() == objetivo
+                                ]
+                            else:
+                                datos_categoria = [
+                                    d for d in datos
+                                    if d.get("categoria", "").strip().lower() == titulo.strip().lower()
+                                ]
                             mostrar_provincia_poblacion_empresa(datos_categoria, f"{key_prefix}_{titulo}")
 
         # --- BLOQUE 1: ASOCIADOS ---
