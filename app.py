@@ -219,7 +219,7 @@ def cargar_datos_de_google():
     # así que los títulos en catalán ("Arguments M-Zero", etc.) nunca llegaban.
     for idioma_param in ["es", "ca"]:
         try:
-            response = requests.get(url_script, params={"lang": idioma_param}, timeout=20)
+            response = requests.get(url_script, params={"lang": idioma_param}, timeout=30)
             if response.status_code == 200:
                 data = response.json()
                 if isinstance(data, list):
