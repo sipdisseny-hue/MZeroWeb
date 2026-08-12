@@ -198,7 +198,7 @@ TRADUCCION_CATEGORIAS_CA = {
 def cargar_catalogo_cursos_y_modulos():
     url_script = "https://script.google.com/macros/s/AKfycbzAfnmO33bANwUsvDRkeMzLjLgLWZeSdzLNduleZ9UYDLEtIqe4YIb-gHSWmJaaFBYY/exec"
     try:
-        response = requests.get(url_script, timeout=20)
+        response = requests.get(url_script, timeout=30)
         if response.status_code == 200:
             try:
                 data = response.json()
