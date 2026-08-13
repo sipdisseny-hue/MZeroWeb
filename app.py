@@ -9,6 +9,12 @@ try:
 except ImportError:
     FPDF_DISPONIBLE = False
 
+try:
+    from supabase import create_client
+    SUPABASE_DISPONIBLE = True
+except ImportError:
+    SUPABASE_DISPONIBLE = False
+
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
 
@@ -507,6 +513,21 @@ with st.sidebar:
                     st.error(T["error_cred"])
             except Exception as e:
                 st.error(f"Error de acceso: {e}")
+
+    # --- NUEVO: PRUEBA DE CONEXIÓN A SUPABASE (temporal) -----------------------
+    # No afecta a nada de lo que ya funciona. Es solo para comprobar que la
+    # app puede hablar con la base de datos nueva antes de migrar nada.
+    st.divider()
+    with st.expander("🔧 Prueba de conexión Supabase (temporal)"):
+        if not SUPABASE_DISPONIBLE:
+            st.warning("Añade 'supabase' a requirements.txt para poder probar la conexión.")
+        elif st.button("Probar conexión"):
+            try:
+                cliente_supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
+                resultado = cliente_supabase.table("admin_credenciales").select("*").limit(1).execute()
+                st.success(f"✅ Conexión correcta. Filas encontradas en admin_credenciales: {len(resultado.data)}")
+            except Exception as e:
+                st.error(f"❌ Error de conexión: {e}")
 
 # --- LÓGICA DE PANTALLAS ---
 if opcion == T["menu_docs"]:
