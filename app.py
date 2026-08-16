@@ -618,6 +618,32 @@ with st.sidebar:
             except Exception as e:
                 st.error(f"❌ Error de conexión: {e}")
 
+    # --- NUEVO: PANEL DE APROBACIÓN DE PETICIONES PENDIENTES -------------------
+    if SUPABASE_DISPONIBLE and st.session_state.autenticado:
+        st.divider()
+        try:
+            cliente_pend = obtener_cliente_supabase()
+            pendientes = cliente_pend.table("empresas").select("*").eq("estado", "pendiente").execute().data
+        except Exception as e:
+            pendientes = []
+            st.error(f"Error al cargar pendientes: {e}")
+
+        etiqueta_panel = f"🔔 Peticiones pendientes ({len(pendientes)})" if pendientes else "🔔 Peticiones pendientes"
+        with st.expander(etiqueta_panel):
+            if not pendientes:
+                st.caption("No hay peticiones pendientes.")
+            for emp in pendientes:
+                nombre_mostrar = emp.get("nombre_centro") or emp.get("nombre_empresa") or emp.get("usuario", "")
+                st.write(f"**{nombre_mostrar}** — {emp.get('tipo', '')}")
+                st.caption(f"Usuario propuesto: {emp.get('usuario', '')} · Email: {emp.get('email', '')}")
+                if st.button("✅ Activar", key=f"activar_emp_{emp['id']}"):
+                    try:
+                        cliente_pend.table("empresas").update({"estado": "activo"}).eq("id", emp["id"]).execute()
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error al activar: {e}")
+                st.divider()
+
 # --- LÓGICA DE PANTALLAS ---
 if opcion == T["menu_docs"]:
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
@@ -890,9 +916,10 @@ if opcion == T["menu_docs"]:
                     else:
                         st.error(T["error_solicitud"])
 
-    def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir_centro_registro=False):
+    def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir_centro_registro=False, usar_supabase=False):
         """Login independiente contra 'Credenciales Asociados' / 'Credenciales
-        Colaboradores' + formulario de petición una vez autenticado."""
+        Colaboradores' (o contra Supabase si usar_supabase=True) + formulario
+        de petición una vez autenticado."""
         login_key = f"{key_prefix}_login_ok"
         id_key = f"{key_prefix}_id_empresa"
         nombre_key = f"{key_prefix}_nombre_empresa"
@@ -904,16 +931,26 @@ if opcion == T["menu_docs"]:
             usuario_in = st.text_input(T["usuario"], key=f"{key_prefix}_user_in")
             pass_in = st.text_input(T["password"], type="password", key=f"{key_prefix}_pass_in")
             if st.button(T["btn_acceder"], key=f"{key_prefix}_btn_acceder"):
-                fila = verificar_credencial_participar(usuario_in, pass_in, nombre_hoja_credenciales)
-                if fila:
-                    st.session_state[login_key] = True
-                    st.session_state[id_key] = str(fila.get("Id. Empresa", "")).strip()
-                    st.session_state[nombre_key] = str(fila.get("Nombre Empresa", "")).strip()
-                    st.rerun()
+                if usar_supabase:
+                    fila = verificar_credencial_supabase(usuario_in, pass_in, tipo)
+                    if fila:
+                        st.session_state[login_key] = True
+                        st.session_state[id_key] = fila.get("id")
+                        st.session_state[nombre_key] = fila.get("nombre_centro") or fila.get("nombre_empresa") or fila.get("usuario", "")
+                        st.rerun()
+                    else:
+                        st.error(T["error_acceso_participar"])
                 else:
-                    st.error(T["error_acceso_participar"])
+                    fila = verificar_credencial_participar(usuario_in, pass_in, nombre_hoja_credenciales)
+                    if fila:
+                        st.session_state[login_key] = True
+                        st.session_state[id_key] = str(fila.get("Id. Empresa", "")).strip()
+                        st.session_state[nombre_key] = str(fila.get("Nombre Empresa", "")).strip()
+                        st.rerun()
+                    else:
+                        st.error(T["error_acceso_participar"])
 
-            bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro)
+            bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase)
         else:
             nombre_empresa = st.session_state.get(nombre_key, "")
             st.success(f"{T['acceso_concedido']} {nombre_empresa}")
@@ -925,7 +962,22 @@ if opcion == T["menu_docs"]:
             if st.button(T["enviar"], key=f"{key_prefix}_btn_enviar"):
                 if texto_peticion.strip():
                     id_empresa = st.session_state.get(id_key, "")
-                    if enviar_peticion_participar(tipo, id_empresa, texto_peticion.strip()):
+                    if usar_supabase:
+                        enviado = False
+                        if SUPABASE_DISPONIBLE:
+                            try:
+                                obtener_cliente_supabase().table("peticiones_participar").insert({
+                                    "id_empresa": id_empresa,
+                                    "texto": texto_peticion.strip()
+                                }).execute()
+                                crear_notificacion("peticion", f"Nuevo mensaje de {nombre_empresa} ({tipo}): {texto_peticion.strip()[:200]}")
+                                enviado = True
+                            except Exception as e:
+                                st.error(f"Error al enviar: {e}")
+                    else:
+                        enviado = enviar_peticion_participar(tipo, id_empresa, texto_peticion.strip())
+
+                    if enviado:
                         st.success(T["peticion_enviada"])
                         st.session_state[peticion_version_key] = version + 1
                         st.rerun()
@@ -950,7 +1002,7 @@ if opcion == T["menu_docs"]:
     with cp2:
         with st.expander(T["colaboradores"]):
             st.markdown(texto_instruccion("colaboradores"), unsafe_allow_html=True)
-            bloque_acceso_y_peticion("colaborador", "Credenciales Colaboradores", "colab_part", incluir_centro_registro=True)
+            bloque_acceso_y_peticion("colaborador", "Credenciales Colaboradores", "colab_part", incluir_centro_registro=True, usar_supabase=True)
 
     with cp3:
         with st.expander(T["candidatos"]):
