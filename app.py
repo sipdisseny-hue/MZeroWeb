@@ -91,6 +91,10 @@ TEXTOS = {
         "campo_email": "Email",
         "campo_nombre_contacto": "Nombre Contacto",
         "campo_web": "Web",
+        "campo_usuario_deseado": "Usuario que quiero usar",
+        "campo_contrasena_deseada": "Contraseña que quiero usar",
+        "campo_vacio_usuario_contrasena": "Indica el usuario y la contraseña que quieres usar.",
+        "solicitud_pendiente_aviso": "Solicitud enviada. En cuanto sea aprobada podrás acceder con tu usuario y contraseña.",
         "descargar_pdf": "📄 Descargar PDF antes de enviar",
         "fpdf_no_disponible": "Para poder descargar el PDF, añade 'fpdf2' al archivo requirements.txt de la app.",
         "titulos_func": ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
@@ -160,6 +164,10 @@ TEXTOS = {
         "campo_email": "Email",
         "campo_nombre_contacto": "Nom Contacte",
         "campo_web": "Web",
+        "campo_usuario_deseado": "Usuari que vull utilitzar",
+        "campo_contrasena_deseada": "Contrasenya que vull utilitzar",
+        "campo_vacio_usuario_contrasena": "Indica l'usuari i la contrasenya que vols utilitzar.",
+        "solicitud_pendiente_aviso": "Sol·licitud enviada. Quan sigui aprovada podràs accedir amb el teu usuari i contrasenya.",
         "descargar_pdf": "📄 Descarregar PDF abans d'enviar",
         "fpdf_no_disponible": "Per poder descarregar el PDF, afegeix 'fpdf2' a l'arxiu requirements.txt de l'app.",
         "titulos_func": ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
@@ -336,6 +344,77 @@ def enviar_peticion_registro(tipo, campos):
         return response.status_code == 200
     except Exception:
         return False
+
+# --- NUEVO: NOTIFICACIONES (en la app + email) ---
+def enviar_email_notificacion(asunto, mensaje):
+    """Envía un aviso por email si hay credenciales configuradas en Secrets
+    (EMAIL_USER, EMAIL_PASSWORD, y opcionalmente EMAIL_NOTIFY_TO). Si no
+    están configuradas, o falla el envío, no rompe el flujo de la app."""
+    if "EMAIL_USER" not in st.secrets or "EMAIL_PASSWORD" not in st.secrets:
+        return
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        msg = MIMEText(mensaje)
+        msg["Subject"] = asunto
+        msg["From"] = st.secrets["EMAIL_USER"]
+        msg["To"] = st.secrets.get("EMAIL_NOTIFY_TO", st.secrets["EMAIL_USER"])
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(st.secrets["EMAIL_USER"], st.secrets["EMAIL_PASSWORD"])
+            server.send_message(msg)
+    except Exception:
+        pass
+
+
+def crear_notificacion(tipo, mensaje):
+    """Guarda el aviso en Supabase (para el badge dentro de la app) y
+    además intenta mandarlo por email."""
+    if SUPABASE_DISPONIBLE:
+        try:
+            obtener_cliente_supabase().table("notificaciones").insert({"tipo": tipo, "mensaje": mensaje}).execute()
+        except Exception:
+            pass
+    enviar_email_notificacion("M-Zero: nueva petición", mensaje)
+
+
+# --- NUEVO: REGISTRO Y LOGIN DE EMPRESAS (Colaboradores) CONTRA SUPABASE ---
+def enviar_peticion_registro_supabase(tipo, campos, usuario, contrasena):
+    if not SUPABASE_DISPONIBLE:
+        return False
+    try:
+        cliente = obtener_cliente_supabase()
+        fila = dict(campos)
+        fila["tipo"] = tipo
+        fila["estado"] = "pendiente"
+        fila["usuario"] = usuario
+        fila["contrasena"] = contrasena
+        cliente.table("empresas").insert(fila).execute()
+        nombre_mostrar = campos.get("nombre_centro") or campos.get("nombre_empresa") or usuario
+        crear_notificacion("registro", f"Nueva solicitud de registro ({tipo}): {nombre_mostrar}")
+        return True
+    except Exception as e:
+        st.error(f"Error al enviar la solicitud: {e}")
+        return False
+
+
+def verificar_credencial_supabase(usuario, contrasena, tipo):
+    if not SUPABASE_DISPONIBLE:
+        return None
+    try:
+        cliente = obtener_cliente_supabase()
+        resultado = (
+            cliente.table("empresas").select("*")
+            .eq("usuario", usuario.strip())
+            .eq("contrasena", contrasena.strip())
+            .eq("tipo", tipo)
+            .eq("estado", "activo")
+            .execute()
+        )
+        if resultado.data:
+            return resultado.data[0]
+    except Exception:
+        pass
+    return None
 
 # --- NUEVO: PDF DEL RESUMEN DE ALUMNOS (antes de enviar) ---
 def _pdf_texto_seguro(valor):
@@ -720,7 +799,7 @@ if opcion == T["menu_docs"]:
         bloque = instrucciones_participar.get(clave, {})
         return bloque.get(lang, "")
 
-    def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False):
+    def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False):
         """Formulario para pedir el alta como Asociado o Colaborador nuevo
         (usuario todavía no inscrito en Credenciales Asociados/Colaboradores)."""
         version = st.session_state.get(f"{key_prefix}_reg_version", 0)
@@ -752,8 +831,42 @@ if opcion == T["menu_docs"]:
 
             web = st.text_input(T["campo_web"], key=f"{key_prefix}_reg_web_{version}")
 
+            usuario_deseado = ""
+            contrasena_deseada = ""
+            if usar_supabase:
+                c9, c10 = st.columns(2)
+                usuario_deseado = c9.text_input(T["campo_usuario_deseado"], key=f"{key_prefix}_reg_usuario_{version}")
+                contrasena_deseada = c10.text_input(T["campo_contrasena_deseada"], type="password", key=f"{key_prefix}_reg_contrasena_{version}")
+
             if st.button(T["enviar_solicitud"], key=f"{key_prefix}_reg_btn_enviar"):
-                if nombre_empresa.strip():
+                if not nombre_empresa.strip():
+                    st.warning(T["campo_vacio_empresa"])
+                elif usar_supabase and (not usuario_deseado.strip() or not contrasena_deseada.strip()):
+                    st.warning(T["campo_vacio_usuario_contrasena"])
+                elif usar_supabase:
+                    campos = {
+                        "nombre_empresa": nombre_empresa.strip(),
+                        "sector": sector.strip(),
+                        "provincia": provincia.strip(),
+                        "poblacion": poblacion.strip(),
+                        "cp": cp.strip(),
+                        "razon_social": razon_social.strip(),
+                        "cif_nif": cif_nif.strip(),
+                        "telefono": telefono.strip(),
+                        "email": email.strip(),
+                        "nombre_contacto": nombre_contacto.strip(),
+                        "web": web.strip(),
+                    }
+                    if incluir_centro:
+                        campos["nombre_centro"] = nombre_centro.strip()
+
+                    if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
+                        st.success(T["solicitud_pendiente_aviso"])
+                        st.session_state[f"{key_prefix}_reg_version"] = version + 1
+                        st.rerun()
+                    else:
+                        st.error(T["error_solicitud"])
+                else:
                     campos = {
                         "Nombre empresa": nombre_empresa.strip(),
                         "Sector": sector.strip(),
@@ -776,8 +889,6 @@ if opcion == T["menu_docs"]:
                         st.rerun()
                     else:
                         st.error(T["error_solicitud"])
-                else:
-                    st.warning(T["campo_vacio_empresa"])
 
     def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir_centro_registro=False):
         """Login independiente contra 'Credenciales Asociados' / 'Credenciales
