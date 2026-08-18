@@ -394,35 +394,39 @@ def enviar_peticion_registro(tipo, campos):
         return False
 
 # --- NUEVO: NOTIFICACIONES (en la app + email) ---
-def enviar_email_notificacion(asunto, mensaje):
-    """Envía un aviso por email si hay credenciales configuradas en Secrets
-    (EMAIL_USER, EMAIL_PASSWORD, y opcionalmente EMAIL_NOTIFY_TO). Si no
-    están configuradas, o falla el envío, no rompe el flujo de la app."""
+def enviar_email(destinatario, asunto, mensaje):
+    """Envía un email si hay credenciales configuradas en Secrets
+    (EMAIL_USER, EMAIL_PASSWORD). Si no están configuradas, o falla el
+    envío, no rompe el flujo de la app — devuelve True/False para que
+    quien llame pueda avisar si quiere."""
     if "EMAIL_USER" not in st.secrets or "EMAIL_PASSWORD" not in st.secrets:
-        return
+        return False
     try:
         import smtplib
         from email.mime.text import MIMEText
         msg = MIMEText(mensaje)
         msg["Subject"] = asunto
         msg["From"] = st.secrets["EMAIL_USER"]
-        msg["To"] = st.secrets.get("EMAIL_NOTIFY_TO", st.secrets["EMAIL_USER"])
+        msg["To"] = destinatario
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(st.secrets["EMAIL_USER"], st.secrets["EMAIL_PASSWORD"])
             server.send_message(msg)
+        return True
     except Exception:
-        pass
+        return False
 
 
 def crear_notificacion(tipo, mensaje):
     """Guarda el aviso en Supabase (para el badge dentro de la app) y
-    además intenta mandarlo por email."""
+    además intenta mandarlo por email al administrador."""
     if SUPABASE_DISPONIBLE:
         try:
             obtener_cliente_supabase().table("notificaciones").insert({"tipo": tipo, "mensaje": mensaje}).execute()
         except Exception:
             pass
-    enviar_email_notificacion("M-Zero: nueva petición", mensaje)
+    destinatario_admin = st.secrets.get("EMAIL_NOTIFY_TO", st.secrets.get("EMAIL_USER", ""))
+    if destinatario_admin:
+        enviar_email(destinatario_admin, "M-Zero: nueva petición", mensaje)
 
 
 # --- NUEVO: REGISTRO Y LOGIN DE EMPRESAS (Colaboradores) CONTRA SUPABASE ---
