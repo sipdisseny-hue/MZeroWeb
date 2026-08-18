@@ -184,6 +184,38 @@ TEXTOS = {
         "campo_contrasena_deseada": "Contrasenya que vull utilitzar",
         "campo_vacio_usuario_contrasena": "Indica l'usuari i la contrasenya que vols utilitzar.",
         "solicitud_pendiente_aviso": "Sol·licitud enviada. Quan sigui aprovada podràs accedir amb el teu usuari i contrasenya.",
+        "anadir_curso": "Afegir curs",
+        "campo_referencia_curso": "Referència del curs",
+        "campo_nombre_curso": "Nom del curs",
+        "campo_nombre_modulo": "Nom del mòdul",
+        "campo_horas_totales": "Hores totals del curs",
+        "campo_competencias": "Competències adquirides",
+        "enviar_curso": "Enviar curs",
+        "curso_enviado": "Curs enviat. Quedarà visible quan l'aprovem.",
+        "campo_vacio_curso": "Omple almenys la referència i el nom del curs.",
+        "anadir_docente": "Afegir docent",
+        "campo_nombre_docente": "Nom del docent",
+        "campo_curso_relacionado": "Curs al qual està relacionat",
+        "enviar_docente": "Enviar docent",
+        "docente_enviado": "Docent enviat. Quan l'activem, li enviarem la seva clau d'accés per email.",
+        "campo_vacio_docente": "Omple el nom, usuari i email del docent.",
+        "sin_cursos_propios": "Primer afegeix un curs per poder-hi relacionar un docent.",
+        "anadir_curso": "Afegir curs",
+        "campo_referencia_curso": "Referència del curs",
+        "campo_nombre_curso": "Nom del curs",
+        "campo_nombre_modulo": "Nom del mòdul",
+        "campo_horas_totales": "Hores totals del curs",
+        "campo_competencias": "Competències adquirides",
+        "enviar_curso": "Enviar curs",
+        "curso_enviado": "Curs enviat. Quedarà visible quan l'aprovem.",
+        "campo_vacio_curso": "Omple almenys la referència i el nom del curs.",
+        "anadir_docente": "Afegir docent",
+        "campo_nombre_docente": "Nom del docent",
+        "campo_curso_relacionado": "Curs al qual està relacionat",
+        "enviar_docente": "Enviar docent",
+        "docente_enviado": "Docent enviat. Quan l'activem, li enviarem la seva clau d'accés per email.",
+        "campo_vacio_docente": "Omple el nom, usuari i email del docent.",
+        "sin_cursos_propios": "Primer afegeix un curs per poder-hi relacionar un docent.",
         "descargar_pdf": "📄 Descarregar PDF abans d'enviar",
         "fpdf_no_disponible": "Per poder descarregar el PDF, afegeix 'fpdf2' a l'arxiu requirements.txt de l'app.",
         "titulos_func": ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
@@ -431,6 +463,75 @@ def verificar_credencial_supabase(usuario, contrasena, tipo):
     except Exception:
         pass
     return None
+
+
+# --- NUEVO: EL COLABORADOR PROPONE CURSO+MÓDULO Y DOCENTE ---
+def enviar_curso_modulo_supabase(empresa_id, nombre_empresa, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias):
+    if not SUPABASE_DISPONIBLE:
+        return False
+    try:
+        cliente = obtener_cliente_supabase()
+
+        existe_curso = cliente.table("cursos").select("codigo_curso").eq("codigo_curso", referencia).execute().data
+        if not existe_curso:
+            cliente.table("cursos").insert({
+                "codigo_curso": referencia,
+                "nombre_es": nombre_curso,
+                "empresa_id": empresa_id,
+                "estado": "pendiente",
+                "horas_totales": horas or None,
+                "competencias": competencias
+            }).execute()
+
+        modulos_existentes = cliente.table("modulos").select("subcodigo").eq("codigo_curso", referencia).execute().data
+        subcodigo = f"{referencia}-M{len(modulos_existentes) + 1}"
+        cliente.table("modulos").insert({
+            "subcodigo": subcodigo,
+            "codigo_curso": referencia,
+            "descripcion_es": nombre_modulo,
+            "nivel_bloque": nivel or None,
+            "estado": "pendiente"
+        }).execute()
+
+        crear_notificacion("curso", f"Nuevo curso propuesto por {nombre_empresa}: {referencia} - {nombre_curso}")
+        return True
+    except Exception as e:
+        st.error(f"Error al enviar el curso: {e}")
+        return False
+
+
+def enviar_docente_supabase(empresa_id, nombre_empresa, nombre_docente, usuario_docente, email_docente, codigo_curso):
+    if not SUPABASE_DISPONIBLE:
+        return False
+    try:
+        cliente = obtener_cliente_supabase()
+
+        existente = cliente.table("docentes").select("id_docente").eq("usuario", usuario_docente).execute().data
+        if existente:
+            id_docente = existente[0]["id_docente"]
+        else:
+            id_docente = usuario_docente
+            cliente.table("docentes").insert({
+                "id_docente": id_docente,
+                "nombre": nombre_docente,
+                "usuario": usuario_docente,
+                "email": email_docente,
+                "estado": "pendiente",
+                "empresa_id": empresa_id
+            }).execute()
+
+        ya_vinculado = (
+            cliente.table("curso_docente").select("id_docente")
+            .eq("id_docente", id_docente).eq("codigo_curso", codigo_curso).execute().data
+        )
+        if not ya_vinculado:
+            cliente.table("curso_docente").insert({"id_docente": id_docente, "codigo_curso": codigo_curso}).execute()
+
+        crear_notificacion("docente", f"Nuevo docente propuesto por {nombre_empresa}: {nombre_docente} ({usuario_docente}) para {codigo_curso}")
+        return True
+    except Exception as e:
+        st.error(f"Error al enviar el docente: {e}")
+        return False
 
 # --- NUEVO: PDF DEL RESUMEN DE ALUMNOS (antes de enviar) ---
 def _pdf_texto_seguro(valor):
@@ -1001,6 +1102,68 @@ if opcion == T["menu_docs"]:
                         st.error(T["error_peticion"])
                 else:
                     st.warning(T["campo_vacio_peticion"])
+
+            # --- NUEVO: solo para Colaboradores (usar_supabase) ---
+            if usar_supabase and tipo == "colaborador":
+                with st.expander(T["anadir_curso"]):
+                    curso_version = st.session_state.get(f"{key_prefix}_curso_version", 0)
+                    referencia = st.text_input(T["campo_referencia_curso"], key=f"{key_prefix}_curso_ref_{curso_version}")
+                    nombre_curso_nuevo = st.text_input(T["campo_nombre_curso"], key=f"{key_prefix}_curso_nombre_{curso_version}")
+                    nombre_modulo_nuevo = st.text_input(T["campo_nombre_modulo"], key=f"{key_prefix}_curso_modulo_{curso_version}")
+                    cc1, cc2 = st.columns(2)
+                    nivel_nuevo = cc1.text_input(T["nivel_bloque"], key=f"{key_prefix}_curso_nivel_{curso_version}")
+                    horas_nuevo = cc2.text_input(T["campo_horas_totales"], key=f"{key_prefix}_curso_horas_{curso_version}")
+                    competencias_nuevo = st.text_area(T["campo_competencias"], key=f"{key_prefix}_curso_comp_{curso_version}")
+
+                    if st.button(T["enviar_curso"], key=f"{key_prefix}_curso_btn_enviar"):
+                        if referencia.strip() and nombre_curso_nuevo.strip():
+                            if enviar_curso_modulo_supabase(
+                                st.session_state.get(id_key), nombre_empresa,
+                                referencia.strip(), nombre_curso_nuevo.strip(), nombre_modulo_nuevo.strip(),
+                                nivel_nuevo.strip(), horas_nuevo.strip(), competencias_nuevo.strip()
+                            ):
+                                st.success(T["curso_enviado"])
+                                st.session_state[f"{key_prefix}_curso_version"] = curso_version + 1
+                                st.rerun()
+                        else:
+                            st.warning(T["campo_vacio_curso"])
+
+                with st.expander(T["anadir_docente"]):
+                    cursos_propios = []
+                    if SUPABASE_DISPONIBLE:
+                        try:
+                            cursos_propios = (
+                                obtener_cliente_supabase().table("cursos").select("codigo_curso, nombre_es")
+                                .eq("empresa_id", st.session_state.get(id_key)).execute().data
+                            )
+                        except Exception:
+                            cursos_propios = []
+
+                    if not cursos_propios:
+                        st.info(T["sin_cursos_propios"])
+                    else:
+                        docente_version = st.session_state.get(f"{key_prefix}_docente_version", 0)
+                        opciones_curso_propio = [f"{c['codigo_curso']} - {c.get('nombre_es', '')}" for c in cursos_propios]
+                        curso_elegido = st.selectbox(T["campo_curso_relacionado"], opciones_curso_propio, key=f"{key_prefix}_docente_curso_{docente_version}")
+                        codigo_curso_elegido = curso_elegido.split(" - ")[0] if " - " in curso_elegido else curso_elegido
+
+                        nombre_docente_nuevo = st.text_input(T["campo_nombre_docente"], key=f"{key_prefix}_docente_nombre_{docente_version}")
+                        dc1, dc2 = st.columns(2)
+                        usuario_docente_nuevo = dc1.text_input(T["campo_usuario_deseado"], key=f"{key_prefix}_docente_usuario_{docente_version}")
+                        email_docente_nuevo = dc2.text_input(T["campo_email"], key=f"{key_prefix}_docente_email_{docente_version}")
+
+                        if st.button(T["enviar_docente"], key=f"{key_prefix}_docente_btn_enviar"):
+                            if nombre_docente_nuevo.strip() and usuario_docente_nuevo.strip() and email_docente_nuevo.strip():
+                                if enviar_docente_supabase(
+                                    st.session_state.get(id_key), nombre_empresa,
+                                    nombre_docente_nuevo.strip(), usuario_docente_nuevo.strip(),
+                                    email_docente_nuevo.strip(), codigo_curso_elegido
+                                ):
+                                    st.success(T["docente_enviado"])
+                                    st.session_state[f"{key_prefix}_docente_version"] = docente_version + 1
+                                    st.rerun()
+                            else:
+                                st.warning(T["campo_vacio_docente"])
 
             if st.button(T["cerrar_sesion"], key=f"{key_prefix}_btn_cerrar_sesion"):
                 st.session_state[login_key] = False
