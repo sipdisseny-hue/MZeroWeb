@@ -744,26 +744,99 @@ with st.sidebar:
         st.divider()
         try:
             cliente_pend = obtener_cliente_supabase()
-            pendientes = cliente_pend.table("empresas").select("*").eq("estado", "pendiente").execute().data
+            pendientes_empresas = cliente_pend.table("empresas").select("*").eq("estado", "pendiente").execute().data
+            pendientes_cursos = cliente_pend.table("cursos").select("*").eq("estado", "pendiente").execute().data
+            pendientes_modulos = cliente_pend.table("modulos").select("*").eq("estado", "pendiente").execute().data
+            pendientes_docentes = cliente_pend.table("docentes").select("*").eq("estado", "pendiente").execute().data
         except Exception as e:
-            pendientes = []
+            pendientes_empresas, pendientes_cursos, pendientes_modulos, pendientes_docentes = [], [], [], []
             st.error(f"Error al cargar pendientes: {e}")
 
-        etiqueta_panel = f"🔔 Peticiones pendientes ({len(pendientes)})" if pendientes else "🔔 Peticiones pendientes"
+        total_pendientes = len(pendientes_empresas) + len(pendientes_cursos) + len(pendientes_modulos) + len(pendientes_docentes)
+        etiqueta_panel = f"🔔 Peticiones pendientes ({total_pendientes})" if total_pendientes else "🔔 Peticiones pendientes"
+
         with st.expander(etiqueta_panel):
-            if not pendientes:
+            if total_pendientes == 0:
                 st.caption("No hay peticiones pendientes.")
-            for emp in pendientes:
-                nombre_mostrar = emp.get("nombre_centro") or emp.get("nombre_empresa") or emp.get("usuario", "")
-                st.write(f"**{nombre_mostrar}** — {emp.get('tipo', '')}")
-                st.caption(f"Usuario propuesto: {emp.get('usuario', '')} · Email: {emp.get('email', '')}")
-                if st.button("✅ Activar", key=f"activar_emp_{emp['id']}"):
-                    try:
-                        cliente_pend.table("empresas").update({"estado": "activo"}).eq("id", emp["id"]).execute()
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Error al activar: {e}")
-                st.divider()
+
+            # --- Empresas (Asociados/Colaboradores) ---
+            if pendientes_empresas:
+                st.markdown("**Empresas / Colaboradores**")
+                for emp in pendientes_empresas:
+                    nombre_mostrar = emp.get("nombre_centro") or emp.get("nombre_empresa") or emp.get("usuario", "")
+                    st.write(f"**{nombre_mostrar}** — {emp.get('tipo', '')}")
+                    st.caption(f"Usuario propuesto: {emp.get('usuario', '')} · Email: {emp.get('email', '')}")
+                    if st.button("✅ Activar", key=f"activar_emp_{emp['id']}"):
+                        try:
+                            cliente_pend.table("empresas").update({"estado": "activo"}).eq("id", emp["id"]).execute()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error al activar: {e}")
+                    st.divider()
+
+            # --- Cursos (con sus módulos pendientes asociados, si los tiene) ---
+            if pendientes_cursos:
+                st.markdown("**Cursos nuevos**")
+                for curso in pendientes_cursos:
+                    modulos_de_este_curso = [m for m in pendientes_modulos if m["codigo_curso"] == curso["codigo_curso"]]
+                    st.write(f"**{curso['codigo_curso']} - {curso.get('nombre_es', '')}**")
+                    st.caption(f"Horas: {curso.get('horas_totales', '')} · Competencias: {curso.get('competencias', '')}")
+                    for m in modulos_de_este_curso:
+                        st.caption(f"↳ Módulo: {m['subcodigo']} - {m.get('descripcion_es', '')} (Nivel {m.get('nivel_bloque', '')})")
+                    if st.button("✅ Activar curso" + (" + módulo(s)" if modulos_de_este_curso else ""), key=f"activar_curso_{curso['codigo_curso']}"):
+                        try:
+                            cliente_pend.table("cursos").update({"estado": "activo"}).eq("codigo_curso", curso["codigo_curso"]).execute()
+                            for m in modulos_de_este_curso:
+                                cliente_pend.table("modulos").update({"estado": "activo"}).eq("subcodigo", m["subcodigo"]).execute()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error al activar: {e}")
+                    st.divider()
+
+            # --- Módulos pendientes de cursos que YA estaban activos ---
+            modulos_sueltos = [m for m in pendientes_modulos if m["codigo_curso"] not in [c["codigo_curso"] for c in pendientes_cursos]]
+            if modulos_sueltos:
+                st.markdown("**Módulos nuevos (de cursos ya activos)**")
+                for m in modulos_sueltos:
+                    st.write(f"**{m['subcodigo']}** - {m.get('descripcion_es', '')} (Curso {m['codigo_curso']}, Nivel {m.get('nivel_bloque', '')})")
+                    if st.button("✅ Activar módulo", key=f"activar_modulo_{m['subcodigo']}"):
+                        try:
+                            cliente_pend.table("modulos").update({"estado": "activo"}).eq("subcodigo", m["subcodigo"]).execute()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error al activar: {e}")
+                    st.divider()
+
+            # --- Docentes: aquí se les asigna la contraseña y se les avisa por email ---
+            if pendientes_docentes:
+                st.markdown("**Docentes nuevos**")
+                for doc in pendientes_docentes:
+                    cursos_del_docente = cliente_pend.table("curso_docente").select("codigo_curso").eq("id_docente", doc["id_docente"]).execute().data
+                    codigos_cursos_doc = ", ".join(c["codigo_curso"] for c in cursos_del_docente) or "—"
+                    st.write(f"**{doc.get('nombre', '')}** (usuario: {doc.get('usuario', '')})")
+                    st.caption(f"Email: {doc.get('email', '')} · Cursos: {codigos_cursos_doc}")
+                    contrasena_nueva = st.text_input("Contraseña a asignar", key=f"pass_doc_{doc['id_docente']}", type="password")
+                    if st.button("✅ Activar y enviar email", key=f"activar_doc_{doc['id_docente']}"):
+                        if not contrasena_nueva.strip():
+                            st.warning("Escribe una contraseña antes de activar.")
+                        else:
+                            try:
+                                cliente_pend.table("docentes").update({
+                                    "contrasena": contrasena_nueva.strip(), "estado": "activo"
+                                }).eq("id_docente", doc["id_docente"]).execute()
+
+                                if doc.get("email"):
+                                    enviado = enviar_email(
+                                        doc["email"],
+                                        "M-Zero: acceso a Evaluaciones",
+                                        f"Hola {doc.get('nombre', '')},\n\nYa tienes acceso al sistema de evaluación de M-Zero.\n\nUsuario: {doc.get('usuario', '')}\nContraseña: {contrasena_nueva.strip()}\n\nAccede desde la pestaña Evaluaciones de la app."
+                                    )
+                                    if not enviado:
+                                        st.warning("Docente activado, pero no se pudo enviar el email (revisa la configuración de EMAIL_USER/EMAIL_PASSWORD en Secrets).")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error al activar: {e}")
+                    st.divider()
 
 # --- LÓGICA DE PANTALLAS ---
 if opcion == T["menu_docs"]:
