@@ -708,6 +708,7 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
+if 'acceso_panel' not in st.session_state: st.session_state.acceso_panel = None
 
 # --- FUNCIÓN GUARDAR ---
 def guardar_en_sheets(titulo, nuevo_contenido):
@@ -719,52 +720,108 @@ def guardar_en_sheets(titulo, nuevo_contenido):
     except:
         return False
 
-# --- SIDEBAR: NAVEGACIÓN E IDENTIFICACIÓN DE ACCESOS ---
-if "acceso_portal" not in st.session_state:
-    st.session_state.acceso_portal = None
-
+# --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
 with st.sidebar:
     st.image("logo_mzero.png")
     st.markdown("## M-Zero Pro")
-
-    idioma_seleccionado = st.radio(
-        "Idioma",
-        ["Castellano", "Català"],
-        horizontal=True,
-        label_visibility="collapsed"
-    )
+    
+    idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     T = TEXTOS[lang]
+    
+    def _abrir_acceso(tipo):
+        # Callback ejecutado antes de que se creen los widgets del siguiente rerun.
+        # Así evitamos modificar la session_state de un radio ya instanciado.
+        st.session_state["navegacion"] = T["menu_docs"]
+        st.session_state["acceso_panel"] = tipo
 
-    # Navegación principal: Evaluación se mantiene exactamente como acceso de docentes.
+    def _cambiar_navegacion():
+        # Si el usuario vuelve a Evaluaciones, cerramos el panel de acceso.
+        if st.session_state.get("navegacion") == T["menu_eval"]:
+            st.session_state["acceso_panel"] = None
+
     opcion = st.radio(
         T["nav_titulo"],
         [T["menu_docs"], T["menu_eval"]],
-        key="nav_opcion"
+        key="navegacion",
+        index=0,
+        on_change=_cambiar_navegacion
     )
 
     st.divider()
-    st.markdown("### Accesos")
+    st.markdown(
+        """<style>
+        section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
+            min-height: 46px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: left;
+            padding-left: 16px;
+            margin-bottom: 8px;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    st.markdown("### 🔐 Accesos")
 
-    # Estos tres botones sustituyen al antiguo usuario/contraseña genérico del sidebar.
-    # Al pulsarlos, la funcionalidad existente de Asociados/Colaboradores/Candidatos
-    # se abre en el área principal.
-    if st.button("👥  Acceso Asociados", key="sidebar_acceso_asociados", use_container_width=True):
-        st.session_state.acceso_portal = "asociados"
-        st.session_state.nav_opcion = T["menu_docs"]
-        st.rerun()
+    # Estos botones sustituyen ÚNICAMENTE al antiguo usuario/contraseña del sidebar.
+    # Cada uno abre la funcionalidad que ya existía en 'Cómo participar'.
+    st.button(
+        f"👥  {T['acceso_asociados']}",
+        key="btn_acceso_asociados",
+        use_container_width=True,
+        on_click=_abrir_acceso,
+        args=("asociado",),
+    )
+    st.button(
+        f"🏢  {T['acceso_colaboradores']}",
+        key="btn_acceso_colaboradores",
+        use_container_width=True,
+        on_click=_abrir_acceso,
+        args=("colaborador",),
+    )
+    st.button(
+        f"🎓  {T['acceso_candidatos']}",
+        key="btn_acceso_candidatos",
+        use_container_width=True,
+        on_click=_abrir_acceso,
+        args=("candidato",),
+    )
 
-    if st.button("🏢  Acceso Colaboradores", key="sidebar_acceso_colaboradores", use_container_width=True):
-        st.session_state.acceso_portal = "colaboradores"
-        st.session_state.nav_opcion = T["menu_docs"]
-        st.rerun()
-
-    if st.button("🎓  Acceso Candidatos", key="sidebar_acceso_candidatos", use_container_width=True):
-        st.session_state.acceso_portal = "candidatos"
-        st.session_state.nav_opcion = T["menu_docs"]
-        st.rerun()
-
-    st.caption("Selecciona un acceso para abrir su funcionalidad.")
+    # El antiguo acceso administrativo no se elimina: se conserva aquí para no
+    # romper la edición de contenidos ni el panel de administración.
+    with st.expander("⚙️ Administración", expanded=False):
+        if st.session_state.autenticado:
+            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
+            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
+                st.session_state.autenticado = False
+                st.session_state.usuario_actual = ""
+                st.rerun()
+        else:
+            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
+            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
+            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
+                url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
+                try:
+                    headers = {'User-Agent': 'Mozilla/5.0'}
+                    response = requests.get(url, headers=headers, timeout=10)
+                    if response.status_code == 200:
+                        df = pd.read_csv(StringIO(response.text), header=None)
+                        login_ok = any(
+                            str(df.iloc[i, 0]).strip() == usuario_admin.strip()
+                            and str(df.iloc[i, 1]).strip() == pass_admin.strip()
+                            for i in range(1, len(df))
+                        )
+                        if login_ok:
+                            st.session_state.autenticado = True
+                            st.session_state.usuario_actual = usuario_admin.strip()
+                            st.rerun()
+                        else:
+                            st.error(T["error_login"])
+                    else:
+                        st.error(T["error_cred"])
+                except Exception as e:
+                    st.error(f"Error de acceso: {e}")
 
     # --- NUEVO: PRUEBA DE CONEXIÓN A SUPABASE (temporal) -----------------------
     # No afecta a nada de lo que ya funciona. Es solo para comprobar que la
@@ -1053,10 +1110,13 @@ if opcion == T["menu_docs"]:
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE: CÓMO PARTICIPAR ---
-    # Por ahora queda únicamente el título. Los accesos se han trasladado al sidebar.
     st.markdown(f"## {T['como_participar']}")
 
-    # El contenido explicativo/vídeos se podrá añadir más adelante aquí.
+    instrucciones_participar = cargar_instrucciones_participar()
+
+    def texto_instruccion(clave):
+        bloque = instrucciones_participar.get(clave, {})
+        return bloque.get(lang, "")
 
     def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False):
         """Formulario para pedir el alta como Asociado o Colaborador nuevo
@@ -1287,32 +1347,28 @@ if opcion == T["menu_docs"]:
                 st.session_state[nombre_key] = ""
                 st.rerun()
 
-    # --- ACCESO SELECCIONADO DESDE EL SIDEBAR ---
-    # Se conserva la misma funcionalidad que ya existía; solo cambia su ubicación.
-    acceso_portal = st.session_state.get("acceso_portal")
+    # Los accesos ya no se muestran dentro de 'Cómo participar'.
+    # El sidebar decide cuál de las funcionalidades existentes se muestra aquí.
+    acceso_panel = st.session_state.get("acceso_panel")
+    if acceso_panel:
+        st.divider()
+        if acceso_panel == "asociado":
+            st.markdown(f"### 👥 {T['acceso_asociados']}")
+            bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
+        elif acceso_panel == "colaborador":
+            st.markdown(f"### 🏢 {T['acceso_colaboradores']}")
+            bloque_acceso_y_peticion(
+                "colaborador",
+                "Credenciales Colaboradores",
+                "colab_part",
+                incluir_centro_registro=True,
+                usar_supabase=True
+            )
+        elif acceso_panel == "candidato":
+            st.markdown(f"### 🎓 {T['acceso_candidatos']}")
+            st.caption("Próximamente.")
 
-    if acceso_portal == "asociados":
-        st.markdown("### 👥 Acceso Asociados")
-        bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
-
-    elif acceso_portal == "colaboradores":
-        st.markdown("### 🏢 Acceso Colaboradores")
-        bloque_acceso_y_peticion(
-            "colaborador",
-            "Credenciales Colaboradores",
-            "colab_part",
-            incluir_centro_registro=True,
-            usar_supabase=True
-        )
-
-    elif acceso_portal == "candidatos":
-        st.markdown("### 🎓 Acceso Candidatos")
-        st.info("Próximamente.")
-
-    st.markdown(
-        f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>",
-        unsafe_allow_html=True
-    )
+    st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
 elif opcion == T["menu_eval"]:
     if 'envio_resultado' in st.session_state:
