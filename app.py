@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+import re
 from datetime import date
 from io import StringIO
 
@@ -40,6 +41,9 @@ TEXTOS = {
         "area_docs": "Área de Documentación y Consultas",
         "asoc_colab": "Asociados y Colaboradores",
         "asociados": "Asociados",
+        "acceso_asociados": "Acceso Asociados",
+        "acceso_colaboradores": "Acceso Colaboradores",
+        "acceso_candidatos": "Acceso Candidatos",
         "colaboradores": "Colaboradores",
         "funcionalidad": "Funcionalidad",
         "contacto": "Contacto",
@@ -129,6 +133,9 @@ TEXTOS = {
         "area_docs": "Àrea de Documentació i Consultes",
         "asoc_colab": "Associats i Col·laboradors",
         "asociados": "Associats",
+        "acceso_asociados": "Accés Associats",
+        "acceso_colaboradores": "Accés Col·laboradors",
+        "acceso_candidatos": "Accés Candidats",
         "colaboradores": "Col·laboradors",
         "funcionalidad": "Funcionalitat",
         "contacto": "Contacte",
@@ -394,6 +401,44 @@ def enviar_peticion_registro(tipo, campos):
         return False
 
 # --- NUEVO: NOTIFICACIONES (en la app + email) ---
+# --- NUEVO: VALIDADOR DE DNI / NIE / CIF (algoritmo oficial español) ---
+def validar_dni_nie_cif(valor):
+    """Devuelve (es_valido: bool|None, tipo: str|None). None si el campo
+    está vacío o no coincide con ningún formato reconocido."""
+    valor = valor.strip().upper().replace(" ", "").replace("-", "")
+    if not valor:
+        return None, None
+
+    letras_dni = "TRWAGMYFPDXBNJZSQVHLCKE"
+
+    # DNI: 8 dígitos + letra de control
+    if re.fullmatch(r"\d{8}[A-Z]", valor):
+        letra_esperada = letras_dni[int(valor[:8]) % 23]
+        return valor[8] == letra_esperada, "DNI"
+
+    # NIE: X/Y/Z + 7 dígitos + letra de control
+    if re.fullmatch(r"[XYZ]\d{7}[A-Z]", valor):
+        prefijo = {"X": "0", "Y": "1", "Z": "2"}[valor[0]]
+        letra_esperada = letras_dni[int(prefijo + valor[1:8]) % 23]
+        return valor[8] == letra_esperada, "NIE"
+
+    # CIF: letra + 7 dígitos + dígito o letra de control
+    if re.fullmatch(r"[A-HJNPQRSUVW]\d{7}[0-9A-J]", valor):
+        digitos = valor[1:8]
+        suma_par = sum(int(d) for i, d in enumerate(digitos) if i % 2 == 1)
+        suma_impar = 0
+        for i, d in enumerate(digitos):
+            if i % 2 == 0:
+                doble = int(d) * 2
+                suma_impar += doble // 10 + doble % 10
+        digito_control = (10 - (suma_par + suma_impar) % 10) % 10
+        letra_control = "JABCDEFGHI"[digito_control]
+        control = valor[8]
+        return control == str(digito_control) or control == letra_control, "CIF"
+
+    return False, None
+
+
 def enviar_email(destinatario, asunto, mensaje):
     """Envía un email si hay credenciales configuradas en Secrets
     (EMAIL_USER, EMAIL_PASSWORD). Si no están configuradas, o falla el
@@ -1251,18 +1296,16 @@ if opcion == T["menu_docs"]:
     cp1, cp2, cp3 = st.columns(3)
 
     with cp1:
-        with st.expander(T["asociados"]):
-            st.markdown(texto_instruccion("asociados"), unsafe_allow_html=True)
+        with st.expander(T["acceso_asociados"]):
             bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
 
     with cp2:
-        with st.expander(T["colaboradores"]):
-            st.markdown(texto_instruccion("colaboradores"), unsafe_allow_html=True)
+        with st.expander(T["acceso_colaboradores"]):
             bloque_acceso_y_peticion("colaborador", "Credenciales Colaboradores", "colab_part", incluir_centro_registro=True, usar_supabase=True)
 
     with cp3:
-        with st.expander(T["candidatos"]):
-            st.markdown(texto_instruccion("candidato"), unsafe_allow_html=True)
+        with st.expander(T["acceso_candidatos"]):
+            st.caption("Próximamente.")
 
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
