@@ -736,9 +736,9 @@ with st.sidebar:
         st.session_state["acceso_panel"] = tipo
 
     def _cambiar_navegacion():
-        # Si el usuario vuelve a Evaluaciones, cerramos el panel de acceso.
-        if st.session_state.get("navegacion") == T["menu_eval"]:
-            st.session_state["acceso_panel"] = None
+        # Al navegar manualmente entre Documentación/Evaluaciones se cierra
+        # cualquier pantalla de acceso independiente.
+        st.session_state["acceso_panel"] = None
 
     opcion = st.radio(
         T["nav_titulo"],
@@ -938,7 +938,297 @@ with st.sidebar:
                     st.divider()
 
 # --- LÓGICA DE PANTALLAS ---
-if opcion == T["menu_docs"]:
+def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False):
+    """Formulario para pedir el alta como Asociado o Colaborador nuevo
+    (usuario todavía no inscrito en Credenciales Asociados/Colaboradores)."""
+    version = st.session_state.get(f"{key_prefix}_reg_version", 0)
+
+    with st.expander(T["solicitar_alta"]):
+        nombre_empresa = st.text_input(T["campo_nombre_empresa"], key=f"{key_prefix}_reg_empresa_{version}")
+
+        nombre_centro = ""
+        if incluir_centro:
+            nombre_centro = st.text_input(T["campo_nombre_centro"], key=f"{key_prefix}_reg_centro_{version}")
+
+        sector = st.text_input(T["campo_sector"], key=f"{key_prefix}_reg_sector_{version}")
+
+        c1, c2 = st.columns(2)
+        provincia = c1.text_input(T["campo_provincia"], key=f"{key_prefix}_reg_prov_{version}")
+        poblacion = c2.text_input(T["campo_poblacion"], key=f"{key_prefix}_reg_pob_{version}")
+
+        c3, c4 = st.columns(2)
+        cp = c3.text_input(T["campo_cp"], key=f"{key_prefix}_reg_cp_{version}")
+        razon_social = c4.text_input(T["campo_razon_social"], key=f"{key_prefix}_reg_razon_{version}")
+
+        c5, c6 = st.columns(2)
+        cif_nif = c5.text_input(T["campo_cif_nif"], key=f"{key_prefix}_reg_cif_{version}")
+        telefono = c6.text_input(T["campo_telefono"], key=f"{key_prefix}_reg_tel_{version}")
+
+        c7, c8 = st.columns(2)
+        email = c7.text_input(T["campo_email"], key=f"{key_prefix}_reg_email_{version}")
+        nombre_contacto = c8.text_input(T["campo_nombre_contacto"], key=f"{key_prefix}_reg_contacto_{version}")
+
+        web = st.text_input(T["campo_web"], key=f"{key_prefix}_reg_web_{version}")
+
+        usuario_deseado = ""
+        contrasena_deseada = ""
+        if usar_supabase:
+            c9, c10 = st.columns(2)
+            usuario_deseado = c9.text_input(T["campo_usuario_deseado"], key=f"{key_prefix}_reg_usuario_{version}")
+            contrasena_deseada = c10.text_input(T["campo_contrasena_deseada"], type="password", key=f"{key_prefix}_reg_contrasena_{version}")
+
+        if st.button(T["enviar_solicitud"], key=f"{key_prefix}_reg_btn_enviar"):
+            if not nombre_empresa.strip():
+                st.warning(T["campo_vacio_empresa"])
+            elif usar_supabase and (not usuario_deseado.strip() or not contrasena_deseada.strip()):
+                st.warning(T["campo_vacio_usuario_contrasena"])
+            elif usar_supabase:
+                campos = {
+                    "nombre_empresa": nombre_empresa.strip(),
+                    "sector": sector.strip(),
+                    "provincia": provincia.strip(),
+                    "poblacion": poblacion.strip(),
+                    "cp": cp.strip(),
+                    "razon_social": razon_social.strip(),
+                    "cif_nif": cif_nif.strip(),
+                    "telefono": telefono.strip(),
+                    "email": email.strip(),
+                    "nombre_contacto": nombre_contacto.strip(),
+                    "web": web.strip(),
+                }
+                if incluir_centro:
+                    campos["nombre_centro"] = nombre_centro.strip()
+
+                if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
+                    st.success(T["solicitud_pendiente_aviso"])
+                    st.session_state[f"{key_prefix}_reg_version"] = version + 1
+                    st.rerun()
+                else:
+                    st.error(T["error_solicitud"])
+            else:
+                campos = {
+                    "Nombre empresa": nombre_empresa.strip(),
+                    "Sector": sector.strip(),
+                    "Provincia": provincia.strip(),
+                    "Población": poblacion.strip(),
+                    "CP": cp.strip(),
+                    "Razón Social": razon_social.strip(),
+                    "CIF/NIF": cif_nif.strip(),
+                    "Telefono": telefono.strip(),
+                    "Email": email.strip(),
+                    "Nombre Contacto": nombre_contacto.strip(),
+                    "Web": web.strip(),
+                }
+                if incluir_centro:
+                    campos["Nombre del Centro"] = nombre_centro.strip()
+
+                if enviar_peticion_registro(tipo, campos):
+                    st.success(T["solicitud_enviada"])
+                    st.session_state[f"{key_prefix}_reg_version"] = version + 1
+                    st.rerun()
+                else:
+                    st.error(T["error_solicitud"])
+
+def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir_centro_registro=False, usar_supabase=False):
+    """Login independiente contra 'Credenciales Asociados' / 'Credenciales
+    Colaboradores' (o contra Supabase si usar_supabase=True) + formulario
+    de petición una vez autenticado."""
+    login_key = f"{key_prefix}_login_ok"
+    id_key = f"{key_prefix}_id_empresa"
+    nombre_key = f"{key_prefix}_nombre_empresa"
+    peticion_version_key = f"{key_prefix}_peticion_version"
+
+    st.markdown("---")
+
+    if not st.session_state.get(login_key):
+        usuario_in = st.text_input(T["usuario"], key=f"{key_prefix}_user_in")
+        pass_in = st.text_input(T["password"], type="password", key=f"{key_prefix}_pass_in")
+        if st.button(T["btn_acceder"], key=f"{key_prefix}_btn_acceder"):
+            if usar_supabase:
+                fila = verificar_credencial_supabase(usuario_in, pass_in, tipo)
+                if fila:
+                    st.session_state[login_key] = True
+                    st.session_state[id_key] = fila.get("id")
+                    st.session_state[nombre_key] = fila.get("nombre_centro") or fila.get("nombre_empresa") or fila.get("usuario", "")
+                    st.rerun()
+                else:
+                    st.error(T["error_acceso_participar"])
+            else:
+                fila = verificar_credencial_participar(usuario_in, pass_in, nombre_hoja_credenciales)
+                if fila:
+                    st.session_state[login_key] = True
+                    st.session_state[id_key] = str(fila.get("Id. Empresa", "")).strip()
+                    st.session_state[nombre_key] = str(fila.get("Nombre Empresa", "")).strip()
+                    st.rerun()
+                else:
+                    st.error(T["error_acceso_participar"])
+
+        bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase)
+    else:
+        nombre_empresa = st.session_state.get(nombre_key, "")
+        st.success(f"{T['acceso_concedido']} {nombre_empresa}")
+
+        version = st.session_state.get(peticion_version_key, 0)
+        texto_peticion = st.text_area(
+            T["escribir_peticion"], key=f"{key_prefix}_peticion_{version}"
+        )
+        if st.button(T["enviar"], key=f"{key_prefix}_btn_enviar"):
+            if texto_peticion.strip():
+                id_empresa = st.session_state.get(id_key, "")
+                if usar_supabase:
+                    enviado = False
+                    if SUPABASE_DISPONIBLE:
+                        try:
+                            obtener_cliente_supabase().table("peticiones_participar").insert({
+                                "id_empresa": id_empresa,
+                                "texto": texto_peticion.strip()
+                            }).execute()
+                            crear_notificacion("peticion", f"Nuevo mensaje de {nombre_empresa} ({tipo}): {texto_peticion.strip()[:200]}")
+                            enviado = True
+                        except Exception as e:
+                            st.error(f"Error al enviar: {e}")
+                else:
+                    enviado = enviar_peticion_participar(tipo, id_empresa, texto_peticion.strip())
+
+                if enviado:
+                    st.success(T["peticion_enviada"])
+                    st.session_state[peticion_version_key] = version + 1
+                    st.rerun()
+                else:
+                    st.error(T["error_peticion"])
+            else:
+                st.warning(T["campo_vacio_peticion"])
+
+        # --- NUEVO: solo para Colaboradores (usar_supabase) ---
+        if usar_supabase and tipo == "colaborador":
+            with st.expander(T["anadir_curso"]):
+                curso_version = st.session_state.get(f"{key_prefix}_curso_version", 0)
+                referencia = st.text_input(T["campo_referencia_curso"], key=f"{key_prefix}_curso_ref_{curso_version}")
+                nombre_curso_nuevo = st.text_input(T["campo_nombre_curso"], key=f"{key_prefix}_curso_nombre_{curso_version}")
+                nombre_modulo_nuevo = st.text_input(T["campo_nombre_modulo"], key=f"{key_prefix}_curso_modulo_{curso_version}")
+                cc1, cc2 = st.columns(2)
+                nivel_nuevo = cc1.text_input(T["nivel_bloque"], key=f"{key_prefix}_curso_nivel_{curso_version}")
+                horas_nuevo = cc2.text_input(T["campo_horas_totales"], key=f"{key_prefix}_curso_horas_{curso_version}")
+                competencias_nuevo = st.text_area(T["campo_competencias"], key=f"{key_prefix}_curso_comp_{curso_version}")
+
+                if st.button(T["enviar_curso"], key=f"{key_prefix}_curso_btn_enviar"):
+                    if referencia.strip() and nombre_curso_nuevo.strip():
+                        if enviar_curso_modulo_supabase(
+                            st.session_state.get(id_key), nombre_empresa,
+                            referencia.strip(), nombre_curso_nuevo.strip(), nombre_modulo_nuevo.strip(),
+                            nivel_nuevo.strip(), horas_nuevo.strip(), competencias_nuevo.strip()
+                        ):
+                            st.success(T["curso_enviado"])
+                            st.session_state[f"{key_prefix}_curso_version"] = curso_version + 1
+                            st.rerun()
+                    else:
+                        st.warning(T["campo_vacio_curso"])
+
+            with st.expander(T["anadir_docente"]):
+                cursos_propios = []
+                if SUPABASE_DISPONIBLE:
+                    try:
+                        cursos_propios = (
+                            obtener_cliente_supabase().table("cursos").select("codigo_curso, nombre_es")
+                            .eq("empresa_id", st.session_state.get(id_key)).execute().data
+                        )
+                    except Exception:
+                        cursos_propios = []
+
+                if not cursos_propios:
+                    st.info(T["sin_cursos_propios"])
+                else:
+                    docente_version = st.session_state.get(f"{key_prefix}_docente_version", 0)
+                    opciones_curso_propio = [f"{c['codigo_curso']} - {c.get('nombre_es', '')}" for c in cursos_propios]
+                    curso_elegido = st.selectbox(T["campo_curso_relacionado"], opciones_curso_propio, key=f"{key_prefix}_docente_curso_{docente_version}")
+                    codigo_curso_elegido = curso_elegido.split(" - ")[0] if " - " in curso_elegido else curso_elegido
+
+                    nombre_docente_nuevo = st.text_input(T["campo_nombre_docente"], key=f"{key_prefix}_docente_nombre_{docente_version}")
+                    dc1, dc2 = st.columns(2)
+                    usuario_docente_nuevo = dc1.text_input(T["campo_usuario_deseado"], key=f"{key_prefix}_docente_usuario_{docente_version}")
+                    email_docente_nuevo = dc2.text_input(T["campo_email"], key=f"{key_prefix}_docente_email_{docente_version}")
+
+                    if st.button(T["enviar_docente"], key=f"{key_prefix}_docente_btn_enviar"):
+                        if nombre_docente_nuevo.strip() and usuario_docente_nuevo.strip() and email_docente_nuevo.strip():
+                            if enviar_docente_supabase(
+                                st.session_state.get(id_key), nombre_empresa,
+                                nombre_docente_nuevo.strip(), usuario_docente_nuevo.strip(),
+                                email_docente_nuevo.strip(), codigo_curso_elegido
+                            ):
+                                st.success(T["docente_enviado"])
+                                st.session_state[f"{key_prefix}_docente_version"] = docente_version + 1
+                                st.rerun()
+                        else:
+                            st.warning(T["campo_vacio_docente"])
+
+        if st.button(T["cerrar_sesion"], key=f"{key_prefix}_btn_cerrar_sesion"):
+            st.session_state[login_key] = False
+            st.session_state[id_key] = ""
+            st.session_state[nombre_key] = ""
+            st.rerun()
+
+
+
+if st.session_state.get("acceso_panel"):
+    acceso_panel = st.session_state["acceso_panel"]
+
+    # Pantallas independientes: al entrar aquí NO se renderiza el bloque
+    # Documentación / Cómo participar. Cada acceso ocupa su propia pantalla.
+    st.markdown(
+        """<style>
+        .access-page {
+            padding: 12px 0 24px 0;
+        }
+        .access-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .access-subtitle {
+            color: #667085;
+            font-size: 1rem;
+            margin-bottom: 22px;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<div class="access-page">', unsafe_allow_html=True)
+
+    if acceso_panel == "asociado":
+        st.markdown(f'<div class="access-title">👥 {T["acceso_asociados"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-subtitle">Acceso y gestión para Asociados</div>', unsafe_allow_html=True)
+        bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
+        if st.button("← Volver a Documentación", key="volver_desde_asociados", use_container_width=False):
+            st.session_state["acceso_panel"] = None
+            st.rerun()
+
+    elif acceso_panel == "colaborador":
+        st.markdown(f'<div class="access-title">🏢 {T["acceso_colaboradores"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-subtitle">Acceso y gestión para Colaboradores</div>', unsafe_allow_html=True)
+        bloque_acceso_y_peticion(
+            "colaborador",
+            "Credenciales Colaboradores",
+            "colab_part",
+            incluir_centro_registro=True,
+            usar_supabase=True
+        )
+        if st.button("← Volver a Documentación", key="volver_desde_colaboradores", use_container_width=False):
+            st.session_state["acceso_panel"] = None
+            st.rerun()
+
+    elif acceso_panel == "candidato":
+        st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
+        st.info("Este acceso estará disponible próximamente.")
+        if st.button("← Volver a Documentación", key="volver_desde_candidatos", use_container_width=False):
+            st.session_state["acceso_panel"] = None
+            st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+elif opcion == T["menu_docs"]:
+
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
     # (y solo una vez por sesión) en vez de en cada carga de la app, para no
     # frenar la pestaña de Evaluaciones cuando no se necesitan.
@@ -1118,256 +1408,7 @@ if opcion == T["menu_docs"]:
         bloque = instrucciones_participar.get(clave, {})
         return bloque.get(lang, "")
 
-    def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False):
-        """Formulario para pedir el alta como Asociado o Colaborador nuevo
-        (usuario todavía no inscrito en Credenciales Asociados/Colaboradores)."""
-        version = st.session_state.get(f"{key_prefix}_reg_version", 0)
-
-        with st.expander(T["solicitar_alta"]):
-            nombre_empresa = st.text_input(T["campo_nombre_empresa"], key=f"{key_prefix}_reg_empresa_{version}")
-
-            nombre_centro = ""
-            if incluir_centro:
-                nombre_centro = st.text_input(T["campo_nombre_centro"], key=f"{key_prefix}_reg_centro_{version}")
-
-            sector = st.text_input(T["campo_sector"], key=f"{key_prefix}_reg_sector_{version}")
-
-            c1, c2 = st.columns(2)
-            provincia = c1.text_input(T["campo_provincia"], key=f"{key_prefix}_reg_prov_{version}")
-            poblacion = c2.text_input(T["campo_poblacion"], key=f"{key_prefix}_reg_pob_{version}")
-
-            c3, c4 = st.columns(2)
-            cp = c3.text_input(T["campo_cp"], key=f"{key_prefix}_reg_cp_{version}")
-            razon_social = c4.text_input(T["campo_razon_social"], key=f"{key_prefix}_reg_razon_{version}")
-
-            c5, c6 = st.columns(2)
-            cif_nif = c5.text_input(T["campo_cif_nif"], key=f"{key_prefix}_reg_cif_{version}")
-            telefono = c6.text_input(T["campo_telefono"], key=f"{key_prefix}_reg_tel_{version}")
-
-            c7, c8 = st.columns(2)
-            email = c7.text_input(T["campo_email"], key=f"{key_prefix}_reg_email_{version}")
-            nombre_contacto = c8.text_input(T["campo_nombre_contacto"], key=f"{key_prefix}_reg_contacto_{version}")
-
-            web = st.text_input(T["campo_web"], key=f"{key_prefix}_reg_web_{version}")
-
-            usuario_deseado = ""
-            contrasena_deseada = ""
-            if usar_supabase:
-                c9, c10 = st.columns(2)
-                usuario_deseado = c9.text_input(T["campo_usuario_deseado"], key=f"{key_prefix}_reg_usuario_{version}")
-                contrasena_deseada = c10.text_input(T["campo_contrasena_deseada"], type="password", key=f"{key_prefix}_reg_contrasena_{version}")
-
-            if st.button(T["enviar_solicitud"], key=f"{key_prefix}_reg_btn_enviar"):
-                if not nombre_empresa.strip():
-                    st.warning(T["campo_vacio_empresa"])
-                elif usar_supabase and (not usuario_deseado.strip() or not contrasena_deseada.strip()):
-                    st.warning(T["campo_vacio_usuario_contrasena"])
-                elif usar_supabase:
-                    campos = {
-                        "nombre_empresa": nombre_empresa.strip(),
-                        "sector": sector.strip(),
-                        "provincia": provincia.strip(),
-                        "poblacion": poblacion.strip(),
-                        "cp": cp.strip(),
-                        "razon_social": razon_social.strip(),
-                        "cif_nif": cif_nif.strip(),
-                        "telefono": telefono.strip(),
-                        "email": email.strip(),
-                        "nombre_contacto": nombre_contacto.strip(),
-                        "web": web.strip(),
-                    }
-                    if incluir_centro:
-                        campos["nombre_centro"] = nombre_centro.strip()
-
-                    if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
-                        st.success(T["solicitud_pendiente_aviso"])
-                        st.session_state[f"{key_prefix}_reg_version"] = version + 1
-                        st.rerun()
-                    else:
-                        st.error(T["error_solicitud"])
-                else:
-                    campos = {
-                        "Nombre empresa": nombre_empresa.strip(),
-                        "Sector": sector.strip(),
-                        "Provincia": provincia.strip(),
-                        "Población": poblacion.strip(),
-                        "CP": cp.strip(),
-                        "Razón Social": razon_social.strip(),
-                        "CIF/NIF": cif_nif.strip(),
-                        "Telefono": telefono.strip(),
-                        "Email": email.strip(),
-                        "Nombre Contacto": nombre_contacto.strip(),
-                        "Web": web.strip(),
-                    }
-                    if incluir_centro:
-                        campos["Nombre del Centro"] = nombre_centro.strip()
-
-                    if enviar_peticion_registro(tipo, campos):
-                        st.success(T["solicitud_enviada"])
-                        st.session_state[f"{key_prefix}_reg_version"] = version + 1
-                        st.rerun()
-                    else:
-                        st.error(T["error_solicitud"])
-
-    def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir_centro_registro=False, usar_supabase=False):
-        """Login independiente contra 'Credenciales Asociados' / 'Credenciales
-        Colaboradores' (o contra Supabase si usar_supabase=True) + formulario
-        de petición una vez autenticado."""
-        login_key = f"{key_prefix}_login_ok"
-        id_key = f"{key_prefix}_id_empresa"
-        nombre_key = f"{key_prefix}_nombre_empresa"
-        peticion_version_key = f"{key_prefix}_peticion_version"
-
-        st.markdown("---")
-
-        if not st.session_state.get(login_key):
-            usuario_in = st.text_input(T["usuario"], key=f"{key_prefix}_user_in")
-            pass_in = st.text_input(T["password"], type="password", key=f"{key_prefix}_pass_in")
-            if st.button(T["btn_acceder"], key=f"{key_prefix}_btn_acceder"):
-                if usar_supabase:
-                    fila = verificar_credencial_supabase(usuario_in, pass_in, tipo)
-                    if fila:
-                        st.session_state[login_key] = True
-                        st.session_state[id_key] = fila.get("id")
-                        st.session_state[nombre_key] = fila.get("nombre_centro") or fila.get("nombre_empresa") or fila.get("usuario", "")
-                        st.rerun()
-                    else:
-                        st.error(T["error_acceso_participar"])
-                else:
-                    fila = verificar_credencial_participar(usuario_in, pass_in, nombre_hoja_credenciales)
-                    if fila:
-                        st.session_state[login_key] = True
-                        st.session_state[id_key] = str(fila.get("Id. Empresa", "")).strip()
-                        st.session_state[nombre_key] = str(fila.get("Nombre Empresa", "")).strip()
-                        st.rerun()
-                    else:
-                        st.error(T["error_acceso_participar"])
-
-            bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase)
-        else:
-            nombre_empresa = st.session_state.get(nombre_key, "")
-            st.success(f"{T['acceso_concedido']} {nombre_empresa}")
-
-            version = st.session_state.get(peticion_version_key, 0)
-            texto_peticion = st.text_area(
-                T["escribir_peticion"], key=f"{key_prefix}_peticion_{version}"
-            )
-            if st.button(T["enviar"], key=f"{key_prefix}_btn_enviar"):
-                if texto_peticion.strip():
-                    id_empresa = st.session_state.get(id_key, "")
-                    if usar_supabase:
-                        enviado = False
-                        if SUPABASE_DISPONIBLE:
-                            try:
-                                obtener_cliente_supabase().table("peticiones_participar").insert({
-                                    "id_empresa": id_empresa,
-                                    "texto": texto_peticion.strip()
-                                }).execute()
-                                crear_notificacion("peticion", f"Nuevo mensaje de {nombre_empresa} ({tipo}): {texto_peticion.strip()[:200]}")
-                                enviado = True
-                            except Exception as e:
-                                st.error(f"Error al enviar: {e}")
-                    else:
-                        enviado = enviar_peticion_participar(tipo, id_empresa, texto_peticion.strip())
-
-                    if enviado:
-                        st.success(T["peticion_enviada"])
-                        st.session_state[peticion_version_key] = version + 1
-                        st.rerun()
-                    else:
-                        st.error(T["error_peticion"])
-                else:
-                    st.warning(T["campo_vacio_peticion"])
-
-            # --- NUEVO: solo para Colaboradores (usar_supabase) ---
-            if usar_supabase and tipo == "colaborador":
-                with st.expander(T["anadir_curso"]):
-                    curso_version = st.session_state.get(f"{key_prefix}_curso_version", 0)
-                    referencia = st.text_input(T["campo_referencia_curso"], key=f"{key_prefix}_curso_ref_{curso_version}")
-                    nombre_curso_nuevo = st.text_input(T["campo_nombre_curso"], key=f"{key_prefix}_curso_nombre_{curso_version}")
-                    nombre_modulo_nuevo = st.text_input(T["campo_nombre_modulo"], key=f"{key_prefix}_curso_modulo_{curso_version}")
-                    cc1, cc2 = st.columns(2)
-                    nivel_nuevo = cc1.text_input(T["nivel_bloque"], key=f"{key_prefix}_curso_nivel_{curso_version}")
-                    horas_nuevo = cc2.text_input(T["campo_horas_totales"], key=f"{key_prefix}_curso_horas_{curso_version}")
-                    competencias_nuevo = st.text_area(T["campo_competencias"], key=f"{key_prefix}_curso_comp_{curso_version}")
-
-                    if st.button(T["enviar_curso"], key=f"{key_prefix}_curso_btn_enviar"):
-                        if referencia.strip() and nombre_curso_nuevo.strip():
-                            if enviar_curso_modulo_supabase(
-                                st.session_state.get(id_key), nombre_empresa,
-                                referencia.strip(), nombre_curso_nuevo.strip(), nombre_modulo_nuevo.strip(),
-                                nivel_nuevo.strip(), horas_nuevo.strip(), competencias_nuevo.strip()
-                            ):
-                                st.success(T["curso_enviado"])
-                                st.session_state[f"{key_prefix}_curso_version"] = curso_version + 1
-                                st.rerun()
-                        else:
-                            st.warning(T["campo_vacio_curso"])
-
-                with st.expander(T["anadir_docente"]):
-                    cursos_propios = []
-                    if SUPABASE_DISPONIBLE:
-                        try:
-                            cursos_propios = (
-                                obtener_cliente_supabase().table("cursos").select("codigo_curso, nombre_es")
-                                .eq("empresa_id", st.session_state.get(id_key)).execute().data
-                            )
-                        except Exception:
-                            cursos_propios = []
-
-                    if not cursos_propios:
-                        st.info(T["sin_cursos_propios"])
-                    else:
-                        docente_version = st.session_state.get(f"{key_prefix}_docente_version", 0)
-                        opciones_curso_propio = [f"{c['codigo_curso']} - {c.get('nombre_es', '')}" for c in cursos_propios]
-                        curso_elegido = st.selectbox(T["campo_curso_relacionado"], opciones_curso_propio, key=f"{key_prefix}_docente_curso_{docente_version}")
-                        codigo_curso_elegido = curso_elegido.split(" - ")[0] if " - " in curso_elegido else curso_elegido
-
-                        nombre_docente_nuevo = st.text_input(T["campo_nombre_docente"], key=f"{key_prefix}_docente_nombre_{docente_version}")
-                        dc1, dc2 = st.columns(2)
-                        usuario_docente_nuevo = dc1.text_input(T["campo_usuario_deseado"], key=f"{key_prefix}_docente_usuario_{docente_version}")
-                        email_docente_nuevo = dc2.text_input(T["campo_email"], key=f"{key_prefix}_docente_email_{docente_version}")
-
-                        if st.button(T["enviar_docente"], key=f"{key_prefix}_docente_btn_enviar"):
-                            if nombre_docente_nuevo.strip() and usuario_docente_nuevo.strip() and email_docente_nuevo.strip():
-                                if enviar_docente_supabase(
-                                    st.session_state.get(id_key), nombre_empresa,
-                                    nombre_docente_nuevo.strip(), usuario_docente_nuevo.strip(),
-                                    email_docente_nuevo.strip(), codigo_curso_elegido
-                                ):
-                                    st.success(T["docente_enviado"])
-                                    st.session_state[f"{key_prefix}_docente_version"] = docente_version + 1
-                                    st.rerun()
-                            else:
-                                st.warning(T["campo_vacio_docente"])
-
-            if st.button(T["cerrar_sesion"], key=f"{key_prefix}_btn_cerrar_sesion"):
-                st.session_state[login_key] = False
-                st.session_state[id_key] = ""
-                st.session_state[nombre_key] = ""
-                st.rerun()
-
-    # Los accesos ya no se muestran dentro de 'Cómo participar'.
-    # El sidebar decide cuál de las funcionalidades existentes se muestra aquí.
-    acceso_panel = st.session_state.get("acceso_panel")
-    if acceso_panel:
-        st.divider()
-        if acceso_panel == "asociado":
-            st.markdown(f"### 👥 {T['acceso_asociados']}")
-            bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
-        elif acceso_panel == "colaborador":
-            st.markdown(f"### 🏢 {T['acceso_colaboradores']}")
-            bloque_acceso_y_peticion(
-                "colaborador",
-                "Credenciales Colaboradores",
-                "colab_part",
-                incluir_centro_registro=True,
-                usar_supabase=True
-            )
-        elif acceso_panel == "candidato":
-            st.markdown(f"### 🎓 {T['acceso_candidatos']}")
-            st.caption("Próximamente.")
-
+    # Los accesos se muestran en pantallas independientes desde el sidebar.
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
 elif opcion == T["menu_eval"]:
