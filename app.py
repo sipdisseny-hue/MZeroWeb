@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+import re
 from datetime import date
 from io import StringIO
 
@@ -40,6 +41,9 @@ TEXTOS = {
         "area_docs": "Área de Documentación y Consultas",
         "asoc_colab": "Asociados y Colaboradores",
         "asociados": "Asociados",
+        "acceso_asociados": "Acceso Asociados",
+        "acceso_colaboradores": "Acceso Colaboradores",
+        "acceso_candidatos": "Acceso Candidatos",
         "colaboradores": "Colaboradores",
         "funcionalidad": "Funcionalidad",
         "contacto": "Contacto",
@@ -129,6 +133,9 @@ TEXTOS = {
         "area_docs": "Àrea de Documentació i Consultes",
         "asoc_colab": "Associats i Col·laboradors",
         "asociados": "Associats",
+        "acceso_asociados": "Accés Associats",
+        "acceso_colaboradores": "Accés Col·laboradors",
+        "acceso_candidatos": "Accés Candidats",
         "colaboradores": "Col·laboradors",
         "funcionalidad": "Funcionalitat",
         "contacto": "Contacte",
@@ -394,35 +401,77 @@ def enviar_peticion_registro(tipo, campos):
         return False
 
 # --- NUEVO: NOTIFICACIONES (en la app + email) ---
-def enviar_email_notificacion(asunto, mensaje):
-    """Envía un aviso por email si hay credenciales configuradas en Secrets
-    (EMAIL_USER, EMAIL_PASSWORD, y opcionalmente EMAIL_NOTIFY_TO). Si no
-    están configuradas, o falla el envío, no rompe el flujo de la app."""
+# --- NUEVO: VALIDADOR DE DNI / NIE / CIF (algoritmo oficial español) ---
+def validar_dni_nie_cif(valor):
+    """Devuelve (es_valido: bool|None, tipo: str|None). None si el campo
+    está vacío o no coincide con ningún formato reconocido."""
+    valor = valor.strip().upper().replace(" ", "").replace("-", "")
+    if not valor:
+        return None, None
+
+    letras_dni = "TRWAGMYFPDXBNJZSQVHLCKE"
+
+    # DNI: 8 dígitos + letra de control
+    if re.fullmatch(r"\d{8}[A-Z]", valor):
+        letra_esperada = letras_dni[int(valor[:8]) % 23]
+        return valor[8] == letra_esperada, "DNI"
+
+    # NIE: X/Y/Z + 7 dígitos + letra de control
+    if re.fullmatch(r"[XYZ]\d{7}[A-Z]", valor):
+        prefijo = {"X": "0", "Y": "1", "Z": "2"}[valor[0]]
+        letra_esperada = letras_dni[int(prefijo + valor[1:8]) % 23]
+        return valor[8] == letra_esperada, "NIE"
+
+    # CIF: letra + 7 dígitos + dígito o letra de control
+    if re.fullmatch(r"[A-HJNPQRSUVW]\d{7}[0-9A-J]", valor):
+        digitos = valor[1:8]
+        suma_par = sum(int(d) for i, d in enumerate(digitos) if i % 2 == 1)
+        suma_impar = 0
+        for i, d in enumerate(digitos):
+            if i % 2 == 0:
+                doble = int(d) * 2
+                suma_impar += doble // 10 + doble % 10
+        digito_control = (10 - (suma_par + suma_impar) % 10) % 10
+        letra_control = "JABCDEFGHI"[digito_control]
+        control = valor[8]
+        return control == str(digito_control) or control == letra_control, "CIF"
+
+    return False, None
+
+
+def enviar_email(destinatario, asunto, mensaje):
+    """Envía un email si hay credenciales configuradas en Secrets
+    (EMAIL_USER, EMAIL_PASSWORD). Si no están configuradas, o falla el
+    envío, no rompe el flujo de la app — devuelve True/False para que
+    quien llame pueda avisar si quiere."""
     if "EMAIL_USER" not in st.secrets or "EMAIL_PASSWORD" not in st.secrets:
-        return
+        return False
     try:
         import smtplib
         from email.mime.text import MIMEText
         msg = MIMEText(mensaje)
         msg["Subject"] = asunto
         msg["From"] = st.secrets["EMAIL_USER"]
-        msg["To"] = st.secrets.get("EMAIL_NOTIFY_TO", st.secrets["EMAIL_USER"])
+        msg["To"] = destinatario
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(st.secrets["EMAIL_USER"], st.secrets["EMAIL_PASSWORD"])
             server.send_message(msg)
+        return True
     except Exception:
-        pass
+        return False
 
 
 def crear_notificacion(tipo, mensaje):
     """Guarda el aviso en Supabase (para el badge dentro de la app) y
-    además intenta mandarlo por email."""
+    además intenta mandarlo por email al administrador."""
     if SUPABASE_DISPONIBLE:
         try:
             obtener_cliente_supabase().table("notificaciones").insert({"tipo": tipo, "mensaje": mensaje}).execute()
         except Exception:
             pass
-    enviar_email_notificacion("M-Zero: nueva petición", mensaje)
+    destinatario_admin = st.secrets.get("EMAIL_NOTIFY_TO", st.secrets.get("EMAIL_USER", ""))
+    if destinatario_admin:
+        enviar_email(destinatario_admin, "M-Zero: nueva petición", mensaje)
 
 
 # --- NUEVO: REGISTRO Y LOGIN DE EMPRESAS (Colaboradores) CONTRA SUPABASE ---
@@ -740,26 +789,99 @@ with st.sidebar:
         st.divider()
         try:
             cliente_pend = obtener_cliente_supabase()
-            pendientes = cliente_pend.table("empresas").select("*").eq("estado", "pendiente").execute().data
+            pendientes_empresas = cliente_pend.table("empresas").select("*").eq("estado", "pendiente").execute().data
+            pendientes_cursos = cliente_pend.table("cursos").select("*").eq("estado", "pendiente").execute().data
+            pendientes_modulos = cliente_pend.table("modulos").select("*").eq("estado", "pendiente").execute().data
+            pendientes_docentes = cliente_pend.table("docentes").select("*").eq("estado", "pendiente").execute().data
         except Exception as e:
-            pendientes = []
+            pendientes_empresas, pendientes_cursos, pendientes_modulos, pendientes_docentes = [], [], [], []
             st.error(f"Error al cargar pendientes: {e}")
 
-        etiqueta_panel = f"🔔 Peticiones pendientes ({len(pendientes)})" if pendientes else "🔔 Peticiones pendientes"
+        total_pendientes = len(pendientes_empresas) + len(pendientes_cursos) + len(pendientes_modulos) + len(pendientes_docentes)
+        etiqueta_panel = f"🔔 Peticiones pendientes ({total_pendientes})" if total_pendientes else "🔔 Peticiones pendientes"
+
         with st.expander(etiqueta_panel):
-            if not pendientes:
+            if total_pendientes == 0:
                 st.caption("No hay peticiones pendientes.")
-            for emp in pendientes:
-                nombre_mostrar = emp.get("nombre_centro") or emp.get("nombre_empresa") or emp.get("usuario", "")
-                st.write(f"**{nombre_mostrar}** — {emp.get('tipo', '')}")
-                st.caption(f"Usuario propuesto: {emp.get('usuario', '')} · Email: {emp.get('email', '')}")
-                if st.button("✅ Activar", key=f"activar_emp_{emp['id']}"):
-                    try:
-                        cliente_pend.table("empresas").update({"estado": "activo"}).eq("id", emp["id"]).execute()
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Error al activar: {e}")
-                st.divider()
+
+            # --- Empresas (Asociados/Colaboradores) ---
+            if pendientes_empresas:
+                st.markdown("**Empresas / Colaboradores**")
+                for emp in pendientes_empresas:
+                    nombre_mostrar = emp.get("nombre_centro") or emp.get("nombre_empresa") or emp.get("usuario", "")
+                    st.write(f"**{nombre_mostrar}** — {emp.get('tipo', '')}")
+                    st.caption(f"Usuario propuesto: {emp.get('usuario', '')} · Email: {emp.get('email', '')}")
+                    if st.button("✅ Activar", key=f"activar_emp_{emp['id']}"):
+                        try:
+                            cliente_pend.table("empresas").update({"estado": "activo"}).eq("id", emp["id"]).execute()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error al activar: {e}")
+                    st.divider()
+
+            # --- Cursos (con sus módulos pendientes asociados, si los tiene) ---
+            if pendientes_cursos:
+                st.markdown("**Cursos nuevos**")
+                for curso in pendientes_cursos:
+                    modulos_de_este_curso = [m for m in pendientes_modulos if m["codigo_curso"] == curso["codigo_curso"]]
+                    st.write(f"**{curso['codigo_curso']} - {curso.get('nombre_es', '')}**")
+                    st.caption(f"Horas: {curso.get('horas_totales', '')} · Competencias: {curso.get('competencias', '')}")
+                    for m in modulos_de_este_curso:
+                        st.caption(f"↳ Módulo: {m['subcodigo']} - {m.get('descripcion_es', '')} (Nivel {m.get('nivel_bloque', '')})")
+                    if st.button("✅ Activar curso" + (" + módulo(s)" if modulos_de_este_curso else ""), key=f"activar_curso_{curso['codigo_curso']}"):
+                        try:
+                            cliente_pend.table("cursos").update({"estado": "activo"}).eq("codigo_curso", curso["codigo_curso"]).execute()
+                            for m in modulos_de_este_curso:
+                                cliente_pend.table("modulos").update({"estado": "activo"}).eq("subcodigo", m["subcodigo"]).execute()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error al activar: {e}")
+                    st.divider()
+
+            # --- Módulos pendientes de cursos que YA estaban activos ---
+            modulos_sueltos = [m for m in pendientes_modulos if m["codigo_curso"] not in [c["codigo_curso"] for c in pendientes_cursos]]
+            if modulos_sueltos:
+                st.markdown("**Módulos nuevos (de cursos ya activos)**")
+                for m in modulos_sueltos:
+                    st.write(f"**{m['subcodigo']}** - {m.get('descripcion_es', '')} (Curso {m['codigo_curso']}, Nivel {m.get('nivel_bloque', '')})")
+                    if st.button("✅ Activar módulo", key=f"activar_modulo_{m['subcodigo']}"):
+                        try:
+                            cliente_pend.table("modulos").update({"estado": "activo"}).eq("subcodigo", m["subcodigo"]).execute()
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error al activar: {e}")
+                    st.divider()
+
+            # --- Docentes: aquí se les asigna la contraseña y se les avisa por email ---
+            if pendientes_docentes:
+                st.markdown("**Docentes nuevos**")
+                for doc in pendientes_docentes:
+                    cursos_del_docente = cliente_pend.table("curso_docente").select("codigo_curso").eq("id_docente", doc["id_docente"]).execute().data
+                    codigos_cursos_doc = ", ".join(c["codigo_curso"] for c in cursos_del_docente) or "—"
+                    st.write(f"**{doc.get('nombre', '')}** (usuario: {doc.get('usuario', '')})")
+                    st.caption(f"Email: {doc.get('email', '')} · Cursos: {codigos_cursos_doc}")
+                    contrasena_nueva = st.text_input("Contraseña a asignar", key=f"pass_doc_{doc['id_docente']}", type="password")
+                    if st.button("✅ Activar y enviar email", key=f"activar_doc_{doc['id_docente']}"):
+                        if not contrasena_nueva.strip():
+                            st.warning("Escribe una contraseña antes de activar.")
+                        else:
+                            try:
+                                cliente_pend.table("docentes").update({
+                                    "contrasena": contrasena_nueva.strip(), "estado": "activo"
+                                }).eq("id_docente", doc["id_docente"]).execute()
+
+                                if doc.get("email"):
+                                    enviado = enviar_email(
+                                        doc["email"],
+                                        "M-Zero: acceso a Evaluaciones",
+                                        f"Hola {doc.get('nombre', '')},\n\nYa tienes acceso al sistema de evaluación de M-Zero.\n\nUsuario: {doc.get('usuario', '')}\nContraseña: {contrasena_nueva.strip()}\n\nAccede desde la pestaña Evaluaciones de la app."
+                                    )
+                                    if not enviado:
+                                        st.warning("Docente activado, pero no se pudo enviar el email (revisa la configuración de EMAIL_USER/EMAIL_PASSWORD en Secrets).")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error al activar: {e}")
+                    st.divider()
 
 # --- LÓGICA DE PANTALLAS ---
 if opcion == T["menu_docs"]:
@@ -967,6 +1089,12 @@ if opcion == T["menu_docs"]:
             c5, c6 = st.columns(2)
             cif_nif = c5.text_input(T["campo_cif_nif"], key=f"{key_prefix}_reg_cif_{version}")
             telefono = c6.text_input(T["campo_telefono"], key=f"{key_prefix}_reg_tel_{version}")
+            if cif_nif.strip():
+                valido_cif, tipo_doc_cif = validar_dni_nie_cif(cif_nif)
+                if valido_cif is True:
+                    st.caption(f"✅ {tipo_doc_cif} válido")
+                elif valido_cif is False:
+                    st.caption(f"⚠️ {T['aviso_cif_no_valido']} ({tipo_doc_cif or 'CIF/NIF/DNI'})")
 
             c7, c8 = st.columns(2)
             email = c7.text_input(T["campo_email"], key=f"{key_prefix}_reg_email_{version}")
@@ -1174,18 +1302,16 @@ if opcion == T["menu_docs"]:
     cp1, cp2, cp3 = st.columns(3)
 
     with cp1:
-        with st.expander(T["asociados"]):
-            st.markdown(texto_instruccion("asociados"), unsafe_allow_html=True)
+        with st.expander(T["acceso_asociados"]):
             bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
 
     with cp2:
-        with st.expander(T["colaboradores"]):
-            st.markdown(texto_instruccion("colaboradores"), unsafe_allow_html=True)
+        with st.expander(T["acceso_colaboradores"]):
             bloque_acceso_y_peticion("colaborador", "Credenciales Colaboradores", "colab_part", incluir_centro_registro=True, usar_supabase=True)
 
     with cp3:
-        with st.expander(T["candidatos"]):
-            st.markdown(texto_instruccion("candidato"), unsafe_allow_html=True)
+        with st.expander(T["acceso_candidatos"]):
+            st.caption("Próximamente.")
 
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
