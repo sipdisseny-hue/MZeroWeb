@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import requests
-import re
 from datetime import date
 from io import StringIO
 
@@ -41,9 +40,6 @@ TEXTOS = {
         "area_docs": "Área de Documentación y Consultas",
         "asoc_colab": "Asociados y Colaboradores",
         "asociados": "Asociados",
-        "acceso_asociados": "Acceso Asociados",
-        "acceso_colaboradores": "Acceso Colaboradores",
-        "acceso_candidatos": "Acceso Candidatos",
         "colaboradores": "Colaboradores",
         "funcionalidad": "Funcionalidad",
         "contacto": "Contacto",
@@ -133,9 +129,6 @@ TEXTOS = {
         "area_docs": "Àrea de Documentació i Consultes",
         "asoc_colab": "Associats i Col·laboradors",
         "asociados": "Associats",
-        "acceso_asociados": "Accés Associats",
-        "acceso_colaboradores": "Accés Col·laboradors",
-        "acceso_candidatos": "Accés Candidats",
         "colaboradores": "Col·laboradors",
         "funcionalidad": "Funcionalitat",
         "contacto": "Contacte",
@@ -401,77 +394,35 @@ def enviar_peticion_registro(tipo, campos):
         return False
 
 # --- NUEVO: NOTIFICACIONES (en la app + email) ---
-# --- NUEVO: VALIDADOR DE DNI / NIE / CIF (algoritmo oficial español) ---
-def validar_dni_nie_cif(valor):
-    """Devuelve (es_valido: bool|None, tipo: str|None). None si el campo
-    está vacío o no coincide con ningún formato reconocido."""
-    valor = valor.strip().upper().replace(" ", "").replace("-", "")
-    if not valor:
-        return None, None
-
-    letras_dni = "TRWAGMYFPDXBNJZSQVHLCKE"
-
-    # DNI: 8 dígitos + letra de control
-    if re.fullmatch(r"\d{8}[A-Z]", valor):
-        letra_esperada = letras_dni[int(valor[:8]) % 23]
-        return valor[8] == letra_esperada, "DNI"
-
-    # NIE: X/Y/Z + 7 dígitos + letra de control
-    if re.fullmatch(r"[XYZ]\d{7}[A-Z]", valor):
-        prefijo = {"X": "0", "Y": "1", "Z": "2"}[valor[0]]
-        letra_esperada = letras_dni[int(prefijo + valor[1:8]) % 23]
-        return valor[8] == letra_esperada, "NIE"
-
-    # CIF: letra + 7 dígitos + dígito o letra de control
-    if re.fullmatch(r"[A-HJNPQRSUVW]\d{7}[0-9A-J]", valor):
-        digitos = valor[1:8]
-        suma_par = sum(int(d) for i, d in enumerate(digitos) if i % 2 == 1)
-        suma_impar = 0
-        for i, d in enumerate(digitos):
-            if i % 2 == 0:
-                doble = int(d) * 2
-                suma_impar += doble // 10 + doble % 10
-        digito_control = (10 - (suma_par + suma_impar) % 10) % 10
-        letra_control = "JABCDEFGHI"[digito_control]
-        control = valor[8]
-        return control == str(digito_control) or control == letra_control, "CIF"
-
-    return False, None
-
-
-def enviar_email(destinatario, asunto, mensaje):
-    """Envía un email si hay credenciales configuradas en Secrets
-    (EMAIL_USER, EMAIL_PASSWORD). Si no están configuradas, o falla el
-    envío, no rompe el flujo de la app — devuelve True/False para que
-    quien llame pueda avisar si quiere."""
+def enviar_email_notificacion(asunto, mensaje):
+    """Envía un aviso por email si hay credenciales configuradas en Secrets
+    (EMAIL_USER, EMAIL_PASSWORD, y opcionalmente EMAIL_NOTIFY_TO). Si no
+    están configuradas, o falla el envío, no rompe el flujo de la app."""
     if "EMAIL_USER" not in st.secrets or "EMAIL_PASSWORD" not in st.secrets:
-        return False
+        return
     try:
         import smtplib
         from email.mime.text import MIMEText
         msg = MIMEText(mensaje)
         msg["Subject"] = asunto
         msg["From"] = st.secrets["EMAIL_USER"]
-        msg["To"] = destinatario
+        msg["To"] = st.secrets.get("EMAIL_NOTIFY_TO", st.secrets["EMAIL_USER"])
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(st.secrets["EMAIL_USER"], st.secrets["EMAIL_PASSWORD"])
             server.send_message(msg)
-        return True
     except Exception:
-        return False
+        pass
 
 
 def crear_notificacion(tipo, mensaje):
     """Guarda el aviso en Supabase (para el badge dentro de la app) y
-    además intenta mandarlo por email al administrador."""
+    además intenta mandarlo por email."""
     if SUPABASE_DISPONIBLE:
         try:
             obtener_cliente_supabase().table("notificaciones").insert({"tipo": tipo, "mensaje": mensaje}).execute()
         except Exception:
             pass
-    destinatario_admin = st.secrets.get("EMAIL_NOTIFY_TO", st.secrets.get("EMAIL_USER", ""))
-    if destinatario_admin:
-        enviar_email(destinatario_admin, "M-Zero: nueva petición", mensaje)
+    enviar_email_notificacion("M-Zero: nueva petición", mensaje)
 
 
 # --- NUEVO: REGISTRO Y LOGIN DE EMPRESAS (Colaboradores) CONTRA SUPABASE ---
@@ -708,7 +659,6 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
-if 'acceso_panel' not in st.session_state: st.session_state.acceso_panel = None
 
 # --- FUNCIÓN GUARDAR ---
 def guardar_en_sheets(titulo, nuevo_contenido):
@@ -729,99 +679,46 @@ with st.sidebar:
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     T = TEXTOS[lang]
     
-    def _abrir_acceso(tipo):
-        # Callback ejecutado antes de que se creen los widgets del siguiente rerun.
-        # Así evitamos modificar la session_state de un radio ya instanciado.
-        st.session_state["navegacion"] = T["menu_docs"]
-        st.session_state["acceso_panel"] = tipo
-
-    def _cambiar_navegacion():
-        # Al navegar manualmente entre Documentación/Evaluaciones se cierra
-        # cualquier pantalla de acceso independiente.
-        st.session_state["acceso_panel"] = None
-
-    opcion = st.radio(
-        T["nav_titulo"],
-        [T["menu_docs"], T["menu_eval"]],
-        key="navegacion",
-        index=0,
-        on_change=_cambiar_navegacion
-    )
-
+    opcion = st.radio(T["nav_titulo"], [T["menu_docs"], T["menu_eval"]])
+    
     st.divider()
-    st.markdown(
-        """<style>
-        section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
-            min-height: 46px;
-            border-radius: 10px;
-            font-weight: 600;
-            text-align: left;
-            padding-left: 16px;
-            margin-bottom: 8px;
-        }
-        </style>""",
-        unsafe_allow_html=True,
-    )
-    st.markdown("### 🔐 Accesos")
-
-    # Estos botones sustituyen ÚNICAMENTE al antiguo usuario/contraseña del sidebar.
-    # Cada uno abre la funcionalidad que ya existía en 'Cómo participar'.
-    st.button(
-        f"👥  {T['acceso_asociados']}",
-        key="btn_acceso_asociados",
-        use_container_width=True,
-        on_click=_abrir_acceso,
-        args=("asociado",),
-    )
-    st.button(
-        f"🏢  {T['acceso_colaboradores']}",
-        key="btn_acceso_colaboradores",
-        use_container_width=True,
-        on_click=_abrir_acceso,
-        args=("colaborador",),
-    )
-    st.button(
-        f"🎓  {T['acceso_candidatos']}",
-        key="btn_acceso_candidatos",
-        use_container_width=True,
-        on_click=_abrir_acceso,
-        args=("candidato",),
-    )
-
-    # El antiguo acceso administrativo no se elimina: se conserva aquí para no
-    # romper la edición de contenidos ni el panel de administración.
-    with st.expander("⚙️ Administración", expanded=False):
-        if st.session_state.autenticado:
-            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
-            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
-                st.session_state.autenticado = False
-                st.session_state.usuario_actual = ""
-                st.rerun()
-        else:
-            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
-            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
-            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
-                url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
-                try:
-                    headers = {'User-Agent': 'Mozilla/5.0'}
-                    response = requests.get(url, headers=headers, timeout=10)
-                    if response.status_code == 200:
-                        df = pd.read_csv(StringIO(response.text), header=None)
-                        login_ok = any(
-                            str(df.iloc[i, 0]).strip() == usuario_admin.strip()
-                            and str(df.iloc[i, 1]).strip() == pass_admin.strip()
-                            for i in range(1, len(df))
-                        )
-                        if login_ok:
-                            st.session_state.autenticado = True
-                            st.session_state.usuario_actual = usuario_admin.strip()
-                            st.rerun()
-                        else:
-                            st.error(T["error_login"])
+    
+    if st.session_state.autenticado:
+        st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
+        if st.button(T["cerrar_sesion"]):
+            st.session_state.autenticado = False
+            st.session_state.usuario_actual = ""
+            st.rerun()
+    else:
+        usuario_in = st.text_input(T["usuario"])
+        pass_in = st.text_input(T["password"], type="password")
+        
+        if st.button(T["btn_acceder"]):
+            url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
+            try:
+                headers = {'User-Agent': 'Mozilla/5.0'}
+                response = requests.get(url, headers=headers, timeout=10)
+                if response.status_code == 200:
+                    df = pd.read_csv(StringIO(response.text), header=None)
+                    
+                    login_ok = False
+                    for i in range(1, len(df)):
+                        u_excel = str(df.iloc[i, 0]).strip()
+                        p_excel = str(df.iloc[i, 1]).strip()
+                        if u_excel == usuario_in.strip() and p_excel == pass_in.strip():
+                            login_ok = True
+                            break
+                            
+                    if login_ok:
+                        st.session_state.autenticado = True
+                        st.session_state.usuario_actual = usuario_in.strip()
+                        st.rerun()
                     else:
-                        st.error(T["error_cred"])
-                except Exception as e:
-                    st.error(f"Error de acceso: {e}")
+                        st.error(T["error_login"])
+                else:
+                    st.error(T["error_cred"])
+            except Exception as e:
+                st.error(f"Error de acceso: {e}")
 
     # --- NUEVO: PRUEBA DE CONEXIÓN A SUPABASE (temporal) -----------------------
     # No afecta a nada de lo que ya funciona. Es solo para comprobar que la
@@ -843,871 +740,29 @@ with st.sidebar:
         st.divider()
         try:
             cliente_pend = obtener_cliente_supabase()
-            pendientes_empresas = cliente_pend.table("empresas").select("*").eq("estado", "pendiente").execute().data
-            pendientes_cursos = cliente_pend.table("cursos").select("*").eq("estado", "pendiente").execute().data
-            pendientes_modulos = cliente_pend.table("modulos").select("*").eq("estado", "pendiente").execute().data
-            pendientes_docentes = cliente_pend.table("docentes").select("*").eq("estado", "pendiente").execute().data
+            pendientes = cliente_pend.table("empresas").select("*").eq("estado", "pendiente").execute().data
         except Exception as e:
-            pendientes_empresas, pendientes_cursos, pendientes_modulos, pendientes_docentes = [], [], [], []
+            pendientes = []
             st.error(f"Error al cargar pendientes: {e}")
 
-        total_pendientes = len(pendientes_empresas) + len(pendientes_cursos) + len(pendientes_modulos) + len(pendientes_docentes)
-        etiqueta_panel = f"🔔 Peticiones pendientes ({total_pendientes})" if total_pendientes else "🔔 Peticiones pendientes"
-
+        etiqueta_panel = f"🔔 Peticiones pendientes ({len(pendientes)})" if pendientes else "🔔 Peticiones pendientes"
         with st.expander(etiqueta_panel):
-            if total_pendientes == 0:
+            if not pendientes:
                 st.caption("No hay peticiones pendientes.")
-
-            # --- Empresas (Asociados/Colaboradores) ---
-            if pendientes_empresas:
-                st.markdown("**Empresas / Colaboradores**")
-                for emp in pendientes_empresas:
-                    nombre_mostrar = emp.get("nombre_centro") or emp.get("nombre_empresa") or emp.get("usuario", "")
-                    st.write(f"**{nombre_mostrar}** — {emp.get('tipo', '')}")
-                    st.caption(f"Usuario propuesto: {emp.get('usuario', '')} · Email: {emp.get('email', '')}")
-                    if st.button("✅ Activar", key=f"activar_emp_{emp['id']}"):
-                        try:
-                            cliente_pend.table("empresas").update({"estado": "activo"}).eq("id", emp["id"]).execute()
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al activar: {e}")
-                    st.divider()
-
-            # --- Cursos (con sus módulos pendientes asociados, si los tiene) ---
-            if pendientes_cursos:
-                st.markdown("**Cursos nuevos**")
-                for curso in pendientes_cursos:
-                    modulos_de_este_curso = [m for m in pendientes_modulos if m["codigo_curso"] == curso["codigo_curso"]]
-                    st.write(f"**{curso['codigo_curso']} - {curso.get('nombre_es', '')}**")
-                    st.caption(f"Horas: {curso.get('horas_totales', '')} · Competencias: {curso.get('competencias', '')}")
-                    for m in modulos_de_este_curso:
-                        st.caption(f"↳ Módulo: {m['subcodigo']} - {m.get('descripcion_es', '')} (Nivel {m.get('nivel_bloque', '')})")
-                    if st.button("✅ Activar curso" + (" + módulo(s)" if modulos_de_este_curso else ""), key=f"activar_curso_{curso['codigo_curso']}"):
-                        try:
-                            cliente_pend.table("cursos").update({"estado": "activo"}).eq("codigo_curso", curso["codigo_curso"]).execute()
-                            for m in modulos_de_este_curso:
-                                cliente_pend.table("modulos").update({"estado": "activo"}).eq("subcodigo", m["subcodigo"]).execute()
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al activar: {e}")
-                    st.divider()
-
-            # --- Módulos pendientes de cursos que YA estaban activos ---
-            modulos_sueltos = [m for m in pendientes_modulos if m["codigo_curso"] not in [c["codigo_curso"] for c in pendientes_cursos]]
-            if modulos_sueltos:
-                st.markdown("**Módulos nuevos (de cursos ya activos)**")
-                for m in modulos_sueltos:
-                    st.write(f"**{m['subcodigo']}** - {m.get('descripcion_es', '')} (Curso {m['codigo_curso']}, Nivel {m.get('nivel_bloque', '')})")
-                    if st.button("✅ Activar módulo", key=f"activar_modulo_{m['subcodigo']}"):
-                        try:
-                            cliente_pend.table("modulos").update({"estado": "activo"}).eq("subcodigo", m["subcodigo"]).execute()
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al activar: {e}")
-                    st.divider()
-
-            # --- Docentes: aquí se les asigna la contraseña y se les avisa por email ---
-            if pendientes_docentes:
-                st.markdown("**Docentes nuevos**")
-                for doc in pendientes_docentes:
-                    cursos_del_docente = cliente_pend.table("curso_docente").select("codigo_curso").eq("id_docente", doc["id_docente"]).execute().data
-                    codigos_cursos_doc = ", ".join(c["codigo_curso"] for c in cursos_del_docente) or "—"
-                    st.write(f"**{doc.get('nombre', '')}** (usuario: {doc.get('usuario', '')})")
-                    st.caption(f"Email: {doc.get('email', '')} · Cursos: {codigos_cursos_doc}")
-                    contrasena_nueva = st.text_input("Contraseña a asignar", key=f"pass_doc_{doc['id_docente']}", type="password")
-                    if st.button("✅ Activar y enviar email", key=f"activar_doc_{doc['id_docente']}"):
-                        if not contrasena_nueva.strip():
-                            st.warning("Escribe una contraseña antes de activar.")
-                        else:
-                            try:
-                                cliente_pend.table("docentes").update({
-                                    "contrasena": contrasena_nueva.strip(), "estado": "activo"
-                                }).eq("id_docente", doc["id_docente"]).execute()
-
-                                if doc.get("email"):
-                                    enviado = enviar_email(
-                                        doc["email"],
-                                        "M-Zero: acceso a Evaluaciones",
-                                        f"Hola {doc.get('nombre', '')},\n\nYa tienes acceso al sistema de evaluación de M-Zero.\n\nUsuario: {doc.get('usuario', '')}\nContraseña: {contrasena_nueva.strip()}\n\nAccede desde la pestaña Evaluaciones de la app."
-                                    )
-                                    if not enviado:
-                                        st.warning("Docente activado, pero no se pudo enviar el email (revisa la configuración de EMAIL_USER/EMAIL_PASSWORD en Secrets).")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Error al activar: {e}")
-                    st.divider()
+            for emp in pendientes:
+                nombre_mostrar = emp.get("nombre_centro") or emp.get("nombre_empresa") or emp.get("usuario", "")
+                st.write(f"**{nombre_mostrar}** — {emp.get('tipo', '')}")
+                st.caption(f"Usuario propuesto: {emp.get('usuario', '')} · Email: {emp.get('email', '')}")
+                if st.button("✅ Activar", key=f"activar_emp_{emp['id']}"):
+                    try:
+                        cliente_pend.table("empresas").update({"estado": "activo"}).eq("id", emp["id"]).execute()
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error al activar: {e}")
+                st.divider()
 
 # --- LÓGICA DE PANTALLAS ---
-def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False):
-    """Formulario para pedir el alta como Asociado o Colaborador nuevo
-    (usuario todavía no inscrito en Credenciales Asociados/Colaboradores)."""
-    version = st.session_state.get(f"{key_prefix}_reg_version", 0)
-
-    with st.expander(T["solicitar_alta"]):
-        nombre_empresa = st.text_input(T["campo_nombre_empresa"], key=f"{key_prefix}_reg_empresa_{version}")
-
-        nombre_centro = ""
-        if incluir_centro:
-            nombre_centro = st.text_input(T["campo_nombre_centro"], key=f"{key_prefix}_reg_centro_{version}")
-
-        sector = st.text_input(T["campo_sector"], key=f"{key_prefix}_reg_sector_{version}")
-
-        c1, c2 = st.columns(2)
-        provincia = c1.text_input(T["campo_provincia"], key=f"{key_prefix}_reg_prov_{version}")
-        poblacion = c2.text_input(T["campo_poblacion"], key=f"{key_prefix}_reg_pob_{version}")
-
-        c3, c4 = st.columns(2)
-        cp = c3.text_input(T["campo_cp"], key=f"{key_prefix}_reg_cp_{version}")
-        razon_social = c4.text_input(T["campo_razon_social"], key=f"{key_prefix}_reg_razon_{version}")
-
-        c5, c6 = st.columns(2)
-        cif_nif = c5.text_input(T["campo_cif_nif"], key=f"{key_prefix}_reg_cif_{version}")
-        telefono = c6.text_input(T["campo_telefono"], key=f"{key_prefix}_reg_tel_{version}")
-
-        c7, c8 = st.columns(2)
-        email = c7.text_input(T["campo_email"], key=f"{key_prefix}_reg_email_{version}")
-        nombre_contacto = c8.text_input(T["campo_nombre_contacto"], key=f"{key_prefix}_reg_contacto_{version}")
-
-        web = st.text_input(T["campo_web"], key=f"{key_prefix}_reg_web_{version}")
-
-        usuario_deseado = ""
-        contrasena_deseada = ""
-        if usar_supabase:
-            c9, c10 = st.columns(2)
-            usuario_deseado = c9.text_input(T["campo_usuario_deseado"], key=f"{key_prefix}_reg_usuario_{version}")
-            contrasena_deseada = c10.text_input(T["campo_contrasena_deseada"], type="password", key=f"{key_prefix}_reg_contrasena_{version}")
-
-        if st.button(T["enviar_solicitud"], key=f"{key_prefix}_reg_btn_enviar"):
-            if not nombre_empresa.strip():
-                st.warning(T["campo_vacio_empresa"])
-            elif usar_supabase and (cif_nif.strip() and not validar_documento_fiscal(cif_nif.strip())):
-                st.warning("El CIF/NIF/DNI indicado no supera la comprobación. Revísalo antes de enviar la solicitud.")
-            elif usar_supabase and (not usuario_deseado.strip() or not contrasena_deseada.strip()):
-                st.warning(T["campo_vacio_usuario_contrasena"])
-            elif usar_supabase:
-                campos = {
-                    "nombre_empresa": nombre_empresa.strip(),
-                    "sector": sector.strip(),
-                    "provincia": provincia.strip(),
-                    "poblacion": poblacion.strip(),
-                    "cp": cp.strip(),
-                    "razon_social": razon_social.strip(),
-                    "cif_nif": cif_nif.strip(),
-                    "telefono": telefono.strip(),
-                    "email": email.strip(),
-                    "nombre_contacto": nombre_contacto.strip(),
-                    "web": web.strip(),
-                }
-                if incluir_centro:
-                    campos["nombre_centro"] = nombre_centro.strip()
-
-                if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
-                    st.success(T["solicitud_pendiente_aviso"])
-                    st.session_state[f"{key_prefix}_reg_version"] = version + 1
-                    st.rerun()
-                else:
-                    st.error(T["error_solicitud"])
-            else:
-                campos = {
-                    "Nombre empresa": nombre_empresa.strip(),
-                    "Sector": sector.strip(),
-                    "Provincia": provincia.strip(),
-                    "Población": poblacion.strip(),
-                    "CP": cp.strip(),
-                    "Razón Social": razon_social.strip(),
-                    "CIF/NIF": cif_nif.strip(),
-                    "Telefono": telefono.strip(),
-                    "Email": email.strip(),
-                    "Nombre Contacto": nombre_contacto.strip(),
-                    "Web": web.strip(),
-                }
-                if incluir_centro:
-                    campos["Nombre del Centro"] = nombre_centro.strip()
-
-                if enviar_peticion_registro(tipo, campos):
-                    st.success(T["solicitud_enviada"])
-                    st.session_state[f"{key_prefix}_reg_version"] = version + 1
-                    st.rerun()
-                else:
-                    st.error(T["error_solicitud"])
-
-def validar_documento_fiscal(valor):
-    """Comprobación básica de DNI/NIE/CIF español. No sustituye una validación oficial."""
-    v = re.sub(r"[^A-Za-z0-9]", "", str(valor or "").upper())
-    if not v:
-        return False
-    if re.fullmatch(r"\d{8}[A-Z]", v):
-        letras = "TRWAGMYFPDXBNJZSQVHLCKE"
-        return letras[int(v[:8]) % 23] == v[-1]
-    if re.fullmatch(r"[XYZ]\d{7}[A-Z]", v):
-        pref = {"X": "0", "Y": "1", "Z": "2"}[v[0]]
-        letras = "TRWAGMYFPDXBNJZSQVHLCKE"
-        return letras[int(pref + v[1:8]) % 23] == v[-1]
-    if re.fullmatch(r"[ABCDEFGHJNPQRSUVW]\d{7}[0-9A-J]", v):
-        # Control CIF
-        pares = sum(int(v[i]) for i in range(2, 8, 2))
-        impares = 0
-        for i in range(1, 8, 2):
-            n = int(v[i]) * 2
-            impares += n // 10 + n % 10
-        control = (10 - ((pares + impares) % 10)) % 10
-        esperado = v[-1]
-        if esperado.isdigit():
-            return control == int(esperado)
-        letras = "JABCDEFGHI"
-        return letras[control] == esperado
-    return False
-
-
-def _sb_table_exists(nombre):
-    if not SUPABASE_DISPONIBLE:
-        return False
-    try:
-        obtener_cliente_supabase().table(nombre).select("*").limit(1).execute()
-        return True
-    except Exception:
-        return False
-
-
-def _cargar_curso_por_codigo(codigo):
-    if not SUPABASE_DISPONIBLE or not codigo.strip():
-        return None
-    try:
-        rows = obtener_cliente_supabase().table("cursos").select("*").eq("codigo_curso", codigo.strip()).limit(1).execute().data
-        return rows[0] if rows else None
-    except Exception:
-        return None
-
-
-def _cargar_docentes_curso(codigo):
-    if not SUPABASE_DISPONIBLE:
-        return []
-    try:
-        links = obtener_cliente_supabase().table("curso_docente").select("id_docente").eq("codigo_curso", codigo).execute().data
-        ids = [x.get("id_docente") for x in links if x.get("id_docente")]
-        if not ids:
-            return []
-        return obtener_cliente_supabase().table("docentes").select("*").in_("id_docente", ids).execute().data
-    except Exception:
-        return []
-
-
-def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias, nombre_empresa):
-    """
-    Relación de catálogo por código de curso.
-
-    Si el código ya existe, se reutiliza exactamente la ficha existente: el
-    colaborador NO tiene que volver a introducir la descripción del curso.
-    Si no existe, se crea con los datos facilitados.
-    """
-    cliente = obtener_cliente_supabase()
-    curso = _cargar_curso_por_codigo(referencia)
-    if curso:
-        return curso
-
-    if not nombre_curso.strip():
-        return None
-
-    ok = enviar_curso_modulo_supabase(
-        empresa_id, nombre_empresa, referencia, nombre_curso, nombre_modulo,
-        nivel, horas, competencias
-    )
-    if not ok:
-        return None
-    return _cargar_curso_por_codigo(referencia)
-
-
-def _crear_edicion_curso(empresa_id, referencia, nombre_curso):
-    cliente = obtener_cliente_supabase()
-    if not _sb_table_exists("curso_ediciones"):
-        raise RuntimeError("Falta la tabla curso_ediciones. Ejecuta el SQL de actualización de la base de datos.")
-    res = cliente.table("curso_ediciones").insert({
-        "empresa_id": empresa_id,
-        "codigo_curso": referencia,
-        "nombre_curso": nombre_curso,
-        "estado": "pendiente"
-    }).select("*").single().execute()
-    return res.data
-
-
-def _crear_o_reutilizar_docente(empresa_id, nombre, usuario, email, codigo_curso):
-    cliente = obtener_cliente_supabase()
-    existente = cliente.table("docentes").select("*").eq("usuario", usuario.strip()).limit(1).execute().data
-    if existente:
-        docente = existente[0]
-        id_docente = docente["id_docente"]
-    else:
-        id_docente = usuario.strip()
-        docente = cliente.table("docentes").insert({
-            "id_docente": id_docente,
-            "nombre": nombre.strip(),
-            "usuario": usuario.strip(),
-            "email": email.strip(),
-            "estado": "pendiente",
-            "empresa_id": empresa_id
-        }).select("*").single().execute().data
-
-    ya = cliente.table("curso_docente").select("id_docente").eq("id_docente", id_docente).eq("codigo_curso", codigo_curso).execute().data
-    if not ya:
-        cliente.table("curso_docente").insert({"id_docente": id_docente, "codigo_curso": codigo_curso}).execute()
-    return docente
-
-
-def _vincular_docente_edicion(edition_id, docente_id):
-    cliente = obtener_cliente_supabase()
-    if not _sb_table_exists("curso_edicion_docente"):
-        raise RuntimeError("Falta la tabla curso_edicion_docente. Ejecuta el SQL de actualización de la base de datos.")
-    ya = cliente.table("curso_edicion_docente").select("id_edicion").eq("id_edicion", edition_id).eq("id_docente", docente_id).execute().data
-    if not ya:
-        cliente.table("curso_edicion_docente").insert({"id_edicion": edition_id, "id_docente": docente_id}).execute()
-
-
-def _anadir_alumno_edicion(edition_id, datos):
-    cliente = obtener_cliente_supabase()
-    if not _sb_table_exists("curso_alumnos"):
-        raise RuntimeError("Falta la tabla curso_alumnos. Ejecuta el SQL de actualización de la base de datos.")
-    return cliente.table("curso_alumnos").insert({
-        "id_edicion": edition_id,
-        "nombre": datos["nombre"].strip(),
-        "apellidos": datos["apellidos"].strip(),
-        "provincia": datos["provincia"].strip(),
-        "localidad": datos["localidad"].strip(),
-        "telefono": datos["telefono"].strip(),
-        "email": datos["email"].strip(),
-        "estado": "pendiente"
-    }).select("*").single().execute().data
-
-
-def _cargar_ediciones_colaborador(empresa_id):
-    if not SUPABASE_DISPONIBLE or not _sb_table_exists("curso_ediciones"):
-        return []
-    try:
-        return obtener_cliente_supabase().table("curso_ediciones").select("*").eq("empresa_id", empresa_id).order("created_at", desc=True).execute().data
-    except Exception:
-        return []
-
-
-def _render_formulario_alumno(prefix, version, titulo="Añadir alumno"):
-    st.markdown(f"### {titulo}")
-    a1, a2 = st.columns(2)
-    nombre = a1.text_input("Nombre", key=f"{prefix}_nombre_{version}")
-    apellidos = a2.text_input("Apellidos", key=f"{prefix}_apellidos_{version}")
-    a3, a4 = st.columns(2)
-    provincia = a3.text_input("Provincia", key=f"{prefix}_provincia_{version}")
-    localidad = a4.text_input("Localidad", key=f"{prefix}_localidad_{version}")
-    a5, a6 = st.columns(2)
-    telefono = a5.text_input("Teléfono", key=f"{prefix}_telefono_{version}")
-    email = a6.text_input("Email", key=f"{prefix}_email_{version}")
-    return {"nombre": nombre, "apellidos": apellidos, "provincia": provincia, "localidad": localidad, "telefono": telefono, "email": email}
-
-
-def _alumno_valido(datos):
-    return all(str(datos.get(k, "")).strip() for k in ["nombre", "apellidos", "provincia", "localidad", "telefono", "email"])
-
-
-def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
-    """Gestión de cursos del colaborador.
-
-    - Cada edición/grupo queda relacionada con un código de curso del catálogo.
-    - Si el código ya existe, se reutiliza su ficha y sus docentes existentes.
-    - En una nueva edición los alumnos siempre deben introducirse de nuevo.
-    - Una vez que el docente envía las evaluaciones de esa edición, ésta pasa
-      a cerrada y el colaborador ya no puede añadir docentes/alumnos.
-    """
-    st.markdown("## Gestión de cursos")
-    st.caption(
-        "Crea una nueva edición de un curso, reutiliza la información que ya exista "
-        "y gestiona posteriormente sus docentes y alumnos."
-    )
-
-    tablas_necesarias = ["curso_ediciones", "curso_alumnos", "curso_edicion_docente"]
-    faltan_tablas = [t for t in tablas_necesarias if not _sb_table_exists(t)]
-    if faltan_tablas:
-        st.error(
-            "Faltan tablas de gestión de cursos en Supabase: " + ", ".join(faltan_tablas) + "."
-        )
-        st.info(
-            "La conexión actual con SUPABASE_URL y SUPABASE_KEY no cambia. "
-            "Ejecuta el SQL de migración de cursos para crear estas tablas."
-        )
-        return
-
-    tab_crear, tab_mis = st.tabs(["➕ Crear nuevo curso", "📚 Mis cursos"])
-
-    # ---------------------------------------------------------------
-    # CREAR NUEVA EDICIÓN
-    # ---------------------------------------------------------------
-    with tab_crear:
-        st.markdown("### 1. Selecciona el curso")
-        cv = st.session_state.get(f"{key_prefix}_nuevo_version", 0)
-
-        referencia = st.text_input(
-            T["campo_referencia_curso"],
-            key=f"{key_prefix}_nuevo_ref_{cv}",
-            help="Introduce el código del curso. Si ya existe, se reutilizará su ficha."
-        )
-
-        curso_existente = _cargar_curso_por_codigo(referencia.strip()) if referencia.strip() else None
-
-        if curso_existente:
-            nombre_catalogo = curso_existente.get("nombre_es") or curso_existente.get("nombre_ca") or referencia.strip()
-            st.success(
-                f"✅ Curso existente encontrado: **{referencia.strip()} — {nombre_catalogo}**. "
-                "Se reutilizará su información y no tendrás que volver a describirlo."
-            )
-        else:
-            st.info("Si es un código nuevo, completa la ficha del curso.")
-            nombre_curso = st.text_input(
-                T["campo_nombre_curso"], key=f"{key_prefix}_nuevo_nombre_{cv}"
-            )
-            c1, c2 = st.columns(2)
-            nombre_modulo = c1.text_input(T["campo_nombre_modulo"], key=f"{key_prefix}_nuevo_modulo_{cv}")
-            nivel = c2.text_input(T["nivel_bloque"], key=f"{key_prefix}_nuevo_nivel_{cv}")
-            c3, c4 = st.columns(2)
-            horas = c3.text_input(T["campo_horas_totales"], key=f"{key_prefix}_nuevo_horas_{cv}")
-            competencias = c4.text_area(T["campo_competencias"], key=f"{key_prefix}_nuevo_comp_{cv}")
-
-        # -----------------------------------------------------------
-        # DOCENTES
-        # -----------------------------------------------------------
-        st.markdown("### 2. Docentes de esta edición")
-
-        docentes_existentes = _cargar_docentes_curso(referencia.strip()) if curso_existente else []
-        docentes_seleccionados = []
-
-        if curso_existente and docentes_existentes:
-            st.caption(
-                "Estos docentes ya están relacionados con este código de curso. "
-                "Puedes reutilizarlos sin volver a introducir sus datos."
-            )
-            for i, d in enumerate(docentes_existentes):
-                nombre_d = d.get("nombre") or d.get("usuario") or "Docente"
-                usuario_d = d.get("usuario") or ""
-                email_d = d.get("email") or ""
-                marcado = st.checkbox(
-                    f"{nombre_d} · {usuario_d} · {email_d}",
-                    value=True,
-                    key=f"{key_prefix}_reuse_doc_{referencia.strip()}_{d.get('id_docente', i)}_{cv}"
-                )
-                if marcado:
-                    docentes_seleccionados.append({
-                        "id_docente": d.get("id_docente"),
-                        "nombre": nombre_d,
-                        "usuario": usuario_d,
-                        "email": email_d,
-                        "existente": True,
-                    })
-        elif curso_existente:
-            st.info("Este código existe, pero todavía no tiene docentes relacionados.")
-
-        st.markdown("#### Añadir docentes nuevos (opcional)")
-        if f"{key_prefix}_draft_docentes" not in st.session_state:
-            st.session_state[f"{key_prefix}_draft_docentes"] = []
-        docentes_draft = st.session_state[f"{key_prefix}_draft_docentes"]
-        dv = st.session_state.get(f"{key_prefix}_docente_draft_version", 0)
-
-        d1, d2, d3 = st.columns(3)
-        dn = d1.text_input("Nombre del docente", key=f"{key_prefix}_draft_doc_nombre_{dv}")
-        du = d2.text_input("Usuario del docente", key=f"{key_prefix}_draft_doc_usuario_{dv}")
-        de = d3.text_input("Email del docente", key=f"{key_prefix}_draft_doc_email_{dv}")
-        if st.button("➕ Añadir docente nuevo a la edición", key=f"{key_prefix}_draft_doc_btn_{dv}"):
-            if dn.strip() and du.strip() and de.strip():
-                docentes_draft.append({"nombre": dn.strip(), "usuario": du.strip(), "email": de.strip()})
-                st.session_state[f"{key_prefix}_docente_draft_version"] = dv + 1
-                st.rerun()
-            else:
-                st.warning("Rellena nombre, usuario y email del docente.")
-
-        for i, d in enumerate(docentes_draft):
-            cc1, cc2 = st.columns([0.9, 0.1])
-            cc1.write(f"**{d['nombre']}** · {d['usuario']} · {d['email']}")
-            if cc2.button("🗑️", key=f"{key_prefix}_draft_doc_del_{i}"):
-                docentes_draft.pop(i)
-                st.rerun()
-
-        total_docentes = len(docentes_seleccionados) + len(docentes_draft)
-        st.caption(f"Docentes que tendrá esta edición: **{total_docentes}**")
-
-        # -----------------------------------------------------------
-        # ALUMNOS: SIEMPRE NUEVOS PARA CADA EDICIÓN
-        # -----------------------------------------------------------
-        st.markdown("### 3. Alumnos de la nueva edición")
-        st.info(
-            "Los alumnos pertenecen a cada edición/grupo. Aunque reutilices el mismo código "
-            "y los mismos docentes, los alumnos de esta nueva edición deben añadirse aquí."
-        )
-
-        if f"{key_prefix}_draft_alumnos" not in st.session_state:
-            st.session_state[f"{key_prefix}_draft_alumnos"] = []
-        alumnos_draft = st.session_state[f"{key_prefix}_draft_alumnos"]
-        av = st.session_state.get(f"{key_prefix}_alumno_draft_version", 0)
-        datos_alumno = _render_formulario_alumno(f"{key_prefix}_draft_alumno", av)
-
-        if st.button("➕ Añadir alumno a la nueva edición", key=f"{key_prefix}_draft_alu_btn_{av}"):
-            if _alumno_valido(datos_alumno):
-                alumnos_draft.append({k: v.strip() for k, v in datos_alumno.items()})
-                st.session_state[f"{key_prefix}_alumno_draft_version"] = av + 1
-                st.rerun()
-            else:
-                st.warning("Todos los campos del alumno son obligatorios.")
-
-        for i, a in enumerate(alumnos_draft):
-            cc1, cc2 = st.columns([0.9, 0.1])
-            cc1.write(
-                f"**{a['nombre']} {a['apellidos']}** · "
-                f"{a['provincia']} / {a['localidad']} · {a['telefono']} · {a['email']}"
-            )
-            if cc2.button("🗑️", key=f"{key_prefix}_draft_alu_del_{i}"):
-                alumnos_draft.pop(i)
-                st.rerun()
-
-        # -----------------------------------------------------------
-        # ENVIAR NUEVA EDICIÓN
-        # -----------------------------------------------------------
-        st.markdown("### 4. Enviar petición del curso")
-        if st.button(
-            "🚀 ENVIAR PETICIÓN DEL CURSO",
-            type="primary",
-            key=f"{key_prefix}_crear_edicion_btn"
-        ):
-            if not referencia.strip():
-                st.warning("Indica el código del curso.")
-            elif not curso_existente and not nombre_curso.strip():
-                st.warning("Al ser un código nuevo, debes indicar el nombre del curso.")
-            elif total_docentes == 0:
-                st.warning("Añade o reutiliza al menos un docente para esta edición.")
-            elif not alumnos_draft:
-                st.warning("Debes añadir al menos un alumno a la nueva edición.")
-            else:
-                try:
-                    if curso_existente:
-                        # Reutilización real: no se vuelve a crear ni modificar el catálogo.
-                        curso = curso_existente
-                        nombre_edicion = (
-                            curso.get("nombre_es")
-                            or curso.get("nombre_ca")
-                            or referencia.strip()
-                        )
-                    else:
-                        curso = _crear_o_reutilizar_curso(
-                            empresa_id,
-                            referencia.strip(),
-                            nombre_curso.strip(),
-                            nombre_modulo.strip(),
-                            nivel.strip(),
-                            horas.strip(),
-                            competencias.strip(),
-                            nombre_empresa,
-                        )
-                        if not curso:
-                            raise RuntimeError("No se pudo crear el curso.")
-                        nombre_edicion = nombre_curso.strip()
-
-                    edicion = _crear_edicion_curso(
-                        empresa_id,
-                        referencia.strip(),
-                        nombre_edicion,
-                    )
-
-                    # Docentes ya existentes del mismo código: se reutilizan.
-                    for d in docentes_seleccionados:
-                        if not d.get("id_docente"):
-                            continue
-                        _vincular_docente_edicion(edicion["id"], d["id_docente"])
-
-                    # Docentes nuevos: se crean/reutilizan en la tabla de docentes
-                    # y se relacionan tanto con el curso catálogo como con la edición.
-                    for d in docentes_draft:
-                        docente = _crear_o_reutilizar_docente(
-                            empresa_id,
-                            d["nombre"],
-                            d["usuario"],
-                            d["email"],
-                            referencia.strip(),
-                        )
-                        _vincular_docente_edicion(edicion["id"], docente["id_docente"])
-
-                    # Los alumnos siempre son propios de esta nueva edición.
-                    for a in alumnos_draft:
-                        _anadir_alumno_edicion(edicion["id"], a)
-
-                    crear_notificacion(
-                        "curso",
-                        f"Nueva edición de curso propuesta por {nombre_empresa}: "
-                        f"{referencia.strip()} ({len(alumnos_draft)} alumnos, {total_docentes} docentes)"
-                    )
-
-                    st.success(
-                        "Petición del curso enviada correctamente. "
-                        "Puedes consultar y ampliar esta edición desde 'Mis cursos'."
-                    )
-                    st.session_state[f"{key_prefix}_draft_docentes"] = []
-                    st.session_state[f"{key_prefix}_draft_alumnos"] = []
-                    st.session_state[f"{key_prefix}_nuevo_version"] = cv + 1
-                    st.session_state[f"{key_prefix}_docente_draft_version"] = 0
-                    st.session_state[f"{key_prefix}_alumno_draft_version"] = 0
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"No se pudo enviar la petición del curso: {e}")
-
-    # ---------------------------------------------------------------
-    # MIS CURSOS
-    # ---------------------------------------------------------------
-    with tab_mis:
-        ediciones = _cargar_ediciones_colaborador(empresa_id)
-        if not ediciones:
-            st.info("Todavía no tienes cursos enviados.")
-
-        for ed in ediciones:
-            eid = ed.get("id")
-            estado = (ed.get("estado") or "pendiente").lower()
-            cerrado = estado == "cerrado"
-            titulo_estado = "🔒 CERRADO" if cerrado else "🟢 ABIERTO"
-
-            with st.expander(
-                f"{ed.get('codigo_curso', '')} · {ed.get('nombre_curso', '')} · {titulo_estado}",
-                expanded=False,
-            ):
-                st.write(f"**Estado:** {estado}")
-
-                try:
-                    alumnos = (
-                        obtener_cliente_supabase()
-                        .table("curso_alumnos")
-                        .select("*")
-                        .eq("id_edicion", eid)
-                        .order("created_at")
-                        .execute().data
-                    )
-                except Exception:
-                    alumnos = []
-
-                try:
-                    links = (
-                        obtener_cliente_supabase()
-                        .table("curso_edicion_docente")
-                        .select("id_docente")
-                        .eq("id_edicion", eid)
-                        .execute().data
-                    )
-                    ids = [x.get("id_docente") for x in links if x.get("id_docente")]
-                    docentes = (
-                        obtener_cliente_supabase()
-                        .table("docentes")
-                        .select("*")
-                        .in_("id_docente", ids)
-                        .execute().data
-                        if ids else []
-                    )
-                except Exception:
-                    docentes = []
-
-                st.markdown(f"**{len(docentes)} docentes · {len(alumnos)} alumnos**")
-
-                st.markdown("#### Docentes")
-                for d in docentes:
-                    st.write(
-                        f"• {d.get('nombre', '')} — {d.get('email', '')} — {d.get('estado', '')}"
-                    )
-
-                st.markdown("#### Alumnos")
-                if alumnos:
-                    columnas = [
-                        "nombre", "apellidos", "provincia", "localidad", "telefono", "email"
-                    ]
-                    st.dataframe(
-                        pd.DataFrame(alumnos)[columnas],
-                        use_container_width=True,
-                        hide_index=True,
-                    )
-                else:
-                    st.info("No hay alumnos registrados.")
-
-                if not cerrado:
-                    st.success(
-                        "Esta edición está abierta. Puedes añadir docentes o alumnos hasta "
-                        "que el docente envíe las evaluaciones."
-                    )
-
-                    st.markdown("### Añadir docente")
-                    mv = st.session_state.get(f"{key_prefix}_manage_doc_{eid}", 0)
-                    m1, m2, m3 = st.columns(3)
-                    mn = m1.text_input("Nombre", key=f"{key_prefix}_mdn_{eid}_{mv}")
-                    mu = m2.text_input("Usuario", key=f"{key_prefix}_mdu_{eid}_{mv}")
-                    me = m3.text_input("Email", key=f"{key_prefix}_mde_{eid}_{mv}")
-
-                    if st.button("➕ Añadir docente", key=f"{key_prefix}_mdb_{eid}_{mv}"):
-                        if mn.strip() and mu.strip() and me.strip():
-                            try:
-                                docente = _crear_o_reutilizar_docente(
-                                    empresa_id,
-                                    mn,
-                                    mu,
-                                    me,
-                                    ed.get("codigo_curso"),
-                                )
-                                _vincular_docente_edicion(eid, docente["id_docente"])
-                                st.session_state[f"{key_prefix}_manage_doc_{eid}"] = mv + 1
-                                st.success("Docente añadido a esta edición.")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"No se pudo añadir el docente: {e}")
-                        else:
-                            st.warning("Rellena nombre, usuario y email.")
-
-                    st.markdown("### Añadir alumno")
-                    mav = st.session_state.get(f"{key_prefix}_manage_alu_{eid}", 0)
-                    datos_nuevo = _render_formulario_alumno(
-                        f"{key_prefix}_manage_alumno_{eid}", mav
-                    )
-                    if st.button("➕ Añadir alumno", key=f"{key_prefix}_mab_{eid}_{mav}"):
-                        if _alumno_valido(datos_nuevo):
-                            try:
-                                _anadir_alumno_edicion(eid, datos_nuevo)
-                                st.session_state[f"{key_prefix}_manage_alu_{eid}"] = mav + 1
-                                st.success("Alumno añadido a esta edición.")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"No se pudo añadir el alumno: {e}")
-                        else:
-                            st.warning("Todos los campos del alumno son obligatorios.")
-                else:
-                    st.warning(
-                        "🔒 Esta edición está cerrada porque el docente ya ha enviado las "
-                        "evaluaciones. Ya no se pueden añadir docentes ni alumnos."
-                    )
-
-def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir_centro_registro=False, usar_supabase=False):
-    login_key = f"{key_prefix}_login_ok"
-    id_key = f"{key_prefix}_id_empresa"
-    nombre_key = f"{key_prefix}_nombre_empresa"
-    peticion_version_key = f"{key_prefix}_peticion_version"
-
-    st.markdown("---")
-
-    if not st.session_state.get(login_key):
-        usuario_in = st.text_input(T["usuario"], key=f"{key_prefix}_user_in")
-        pass_in = st.text_input(T["password"], type="password", key=f"{key_prefix}_pass_in")
-        if st.button(T["btn_acceder"], key=f"{key_prefix}_btn_acceder"):
-            if usar_supabase:
-                fila = verificar_credencial_supabase(usuario_in, pass_in, tipo)
-                if fila:
-                    st.session_state[login_key] = True
-                    st.session_state[id_key] = fila.get("id")
-                    st.session_state[nombre_key] = fila.get("nombre_centro") or fila.get("nombre_empresa") or fila.get("usuario", "")
-                    st.rerun()
-                else:
-                    st.error(T["error_acceso_participar"])
-            else:
-                fila = verificar_credencial_participar(usuario_in, pass_in, nombre_hoja_credenciales)
-                if fila:
-                    st.session_state[login_key] = True
-                    st.session_state[id_key] = str(fila.get("Id. Empresa", "")).strip()
-                    st.session_state[nombre_key] = str(fila.get("Nombre Empresa", "")).strip()
-                    st.rerun()
-                else:
-                    st.error(T["error_acceso_participar"])
-
-        bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase)
-    else:
-        nombre_empresa = st.session_state.get(nombre_key, "")
-        id_empresa = st.session_state.get(id_key, "")
-        st.success(f"{T['acceso_concedido']} {nombre_empresa}")
-
-        if tipo == "colaborador" and usar_supabase:
-            _render_colaborador_logueado(id_empresa, nombre_empresa, key_prefix)
-        else:
-            version = st.session_state.get(peticion_version_key, 0)
-            texto_peticion = st.text_area(T["escribir_peticion"], key=f"{key_prefix}_peticion_{version}")
-            if st.button(T["enviar"], key=f"{key_prefix}_btn_enviar"):
-                if texto_peticion.strip():
-                    enviado = False
-                    if usar_supabase and SUPABASE_DISPONIBLE:
-                        try:
-                            obtener_cliente_supabase().table("peticiones_participar").insert({"id_empresa": id_empresa, "texto": texto_peticion.strip()}).execute()
-                            crear_notificacion("peticion", f"Nuevo mensaje de {nombre_empresa} ({tipo}): {texto_peticion.strip()[:200]}")
-                            enviado = True
-                        except Exception as e:
-                            st.error(f"Error al enviar: {e}")
-                    else:
-                        enviado = enviar_peticion_participar(tipo, id_empresa, texto_peticion.strip())
-                    if enviado:
-                        st.success(T["peticion_enviada"])
-                        st.session_state[peticion_version_key] = version + 1
-                        st.rerun()
-                    else:
-                        st.error(T["error_peticion"])
-                else:
-                    st.warning(T["campo_vacio_peticion"])
-
-        if st.button(T["cerrar_sesion"], key=f"{key_prefix}_btn_cerrar_sesion"):
-            st.session_state[login_key] = False
-            st.session_state[id_key] = ""
-            st.session_state[nombre_key] = ""
-            st.rerun()
-
-
-
-if st.session_state.get("acceso_panel"):
-    acceso_panel = st.session_state["acceso_panel"]
-
-    # Pantallas independientes: al entrar aquí NO se renderiza el bloque
-    # Documentación / Cómo participar. Cada acceso ocupa su propia pantalla.
-    st.markdown(
-        """<style>
-        .access-page {
-            padding: 12px 0 24px 0;
-        }
-        .access-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        .access-subtitle {
-            color: #667085;
-            font-size: 1rem;
-            margin-bottom: 22px;
-        }
-        </style>""",
-        unsafe_allow_html=True,
-    )
-
-    st.markdown('<div class="access-page">', unsafe_allow_html=True)
-
-    if acceso_panel == "asociado":
-        st.markdown(f'<div class="access-title">👥 {T["acceso_asociados"]}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="access-subtitle">Acceso y gestión para Asociados</div>', unsafe_allow_html=True)
-        bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
-        if st.button("← Volver a Documentación", key="volver_desde_asociados", use_container_width=False):
-            st.session_state["acceso_panel"] = None
-            st.rerun()
-
-    elif acceso_panel == "colaborador":
-        st.markdown(f'<div class="access-title">🏢 {T["acceso_colaboradores"]}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="access-subtitle">Acceso y gestión para Colaboradores</div>', unsafe_allow_html=True)
-        bloque_acceso_y_peticion(
-            "colaborador",
-            "Credenciales Colaboradores",
-            "colab_part",
-            incluir_centro_registro=True,
-            usar_supabase=True
-        )
-        if st.button("← Volver a Documentación", key="volver_desde_colaboradores", use_container_width=False):
-            st.session_state["acceso_panel"] = None
-            st.rerun()
-
-    elif acceso_panel == "candidato":
-        st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
-        st.info("Este acceso estará disponible próximamente.")
-        if st.button("← Volver a Documentación", key="volver_desde_candidatos", use_container_width=False):
-            st.session_state["acceso_panel"] = None
-            st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-elif opcion == T["menu_docs"]:
-
+if opcion == T["menu_docs"]:
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
     # (y solo una vez por sesión) en vez de en cada carga de la app, para no
     # frenar la pestaña de Evaluaciones cuando no se necesitan.
@@ -1887,7 +942,251 @@ elif opcion == T["menu_docs"]:
         bloque = instrucciones_participar.get(clave, {})
         return bloque.get(lang, "")
 
-    # Los accesos se muestran en pantallas independientes desde el sidebar.
+    def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False):
+        """Formulario para pedir el alta como Asociado o Colaborador nuevo
+        (usuario todavía no inscrito en Credenciales Asociados/Colaboradores)."""
+        version = st.session_state.get(f"{key_prefix}_reg_version", 0)
+
+        with st.expander(T["solicitar_alta"]):
+            nombre_empresa = st.text_input(T["campo_nombre_empresa"], key=f"{key_prefix}_reg_empresa_{version}")
+
+            nombre_centro = ""
+            if incluir_centro:
+                nombre_centro = st.text_input(T["campo_nombre_centro"], key=f"{key_prefix}_reg_centro_{version}")
+
+            sector = st.text_input(T["campo_sector"], key=f"{key_prefix}_reg_sector_{version}")
+
+            c1, c2 = st.columns(2)
+            provincia = c1.text_input(T["campo_provincia"], key=f"{key_prefix}_reg_prov_{version}")
+            poblacion = c2.text_input(T["campo_poblacion"], key=f"{key_prefix}_reg_pob_{version}")
+
+            c3, c4 = st.columns(2)
+            cp = c3.text_input(T["campo_cp"], key=f"{key_prefix}_reg_cp_{version}")
+            razon_social = c4.text_input(T["campo_razon_social"], key=f"{key_prefix}_reg_razon_{version}")
+
+            c5, c6 = st.columns(2)
+            cif_nif = c5.text_input(T["campo_cif_nif"], key=f"{key_prefix}_reg_cif_{version}")
+            telefono = c6.text_input(T["campo_telefono"], key=f"{key_prefix}_reg_tel_{version}")
+
+            c7, c8 = st.columns(2)
+            email = c7.text_input(T["campo_email"], key=f"{key_prefix}_reg_email_{version}")
+            nombre_contacto = c8.text_input(T["campo_nombre_contacto"], key=f"{key_prefix}_reg_contacto_{version}")
+
+            web = st.text_input(T["campo_web"], key=f"{key_prefix}_reg_web_{version}")
+
+            usuario_deseado = ""
+            contrasena_deseada = ""
+            if usar_supabase:
+                c9, c10 = st.columns(2)
+                usuario_deseado = c9.text_input(T["campo_usuario_deseado"], key=f"{key_prefix}_reg_usuario_{version}")
+                contrasena_deseada = c10.text_input(T["campo_contrasena_deseada"], type="password", key=f"{key_prefix}_reg_contrasena_{version}")
+
+            if st.button(T["enviar_solicitud"], key=f"{key_prefix}_reg_btn_enviar"):
+                if not nombre_empresa.strip():
+                    st.warning(T["campo_vacio_empresa"])
+                elif usar_supabase and (not usuario_deseado.strip() or not contrasena_deseada.strip()):
+                    st.warning(T["campo_vacio_usuario_contrasena"])
+                elif usar_supabase:
+                    campos = {
+                        "nombre_empresa": nombre_empresa.strip(),
+                        "sector": sector.strip(),
+                        "provincia": provincia.strip(),
+                        "poblacion": poblacion.strip(),
+                        "cp": cp.strip(),
+                        "razon_social": razon_social.strip(),
+                        "cif_nif": cif_nif.strip(),
+                        "telefono": telefono.strip(),
+                        "email": email.strip(),
+                        "nombre_contacto": nombre_contacto.strip(),
+                        "web": web.strip(),
+                    }
+                    if incluir_centro:
+                        campos["nombre_centro"] = nombre_centro.strip()
+
+                    if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
+                        st.success(T["solicitud_pendiente_aviso"])
+                        st.session_state[f"{key_prefix}_reg_version"] = version + 1
+                        st.rerun()
+                    else:
+                        st.error(T["error_solicitud"])
+                else:
+                    campos = {
+                        "Nombre empresa": nombre_empresa.strip(),
+                        "Sector": sector.strip(),
+                        "Provincia": provincia.strip(),
+                        "Población": poblacion.strip(),
+                        "CP": cp.strip(),
+                        "Razón Social": razon_social.strip(),
+                        "CIF/NIF": cif_nif.strip(),
+                        "Telefono": telefono.strip(),
+                        "Email": email.strip(),
+                        "Nombre Contacto": nombre_contacto.strip(),
+                        "Web": web.strip(),
+                    }
+                    if incluir_centro:
+                        campos["Nombre del Centro"] = nombre_centro.strip()
+
+                    if enviar_peticion_registro(tipo, campos):
+                        st.success(T["solicitud_enviada"])
+                        st.session_state[f"{key_prefix}_reg_version"] = version + 1
+                        st.rerun()
+                    else:
+                        st.error(T["error_solicitud"])
+
+    def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir_centro_registro=False, usar_supabase=False):
+        """Login independiente contra 'Credenciales Asociados' / 'Credenciales
+        Colaboradores' (o contra Supabase si usar_supabase=True) + formulario
+        de petición una vez autenticado."""
+        login_key = f"{key_prefix}_login_ok"
+        id_key = f"{key_prefix}_id_empresa"
+        nombre_key = f"{key_prefix}_nombre_empresa"
+        peticion_version_key = f"{key_prefix}_peticion_version"
+
+        st.markdown("---")
+
+        if not st.session_state.get(login_key):
+            usuario_in = st.text_input(T["usuario"], key=f"{key_prefix}_user_in")
+            pass_in = st.text_input(T["password"], type="password", key=f"{key_prefix}_pass_in")
+            if st.button(T["btn_acceder"], key=f"{key_prefix}_btn_acceder"):
+                if usar_supabase:
+                    fila = verificar_credencial_supabase(usuario_in, pass_in, tipo)
+                    if fila:
+                        st.session_state[login_key] = True
+                        st.session_state[id_key] = fila.get("id")
+                        st.session_state[nombre_key] = fila.get("nombre_centro") or fila.get("nombre_empresa") or fila.get("usuario", "")
+                        st.rerun()
+                    else:
+                        st.error(T["error_acceso_participar"])
+                else:
+                    fila = verificar_credencial_participar(usuario_in, pass_in, nombre_hoja_credenciales)
+                    if fila:
+                        st.session_state[login_key] = True
+                        st.session_state[id_key] = str(fila.get("Id. Empresa", "")).strip()
+                        st.session_state[nombre_key] = str(fila.get("Nombre Empresa", "")).strip()
+                        st.rerun()
+                    else:
+                        st.error(T["error_acceso_participar"])
+
+            bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase)
+        else:
+            nombre_empresa = st.session_state.get(nombre_key, "")
+            st.success(f"{T['acceso_concedido']} {nombre_empresa}")
+
+            version = st.session_state.get(peticion_version_key, 0)
+            texto_peticion = st.text_area(
+                T["escribir_peticion"], key=f"{key_prefix}_peticion_{version}"
+            )
+            if st.button(T["enviar"], key=f"{key_prefix}_btn_enviar"):
+                if texto_peticion.strip():
+                    id_empresa = st.session_state.get(id_key, "")
+                    if usar_supabase:
+                        enviado = False
+                        if SUPABASE_DISPONIBLE:
+                            try:
+                                obtener_cliente_supabase().table("peticiones_participar").insert({
+                                    "id_empresa": id_empresa,
+                                    "texto": texto_peticion.strip()
+                                }).execute()
+                                crear_notificacion("peticion", f"Nuevo mensaje de {nombre_empresa} ({tipo}): {texto_peticion.strip()[:200]}")
+                                enviado = True
+                            except Exception as e:
+                                st.error(f"Error al enviar: {e}")
+                    else:
+                        enviado = enviar_peticion_participar(tipo, id_empresa, texto_peticion.strip())
+
+                    if enviado:
+                        st.success(T["peticion_enviada"])
+                        st.session_state[peticion_version_key] = version + 1
+                        st.rerun()
+                    else:
+                        st.error(T["error_peticion"])
+                else:
+                    st.warning(T["campo_vacio_peticion"])
+
+            # --- NUEVO: solo para Colaboradores (usar_supabase) ---
+            if usar_supabase and tipo == "colaborador":
+                with st.expander(T["anadir_curso"]):
+                    curso_version = st.session_state.get(f"{key_prefix}_curso_version", 0)
+                    referencia = st.text_input(T["campo_referencia_curso"], key=f"{key_prefix}_curso_ref_{curso_version}")
+                    nombre_curso_nuevo = st.text_input(T["campo_nombre_curso"], key=f"{key_prefix}_curso_nombre_{curso_version}")
+                    nombre_modulo_nuevo = st.text_input(T["campo_nombre_modulo"], key=f"{key_prefix}_curso_modulo_{curso_version}")
+                    cc1, cc2 = st.columns(2)
+                    nivel_nuevo = cc1.text_input(T["nivel_bloque"], key=f"{key_prefix}_curso_nivel_{curso_version}")
+                    horas_nuevo = cc2.text_input(T["campo_horas_totales"], key=f"{key_prefix}_curso_horas_{curso_version}")
+                    competencias_nuevo = st.text_area(T["campo_competencias"], key=f"{key_prefix}_curso_comp_{curso_version}")
+
+                    if st.button(T["enviar_curso"], key=f"{key_prefix}_curso_btn_enviar"):
+                        if referencia.strip() and nombre_curso_nuevo.strip():
+                            if enviar_curso_modulo_supabase(
+                                st.session_state.get(id_key), nombre_empresa,
+                                referencia.strip(), nombre_curso_nuevo.strip(), nombre_modulo_nuevo.strip(),
+                                nivel_nuevo.strip(), horas_nuevo.strip(), competencias_nuevo.strip()
+                            ):
+                                st.success(T["curso_enviado"])
+                                st.session_state[f"{key_prefix}_curso_version"] = curso_version + 1
+                                st.rerun()
+                        else:
+                            st.warning(T["campo_vacio_curso"])
+
+                with st.expander(T["anadir_docente"]):
+                    cursos_propios = []
+                    if SUPABASE_DISPONIBLE:
+                        try:
+                            cursos_propios = (
+                                obtener_cliente_supabase().table("cursos").select("codigo_curso, nombre_es")
+                                .eq("empresa_id", st.session_state.get(id_key)).execute().data
+                            )
+                        except Exception:
+                            cursos_propios = []
+
+                    if not cursos_propios:
+                        st.info(T["sin_cursos_propios"])
+                    else:
+                        docente_version = st.session_state.get(f"{key_prefix}_docente_version", 0)
+                        opciones_curso_propio = [f"{c['codigo_curso']} - {c.get('nombre_es', '')}" for c in cursos_propios]
+                        curso_elegido = st.selectbox(T["campo_curso_relacionado"], opciones_curso_propio, key=f"{key_prefix}_docente_curso_{docente_version}")
+                        codigo_curso_elegido = curso_elegido.split(" - ")[0] if " - " in curso_elegido else curso_elegido
+
+                        nombre_docente_nuevo = st.text_input(T["campo_nombre_docente"], key=f"{key_prefix}_docente_nombre_{docente_version}")
+                        dc1, dc2 = st.columns(2)
+                        usuario_docente_nuevo = dc1.text_input(T["campo_usuario_deseado"], key=f"{key_prefix}_docente_usuario_{docente_version}")
+                        email_docente_nuevo = dc2.text_input(T["campo_email"], key=f"{key_prefix}_docente_email_{docente_version}")
+
+                        if st.button(T["enviar_docente"], key=f"{key_prefix}_docente_btn_enviar"):
+                            if nombre_docente_nuevo.strip() and usuario_docente_nuevo.strip() and email_docente_nuevo.strip():
+                                if enviar_docente_supabase(
+                                    st.session_state.get(id_key), nombre_empresa,
+                                    nombre_docente_nuevo.strip(), usuario_docente_nuevo.strip(),
+                                    email_docente_nuevo.strip(), codigo_curso_elegido
+                                ):
+                                    st.success(T["docente_enviado"])
+                                    st.session_state[f"{key_prefix}_docente_version"] = docente_version + 1
+                                    st.rerun()
+                            else:
+                                st.warning(T["campo_vacio_docente"])
+
+            if st.button(T["cerrar_sesion"], key=f"{key_prefix}_btn_cerrar_sesion"):
+                st.session_state[login_key] = False
+                st.session_state[id_key] = ""
+                st.session_state[nombre_key] = ""
+                st.rerun()
+
+    cp1, cp2, cp3 = st.columns(3)
+
+    with cp1:
+        with st.expander(T["asociados"]):
+            st.markdown(texto_instruccion("asociados"), unsafe_allow_html=True)
+            bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
+
+    with cp2:
+        with st.expander(T["colaboradores"]):
+            st.markdown(texto_instruccion("colaboradores"), unsafe_allow_html=True)
+            bloque_acceso_y_peticion("colaborador", "Credenciales Colaboradores", "colab_part", incluir_centro_registro=True, usar_supabase=True)
+
+    with cp3:
+        with st.expander(T["candidatos"]):
+            st.markdown(texto_instruccion("candidato"), unsafe_allow_html=True)
+
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
 elif opcion == T["menu_eval"]:
@@ -1965,8 +1264,6 @@ elif opcion == T["menu_eval"]:
             modulos_filtrados = []
             nivel = ""
             alumno = ""
-            edition_id_actual = None
-            alumnos_edicion = []
 
             if not cursos_permitidos:
                 st.info(T["aviso_sin_cursos_docente"])
@@ -1977,30 +1274,6 @@ elif opcion == T["menu_eval"]:
                 opciones_cursos_display = [f"{c['codigo_curso']} - {c.get(campo_nombre_curso) or c.get('nombre_es') or ''}" for c in cursos_permitidos]
                 curso_seleccionado_full = c2.selectbox(T["curso"], opciones_cursos_display, key=f"f_cur_{st.session_state.reset_todo}")
                 curso_codigo_actual = curso_seleccionado_full.split(" - ")[0] if " - " in curso_seleccionado_full else curso_seleccionado_full
-
-                # Si el colaborador ha creado ediciones/grupos, el docente entra en
-                # la edición concreta y recibe automáticamente el listado de alumnos.
-                ediciones_docente = []
-                if _sb_table_exists("curso_ediciones") and _sb_table_exists("curso_edicion_docente"):
-                    try:
-                        links_ed = cliente_sb.table("curso_edicion_docente").select("id_edicion").eq("id_docente", docente_info["id_docente"]).execute().data
-                        ids_ed = [x.get("id_edicion") for x in links_ed if x.get("id_edicion")]
-                        if ids_ed:
-                            ediciones_docente = (cliente_sb.table("curso_ediciones").select("*")
-                                                 .in_("id", ids_ed).eq("codigo_curso", curso_codigo_actual)
-                                                 .neq("estado", "cerrado").execute().data)
-                    except Exception:
-                        ediciones_docente = []
-
-                if ediciones_docente:
-                    ed1, ed2 = st.columns(2)
-                    opciones_ed = [f"{e.get('id')} · {e.get('codigo_curso')} · {e.get('estado', 'pendiente')}" for e in ediciones_docente]
-                    edicion_display = ed1.selectbox("Edición / grupo", opciones_ed, key=f"f_ed_{st.session_state.reset_todo}")
-                    edition_id_actual = edicion_display.split(" · ")[0]
-                    try:
-                        alumnos_edicion = cliente_sb.table("curso_alumnos").select("*").eq("id_edicion", edition_id_actual).order("created_at").execute().data
-                    except Exception:
-                        alumnos_edicion = []
 
                 try:
                     modulos_filtrados = (
@@ -2026,12 +1299,7 @@ elif opcion == T["menu_eval"]:
 
                 c4, c5 = st.columns(2)
                 nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
-                if alumnos_edicion:
-                    opciones_alumnos = [f"{a.get('id')} · {a.get('nombre', '')} {a.get('apellidos', '')}" for a in alumnos_edicion]
-                    alumno_display = c5.selectbox(T["alumno"], opciones_alumnos, key=f"f_alu_sel_{st.session_state.reset_todo}")
-                    alumno = alumno_display.split(" · ", 1)[1] if " · " in alumno_display else alumno_display
-                else:
-                    alumno = c5.text_input(T["alumno"], key=f"f_alu_{st.session_state.alumno_key}")
+                alumno = c5.text_input(T["alumno"], key=f"f_alu_{st.session_state.alumno_key}")
 
             if curso_codigo_actual is not None:
                 criterios = [
@@ -2086,8 +1354,7 @@ elif opcion == T["menu_eval"]:
                         registro = {
                             "Alumno": alumno, "Profesor": nombre_docente, "Usuario": docente_info.get("usuario", ""),
                             "Curso": curso_seleccionado_full, "CursoCodigo": curso_codigo_actual,
-                            "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res,
-                            "EditionId": edition_id_actual
+                            "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res
                         }
                         registro.update(notas)
                         st.session_state.lista_alumnos.append(registro)
@@ -2120,16 +1387,6 @@ elif opcion == T["menu_eval"]:
 
                     if st.button(T["enviar_sheets"], type="primary"):
                         try:
-                            # Para las nuevas ediciones, el envío final solo se permite
-                            # cuando TODOS los alumnos de la clase han sido evaluados.
-                            if edition_id_actual and alumnos_edicion:
-                                alumnos_clase = {f"{a.get('nombre', '')} {a.get('apellidos', '')}".strip() for a in alumnos_edicion}
-                                alumnos_evaluados = {str(r.get("Alumno", "")).strip() for r in st.session_state.lista_alumnos if r.get("EditionId") == edition_id_actual}
-                                faltan = sorted(alumnos_clase - alumnos_evaluados)
-                                if faltan:
-                                    st.warning("No se puede cerrar el curso todavía. Faltan por evaluar: " + ", ".join(faltan))
-                                    st.stop()
-
                             filas_supabase = []
                             for reg in st.session_state.lista_alumnos:
                                 fila = {
@@ -2143,27 +1400,13 @@ elif opcion == T["menu_eval"]:
                                     "nota": reg.get("Nota"),
                                     "estado": reg.get("Estado", "")
                                 }
-                                if reg.get("EditionId"):
-                                    fila["edition_id"] = reg.get("EditionId")
                                 for idx_crit, crit in enumerate(criterios, start=1):
                                     fila[f"crit_{idx_crit}"] = reg.get(crit)
                                 filas_supabase.append(fila)
 
-                            # Si la base todavía no tiene edition_id, conservamos la
-                            # inserción antigua para no romper instalaciones existentes.
-                            try:
-                                cliente_sb.table("evaluaciones").insert(filas_supabase).execute()
-                            except Exception:
-                                filas_sin_edition = [{k: v for k, v in f.items() if k != "edition_id"} for f in filas_supabase]
-                                cliente_sb.table("evaluaciones").insert(filas_sin_edition).execute()
+                            cliente_sb.table("evaluaciones").insert(filas_supabase).execute()
 
-                            if edition_id_actual and _sb_table_exists("curso_ediciones"):
-                                cliente_sb.table("curso_ediciones").update({
-                                    "estado": "cerrado",
-                                    "cerrado_at": date.today().isoformat()
-                                }).eq("id", edition_id_actual).execute()
-
-                            st.session_state.envio_resultado = ("success", T["exito_envio"] + (" El curso ha quedado cerrado y ya no admite cambios." if edition_id_actual else ""))
+                            st.session_state.envio_resultado = ("success", T["exito_envio"])
                             st.session_state.lista_alumnos = []
                             st.session_state.reset_todo += 1
                             st.rerun()
