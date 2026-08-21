@@ -598,6 +598,27 @@ def enviar_docente_supabase(empresa_id, nombre_empresa, nombre_docente, usuario_
         st.error(f"Error al enviar el docente: {e}")
         return False
 
+
+def enviar_alumno_supabase(nombre_empresa, codigo_curso, nombre, apellido, provincia, localidad, telefono, email):
+    if not SUPABASE_DISPONIBLE:
+        return False
+    try:
+        cliente = obtener_cliente_supabase()
+        cliente.table("alumnos_curso").insert({
+            "codigo_curso": codigo_curso,
+            "nombre": nombre,
+            "apellido": apellido,
+            "provincia": provincia,
+            "localidad": localidad,
+            "telefono": telefono,
+            "email": email
+        }).execute()
+        crear_notificacion("alumno", f"Nuevo alumno añadido por {nombre_empresa} a {codigo_curso}: {nombre} {apellido}")
+        return True
+    except Exception as e:
+        st.error(f"Error al añadir el alumno: {e}")
+        return False
+
 # --- NUEVO: PDF DEL RESUMEN DE ALUMNOS (antes de enviar) ---
 def _pdf_texto_seguro(valor):
     """Los tipos de letra base de fpdf2 solo soportan Latin-1. Cualquier
@@ -1308,6 +1329,65 @@ if opcion == T["menu_docs"]:
                                     st.rerun()
                             else:
                                 st.warning(T["campo_vacio_docente"])
+
+                with st.expander(T["anadir_alumnos"]):
+                    cursos_propios_alu = []
+                    if SUPABASE_DISPONIBLE:
+                        try:
+                            cursos_propios_alu = (
+                                obtener_cliente_supabase().table("cursos").select("codigo_curso, nombre_es")
+                                .eq("empresa_id", st.session_state.get(id_key)).execute().data
+                            )
+                        except Exception:
+                            cursos_propios_alu = []
+
+                    if not cursos_propios_alu:
+                        st.info(T["sin_cursos_propios"])
+                    else:
+                        alumno_version = st.session_state.get(f"{key_prefix}_alumno_version", 0)
+                        opciones_curso_alu = [f"{c['codigo_curso']} - {c.get('nombre_es', '')}" for c in cursos_propios_alu]
+                        curso_elegido_alu = st.selectbox(T["campo_curso_relacionado"], opciones_curso_alu, key=f"{key_prefix}_alumno_curso_{alumno_version}")
+                        codigo_curso_alu = curso_elegido_alu.split(" - ")[0] if " - " in curso_elegido_alu else curso_elegido_alu
+
+                        al1, al2 = st.columns(2)
+                        nombre_alumno_nuevo = al1.text_input(T["campo_nombre_alumno"], key=f"{key_prefix}_alu_nombre_{alumno_version}")
+                        apellido_alumno_nuevo = al2.text_input(T["campo_apellido_alumno"], key=f"{key_prefix}_alu_apellido_{alumno_version}")
+
+                        al3, al4 = st.columns(2)
+                        provincia_alumno_nuevo = al3.text_input(T["campo_provincia"], key=f"{key_prefix}_alu_prov_{alumno_version}")
+                        localidad_alumno_nuevo = al4.text_input(T["campo_poblacion"], key=f"{key_prefix}_alu_local_{alumno_version}")
+
+                        al5, al6 = st.columns(2)
+                        telefono_alumno_nuevo = al5.text_input(T["campo_telefono"], key=f"{key_prefix}_alu_tel_{alumno_version}")
+                        email_alumno_nuevo = al6.text_input(T["campo_email"], key=f"{key_prefix}_alu_email_{alumno_version}")
+
+                        if st.button(T["enviar_alumno"], key=f"{key_prefix}_alu_btn_enviar"):
+                            campos_alumno = [nombre_alumno_nuevo, apellido_alumno_nuevo, provincia_alumno_nuevo, localidad_alumno_nuevo, telefono_alumno_nuevo, email_alumno_nuevo]
+                            if all(c.strip() for c in campos_alumno):
+                                if enviar_alumno_supabase(
+                                    nombre_empresa, codigo_curso_alu,
+                                    nombre_alumno_nuevo.strip(), apellido_alumno_nuevo.strip(),
+                                    provincia_alumno_nuevo.strip(), localidad_alumno_nuevo.strip(),
+                                    telefono_alumno_nuevo.strip(), email_alumno_nuevo.strip()
+                                ):
+                                    st.success(T["alumno_anadido"])
+                                    st.session_state[f"{key_prefix}_alumno_version"] = alumno_version + 1
+                                    st.rerun()
+                            else:
+                                st.warning(T["campo_vacio_alumno"])
+
+                        if SUPABASE_DISPONIBLE:
+                            try:
+                                alumnos_ya_anadidos = (
+                                    obtener_cliente_supabase().table("alumnos_curso").select("nombre, apellido")
+                                    .eq("codigo_curso", codigo_curso_alu).execute().data
+                                )
+                            except Exception:
+                                alumnos_ya_anadidos = []
+                            if alumnos_ya_anadidos:
+                                st.caption(T["lista_alumnos_curso"])
+                                for al in alumnos_ya_anadidos:
+                                    st.write(f"- {al.get('nombre', '')} {al.get('apellido', '')}")
 
             if st.button(T["cerrar_sesion"], key=f"{key_prefix}_btn_cerrar_sesion"):
                 st.session_state[login_key] = False
