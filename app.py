@@ -745,7 +745,7 @@ if 'lista_alumnos' not in st.session_state: st.session_state.lista_alumnos = []
 if 'alumno_key' not in st.session_state: st.session_state.alumno_key = 0
 if 'reset_todo' not in st.session_state: st.session_state.reset_todo = 0
 if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = ""
-if 'pantalla' not in st.session_state: st.session_state.pantalla = 'principal'
+if 'pantalla' not in st.session_state: st.session_state.pantalla = "principal"
 
 # --- FUNCIÓN GUARDAR ---
 def guardar_en_sheets(titulo, nuevo_contenido):
@@ -1051,6 +1051,8 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
             st.session_state[nombre_key] = ""
             st.rerun()
 
+
+
 # --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
 with st.sidebar:
     st.image("logo_mzero.png")
@@ -1070,11 +1072,7 @@ with st.sidebar:
         on_change=volver_navegacion
     )
 
-    # -------------------------------------------------------------
-    # ACCESOS DESTACADOS
-    # Estos botones sustituyen a los antiguos tres expanders que
-    # estaban dentro de la pantalla Documentos.
-    # -------------------------------------------------------------
+    # --- ACCESOS DESTACADOS ---
     st.markdown("### 🔐 Accesos")
 
     if st.button(f"👥  {T['acceso_asociados']}", use_container_width=True, key="nav_acceso_asociados"):
@@ -1229,18 +1227,20 @@ with st.sidebar:
 
 # --- LÓGICA DE PANTALLAS ---
 
-# Los tres accesos funcionan ahora como pantallas independientes.
-# Se reutiliza exactamente la misma función de acceso/formularios que
-# ya existía, por lo que no se modifica la lógica de credenciales,
-# peticiones, cursos, docentes ni alumnos.
 if st.session_state.pantalla == "acceso_asociados":
     st.markdown(f"## {T['acceso_asociados']}")
-    st.caption("Acceso y gestión para Asociados.") if lang == "es" else st.caption("Accés i gestió per a Associats.")
+    if lang == "es":
+        st.caption("Acceso y gestión para Asociados.")
+    else:
+        st.caption("Accés i gestió per a Associats.")
     bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
 
 elif st.session_state.pantalla == "acceso_colaboradores":
     st.markdown(f"## {T['acceso_colaboradores']}")
-    st.caption("Acceso y gestión para Colaboradores.") if lang == "es" else st.caption("Accés i gestió per a Col·laboradors.")
+    if lang == "es":
+        st.caption("Acceso y gestión para Colaboradores.")
+    else:
+        st.caption("Accés i gestió per a Col·laboradors.")
     bloque_acceso_y_peticion(
         "colaborador",
         "Credenciales Colaboradores",
@@ -1251,7 +1251,10 @@ elif st.session_state.pantalla == "acceso_colaboradores":
 
 elif st.session_state.pantalla == "acceso_candidatos":
     st.markdown(f"## {T['acceso_candidatos']}")
-    st.info("Próximamente." if lang == "es" else "Properament.")
+    if lang == "es":
+        st.info("Próximamente.")
+    else:
+        st.info("Properament.")
 
 elif opcion == T["menu_docs"]:
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
@@ -1424,6 +1427,14 @@ elif opcion == T["menu_docs"]:
                         refrescar_app()
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
+    # --- BLOQUE: CÓMO PARTICIPAR ---
+    st.markdown(f"## {T['como_participar']}")
+
+    instrucciones_participar = cargar_instrucciones_participar()
+
+    def texto_instruccion(clave):
+        bloque = instrucciones_participar.get(clave, {})
+        return bloque.get(lang, "")
 
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
