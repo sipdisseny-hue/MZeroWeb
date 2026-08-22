@@ -1062,15 +1062,40 @@ with st.sidebar:
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     T = TEXTOS[lang]
     
-    def volver_navegacion():
-        st.session_state.pantalla = "principal"
+    # --- NAVEGACIÓN PRINCIPAL ---
+    # Usamos botones en lugar de un radio porque el usuario puede estar
+    # dentro de un formulario de acceso mientras "Documentos" sigue siendo
+    # la opción seleccionada. Con un radio, volver a pulsar "Documentos" no
+    # genera ningún cambio y el formulario permanecería abierto.
+    # Con botones, CADA pulsación de Documentos/Evaluaciones fuerza la salida
+    # de cualquier pantalla o formulario de Accesos.
+    st.markdown(f"**{T['nav_titulo']}**")
 
-    opcion = st.radio(
-        T["nav_titulo"],
-        [T["menu_docs"], T["menu_eval"]],
-        key="opcion_nav",
-        on_change=volver_navegacion
-    )
+    if st.button(
+        f"📄  {T['menu_docs']}",
+        use_container_width=True,
+        type="primary" if st.session_state.get("opcion_nav", T["menu_docs"]) == T["menu_docs"] else "secondary",
+        key="nav_documentos"
+    ):
+        st.session_state.opcion_nav = T["menu_docs"]
+        st.session_state.pantalla = "principal"
+        st.rerun()
+
+    if st.button(
+        f"📝  {T['menu_eval']}",
+        use_container_width=True,
+        type="primary" if st.session_state.get("opcion_nav", T["menu_docs"]) == T["menu_eval"] else "secondary",
+        key="nav_evaluaciones"
+    ):
+        st.session_state.opcion_nav = T["menu_eval"]
+        st.session_state.pantalla = "principal"
+        st.rerun()
+
+    # Si es la primera carga, dejamos Documentos como pantalla principal.
+    if "opcion_nav" not in st.session_state:
+        st.session_state.opcion_nav = T["menu_docs"]
+
+    opcion = st.session_state.opcion_nav
 
     # --- ACCESOS DESTACADOS ---
     st.markdown("### 🔐 Accesos")
