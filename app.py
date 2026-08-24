@@ -2162,11 +2162,44 @@ elif opcion == T["menu_eval"]:
                 c4, c5 = st.columns(2)
                 nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
                 if alumnos_edicion:
-                    opciones_alumnos = [f"{a.get('id')} · {a.get('nombre', '')} {a.get('apellidos', '')}" for a in alumnos_edicion]
-                    alumno_display = c5.selectbox(T["alumno"], opciones_alumnos, key=f"f_alu_sel_{st.session_state.reset_todo}")
-                    alumno = alumno_display.split(" · ", 1)[1] if " · " in alumno_display else alumno_display
+                    # El UUID del alumno es un identificador interno de Supabase.
+                    # No se muestra al docente: solo se muestra Nombre y Apellidos.
+                    # El ID real sigue conservándose internamente en alumno_id_actual.
+                    opciones_alumnos = []
+                    mapa_alumnos = {}
+
+                    for indice_alu, a in enumerate(alumnos_edicion, start=1):
+                        nombre_completo = (
+                            f"{a.get('nombre', '')} {a.get('apellidos', '')}"
+                        ).strip()
+
+                        # Si hubiera dos alumnos con el mismo nombre, añadimos
+                        # un número únicamente para distinguirlos visualmente.
+                        etiqueta = nombre_completo or f"Alumno {indice_alu:02d}"
+                        if etiqueta in mapa_alumnos:
+                            etiqueta = f"{etiqueta} · Alumno {indice_alu:02d}"
+
+                        opciones_alumnos.append(etiqueta)
+                        mapa_alumnos[etiqueta] = a
+
+                    alumno_display = c5.selectbox(
+                        T["alumno"],
+                        opciones_alumnos,
+                        key=f"f_alu_sel_{st.session_state.reset_todo}"
+                    )
+
+                    alumno_seleccionado = mapa_alumnos[alumno_display]
+                    alumno_id_actual = alumno_seleccionado.get("id")
+                    alumno = (
+                        f"{alumno_seleccionado.get('nombre', '')} "
+                        f"{alumno_seleccionado.get('apellidos', '')}"
+                    ).strip()
                 else:
-                    alumno = c5.text_input(T["alumno"], key=f"f_alu_{st.session_state.alumno_key}")
+                    alumno_id_actual = None
+                    alumno = c5.text_input(
+                        T["alumno"],
+                        key=f"f_alu_{st.session_state.alumno_key}"
+                    )
 
             if curso_codigo_actual is not None:
                 criterios = [
@@ -2269,7 +2302,8 @@ elif opcion == T["menu_eval"]:
                             "Nivel": nivel,
                             "Nota": nota_final,
                             "Estado": res,
-                            "EditionId": edition_id_actual
+                            "EditionId": edition_id_actual,
+                            "AlumnoId": alumno_id_actual
                         }
                         registro.update(notas)
                         st.session_state.lista_alumnos.append(registro)
