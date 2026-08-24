@@ -1118,71 +1118,179 @@ def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modul
 
 
 def _crear_edicion_curso(empresa_id, referencia, nombre_curso):
+    """Crea una nueva edición del curso en curso_ediciones.
+
+    No utiliza .single(), porque la versión del cliente Supabase usada por
+    esta aplicación puede no exponer ese método en el builder de inserción.
+    """
     cliente = obtener_cliente_supabase()
+
     if not _sb_table_exists("curso_ediciones"):
-        raise RuntimeError("Falta la tabla curso_ediciones. Ejecuta el SQL de actualización de la base de datos.")
-    res = cliente.table("curso_ediciones").insert({
+        raise RuntimeError(
+            "Falta la tabla curso_ediciones. "
+            "Ejecuta el SQL de actualización de la base de datos."
+        )
+
+    datos_edicion = {
         "empresa_id": empresa_id,
-        "codigo_curso": referencia,
-        "nombre_curso": nombre_curso,
-        "estado": "pendiente"
-    }).select("*").single().execute()
-    return res.data
+        "codigo_curso": str(referencia).strip(),
+        "nombre_curso": str(nombre_curso).strip(),
+        "estado": "pendiente",
+    }
+
+    resultado = cliente.table("curso_ediciones").insert(datos_edicion).execute()
+
+    if not resultado.data:
+        raise RuntimeError("Supabase no devolvió la edición creada.")
+
+    return resultado.data[0]
 
 
 def _crear_o_reutilizar_docente(empresa_id, nombre, usuario, email, codigo_curso):
+    """Busca un docente existente o crea uno nuevo y mantiene curso_docente."""
     cliente = obtener_cliente_supabase()
-    existente = cliente.table("docentes").select("*").eq("usuario", usuario.strip()).limit(1).execute().data
+
+    nombre = str(nombre).strip()
+    usuario = str(usuario).strip()
+    email = str(email).strip()
+    codigo_curso = str(codigo_curso).strip()
+
+    if not nombre or not usuario or not email:
+        raise ValueError("Nombre, usuario y email del docente son obligatorios.")
+
+    existente = (
+        cliente.table("docentes")
+        .select("*")
+        .eq("usuario", usuario)
+        .limit(1)
+        .execute()
+        .data
+    )
+
     if existente:
         docente = existente[0]
         id_docente = docente["id_docente"]
     else:
-        id_docente = usuario.strip()
-        docente = cliente.table("docentes").insert({
+        id_docente = usuario
+        datos_docente = {
             "id_docente": id_docente,
-            "nombre": nombre.strip(),
-            "usuario": usuario.strip(),
-            "email": email.strip(),
+            "nombre": nombre,
+            "usuario": usuario,
+            "email": email,
             "estado": "pendiente",
-            "empresa_id": empresa_id
-        }).select("*").single().execute().data
+            "empresa_id": empresa_id,
+        }
 
-    ya = cliente.table("curso_docente").select("id_docente").eq("id_docente", id_docente).eq("codigo_curso", codigo_curso).execute().data
-    if not ya:
-        cliente.table("curso_docente").insert({"id_docente": id_docente, "codigo_curso": codigo_curso}).execute()
+        resultado = cliente.table("docentes").insert(datos_docente).execute()
+
+        if not resultado.data:
+            raise RuntimeError("Supabase no devolvió el docente creado.")
+
+        docente = resultado.data[0]
+
+    # Mantener la relación histórica del docente con el código del curso.
+    if codigo_curso:
+        ya = (
+            cliente.table("curso_docente")
+            .select("id_docente")
+            .eq("id_docente", id_docente)
+            .eq("codigo_curso", codigo_curso)
+            .execute()
+            .data
+        )
+        if not ya:
+            cliente.table("curso_docente").insert({
+                "id_docente": id_docente,
+                "codigo_curso": codigo_curso,
+            }).execute()
+
     return docente
 
 
 def _vincular_docente_edicion(edition_id, docente_id):
+    """Relaciona un docente con una edición concreta."""
     cliente = obtener_cliente_supabase()
+
     if not _sb_table_exists("curso_edicion_docente"):
-        raise RuntimeError("Falta la tabla curso_edicion_docente. Ejecuta el SQL de actualización de la base de datos.")
-    ya = cliente.table("curso_edicion_docente").select("id_edicion").eq("id_edicion", edition_id).eq("id_docente", docente_id).execute().data
+        raise RuntimeError(
+            "Falta la tabla curso_edicion_docente. "
+            "Ejecuta el SQL de actualización de la base de datos."
+        )
+
+    ya = (
+        cliente.table("curso_edicion_docente")
+        .select("id_edicion")
+        .eq("id_edicion", edition_id)
+        .eq("id_docente", docente_id)
+        .execute()
+        .data
+    )
+
     if not ya:
-        cliente.table("curso_edicion_docente").insert({"id_edicion": edition_id, "id_docente": docente_id}).execute()
+        cliente.table("curso_edicion_docente").insert({
+            "id_edicion": edition_id,
+            "id_docente": docente_id,
+        }).execute()
 
 
 def _anadir_alumno_edicion(edition_id, datos):
+    """Añade un alumno a curso_alumnos para una edición concreta.
+
+    IMPORTANTE: la aplicación utiliza curso_alumnos, NO alumnos_cursos.
+    """
     cliente = obtener_cliente_supabase()
+
     if not _sb_table_exists("curso_alumnos"):
-        raise RuntimeError("Falta la tabla curso_alumnos. Ejecuta el SQL de actualización de la base de datos.")
-    return cliente.table("curso_alumnos").insert({
+        raise RuntimeError(
+            "Falta la tabla curso_alumnos. "
+            "Ejecuta el SQL de actualización de la base de datos."
+        )
+
+    campos_obligatorios = [
+        "nombre",
+        "apellidos",
+        "provincia",
+        "localidad",
+        "telefono",
+        "email",
+    ]
+
+    for campo in campos_obligatorios:
+        if not str(datos.get(campo, "")).strip():
+            raise ValueError(f"El campo '{campo}' del alumno es obligatorio.")
+
+    datos_alumno = {
         "id_edicion": edition_id,
-        "nombre": datos["nombre"].strip(),
-        "apellidos": datos["apellidos"].strip(),
-        "provincia": datos["provincia"].strip(),
-        "localidad": datos["localidad"].strip(),
-        "telefono": datos["telefono"].strip(),
-        "email": datos["email"].strip(),
-        "estado": "pendiente"
-    }).select("*").single().execute().data
+        "nombre": str(datos["nombre"]).strip(),
+        "apellidos": str(datos["apellidos"]).strip(),
+        "provincia": str(datos["provincia"]).strip(),
+        "localidad": str(datos["localidad"]).strip(),
+        "telefono": str(datos["telefono"]).strip(),
+        "email": str(datos["email"]).strip(),
+        "estado": "pendiente",
+    }
+
+    resultado = cliente.table("curso_alumnos").insert(datos_alumno).execute()
+
+    if not resultado.data:
+        raise RuntimeError("Supabase no devolvió el alumno creado.")
+
+    return resultado.data[0]
 
 
 def _cargar_ediciones_colaborador(empresa_id):
     if not SUPABASE_DISPONIBLE or not _sb_table_exists("curso_ediciones"):
         return []
     try:
-        return obtener_cliente_supabase().table("curso_ediciones").select("*").eq("empresa_id", empresa_id).order("created_at", desc=True).execute().data
+        return (
+            obtener_cliente_supabase()
+            .table("curso_ediciones")
+            .select("*")
+            .eq("empresa_id", empresa_id)
+            .order("created_at", desc=True)
+            .execute()
+            .data
+        )
     except Exception:
         return []
 
@@ -1300,7 +1408,7 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         elif curso_existente:
             st.info("Este código existe, pero todavía no tiene docentes relacionados.")
 
-        st.markdown("#### Añadir docentes nuevos (opcional)")
+        st.markdown("#### Añadir docentes nuevos")
         if f"{key_prefix}_draft_docentes" not in st.session_state:
             st.session_state[f"{key_prefix}_draft_docentes"] = []
         docentes_draft = st.session_state[f"{key_prefix}_draft_docentes"]
