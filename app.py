@@ -377,11 +377,13 @@ def enviar_peticion_participar(tipo, id_empresa, texto):
         try:
             data = response.json()
         except Exception:
-            # El script devolvió texto plano (p. ej. "OK"), lo damos por válido
+            # El script devolvió texto plano (p. ej. "OK"), lo damos por válido.
+            crear_notificacion("peticion", f"Nueva petición de {tipo} (empresa {id_empresa}): {str(texto).strip()[:200]}")
             return True
         if isinstance(data, dict) and data.get("ok") is False:
             st.error(f"No se pudo guardar la petición: {data.get('error', 'error desconocido')}")
             return False
+        crear_notificacion("peticion", f"Nueva petición de {tipo} (empresa {id_empresa}): {str(texto).strip()[:200]}")
         return True
     except Exception as e:
         st.error(f"Error de conexión al enviar la petición: {e}")
@@ -396,7 +398,10 @@ def enviar_peticion_registro(tipo, campos):
     payload = {"accion": "registro", "tipo": tipo, "campos": campos}
     try:
         response = requests.post(url_script, json=payload, timeout=20)
-        return response.status_code == 200
+        if response.status_code == 200:
+            crear_notificacion("registro", f"Nueva solicitud de registro ({tipo}) enviada desde la app.")
+            return True
+        return False
     except Exception:
         return False
 
@@ -1118,179 +1123,71 @@ def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modul
 
 
 def _crear_edicion_curso(empresa_id, referencia, nombre_curso):
-    """Crea una nueva edición del curso en curso_ediciones.
-
-    No utiliza .single(), porque la versión del cliente Supabase usada por
-    esta aplicación puede no exponer ese método en el builder de inserción.
-    """
     cliente = obtener_cliente_supabase()
-
     if not _sb_table_exists("curso_ediciones"):
-        raise RuntimeError(
-            "Falta la tabla curso_ediciones. "
-            "Ejecuta el SQL de actualización de la base de datos."
-        )
-
-    datos_edicion = {
+        raise RuntimeError("Falta la tabla curso_ediciones. Ejecuta el SQL de actualización de la base de datos.")
+    res = cliente.table("curso_ediciones").insert({
         "empresa_id": empresa_id,
-        "codigo_curso": str(referencia).strip(),
-        "nombre_curso": str(nombre_curso).strip(),
-        "estado": "pendiente",
-    }
-
-    resultado = cliente.table("curso_ediciones").insert(datos_edicion).execute()
-
-    if not resultado.data:
-        raise RuntimeError("Supabase no devolvió la edición creada.")
-
-    return resultado.data[0]
+        "codigo_curso": referencia,
+        "nombre_curso": nombre_curso,
+        "estado": "pendiente"
+    }).select("*").single().execute()
+    return res.data
 
 
 def _crear_o_reutilizar_docente(empresa_id, nombre, usuario, email, codigo_curso):
-    """Busca un docente existente o crea uno nuevo y mantiene curso_docente."""
     cliente = obtener_cliente_supabase()
-
-    nombre = str(nombre).strip()
-    usuario = str(usuario).strip()
-    email = str(email).strip()
-    codigo_curso = str(codigo_curso).strip()
-
-    if not nombre or not usuario or not email:
-        raise ValueError("Nombre, usuario y email del docente son obligatorios.")
-
-    existente = (
-        cliente.table("docentes")
-        .select("*")
-        .eq("usuario", usuario)
-        .limit(1)
-        .execute()
-        .data
-    )
-
+    existente = cliente.table("docentes").select("*").eq("usuario", usuario.strip()).limit(1).execute().data
     if existente:
         docente = existente[0]
         id_docente = docente["id_docente"]
     else:
-        id_docente = usuario
-        datos_docente = {
+        id_docente = usuario.strip()
+        docente = cliente.table("docentes").insert({
             "id_docente": id_docente,
-            "nombre": nombre,
-            "usuario": usuario,
-            "email": email,
+            "nombre": nombre.strip(),
+            "usuario": usuario.strip(),
+            "email": email.strip(),
             "estado": "pendiente",
-            "empresa_id": empresa_id,
-        }
+            "empresa_id": empresa_id
+        }).select("*").single().execute().data
 
-        resultado = cliente.table("docentes").insert(datos_docente).execute()
-
-        if not resultado.data:
-            raise RuntimeError("Supabase no devolvió el docente creado.")
-
-        docente = resultado.data[0]
-
-    # Mantener la relación histórica del docente con el código del curso.
-    if codigo_curso:
-        ya = (
-            cliente.table("curso_docente")
-            .select("id_docente")
-            .eq("id_docente", id_docente)
-            .eq("codigo_curso", codigo_curso)
-            .execute()
-            .data
-        )
-        if not ya:
-            cliente.table("curso_docente").insert({
-                "id_docente": id_docente,
-                "codigo_curso": codigo_curso,
-            }).execute()
-
+    ya = cliente.table("curso_docente").select("id_docente").eq("id_docente", id_docente).eq("codigo_curso", codigo_curso).execute().data
+    if not ya:
+        cliente.table("curso_docente").insert({"id_docente": id_docente, "codigo_curso": codigo_curso}).execute()
     return docente
 
 
 def _vincular_docente_edicion(edition_id, docente_id):
-    """Relaciona un docente con una edición concreta."""
     cliente = obtener_cliente_supabase()
-
     if not _sb_table_exists("curso_edicion_docente"):
-        raise RuntimeError(
-            "Falta la tabla curso_edicion_docente. "
-            "Ejecuta el SQL de actualización de la base de datos."
-        )
-
-    ya = (
-        cliente.table("curso_edicion_docente")
-        .select("id_edicion")
-        .eq("id_edicion", edition_id)
-        .eq("id_docente", docente_id)
-        .execute()
-        .data
-    )
-
+        raise RuntimeError("Falta la tabla curso_edicion_docente. Ejecuta el SQL de actualización de la base de datos.")
+    ya = cliente.table("curso_edicion_docente").select("id_edicion").eq("id_edicion", edition_id).eq("id_docente", docente_id).execute().data
     if not ya:
-        cliente.table("curso_edicion_docente").insert({
-            "id_edicion": edition_id,
-            "id_docente": docente_id,
-        }).execute()
+        cliente.table("curso_edicion_docente").insert({"id_edicion": edition_id, "id_docente": docente_id}).execute()
 
 
 def _anadir_alumno_edicion(edition_id, datos):
-    """Añade un alumno a curso_alumnos para una edición concreta.
-
-    IMPORTANTE: la aplicación utiliza curso_alumnos, NO alumnos_cursos.
-    """
     cliente = obtener_cliente_supabase()
-
     if not _sb_table_exists("curso_alumnos"):
-        raise RuntimeError(
-            "Falta la tabla curso_alumnos. "
-            "Ejecuta el SQL de actualización de la base de datos."
-        )
-
-    campos_obligatorios = [
-        "nombre",
-        "apellidos",
-        "provincia",
-        "localidad",
-        "telefono",
-        "email",
-    ]
-
-    for campo in campos_obligatorios:
-        if not str(datos.get(campo, "")).strip():
-            raise ValueError(f"El campo '{campo}' del alumno es obligatorio.")
-
-    datos_alumno = {
+        raise RuntimeError("Falta la tabla curso_alumnos. Ejecuta el SQL de actualización de la base de datos.")
+    return cliente.table("curso_alumnos").insert({
         "id_edicion": edition_id,
-        "nombre": str(datos["nombre"]).strip(),
-        "apellidos": str(datos["apellidos"]).strip(),
-        "provincia": str(datos["provincia"]).strip(),
-        "localidad": str(datos["localidad"]).strip(),
-        "telefono": str(datos["telefono"]).strip(),
-        "email": str(datos["email"]).strip(),
-        "estado": "pendiente",
-    }
-
-    resultado = cliente.table("curso_alumnos").insert(datos_alumno).execute()
-
-    if not resultado.data:
-        raise RuntimeError("Supabase no devolvió el alumno creado.")
-
-    return resultado.data[0]
+        "nombre": datos["nombre"].strip(),
+        "apellidos": datos["apellidos"].strip(),
+        "provincia": datos["provincia"].strip(),
+        "localidad": datos["localidad"].strip(),
+        "telefono": datos["telefono"].strip(),
+        "email": datos["email"].strip(),
+        "estado": "pendiente"
+    }).select("*").single().execute().data
 
 
 def _cargar_ediciones_colaborador(empresa_id):
     if not SUPABASE_DISPONIBLE or not _sb_table_exists("curso_ediciones"):
         return []
     try:
-        return (
-            obtener_cliente_supabase()
-            .table("curso_ediciones")
-            .select("*")
-            .eq("empresa_id", empresa_id)
-            .order("created_at", desc=True)
-            .execute()
-            .data
-        )
+        return obtener_cliente_supabase().table("curso_ediciones").select("*").eq("empresa_id", empresa_id).order("created_at", desc=True).execute().data
     except Exception:
         return []
 
@@ -1408,7 +1305,7 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         elif curso_existente:
             st.info("Este código existe, pero todavía no tiene docentes relacionados.")
 
-        st.markdown("#### Añadir docentes nuevos")
+        st.markdown("#### Añadir docentes nuevos (opcional)")
         if f"{key_prefix}_draft_docentes" not in st.session_state:
             st.session_state[f"{key_prefix}_draft_docentes"] = []
         docentes_draft = st.session_state[f"{key_prefix}_draft_docentes"]
@@ -1663,7 +1560,6 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                         else:
                             st.warning("Rellena nombre, usuario y email.")
 
-                    st.markdown("### Añadir alumno")
                     mav = st.session_state.get(f"{key_prefix}_manage_alu_{eid}", 0)
                     datos_nuevo = _render_formulario_alumno(
                         f"{key_prefix}_manage_alumno_{eid}", mav
@@ -2101,39 +1997,12 @@ elif opcion == T["menu_eval"]:
                         ediciones_docente = []
 
                 if ediciones_docente:
-                    # El UUID de la edición es un identificador interno y NO se muestra
-                    # al docente. Si solo existe un grupo, se selecciona automáticamente.
-                    if len(ediciones_docente) == 1:
-                        edicion_actual = ediciones_docente[0]
-                        edition_id_actual = edicion_actual.get("id")
-                    else:
-                        ed1, _ = st.columns([0.45, 0.55])
-                        opciones_ed = []
-                        mapa_ediciones = {}
-
-                        for indice_ed, ed in enumerate(ediciones_docente, start=1):
-                            estado_ed = str(ed.get("estado", "pendiente")).strip().lower()
-                            estado_visible = "Cerrado" if estado_ed == "cerrado" else "Activo"
-                            etiqueta = f"Grupo {indice_ed:02d} · {estado_visible}"
-                            opciones_ed.append(etiqueta)
-                            mapa_ediciones[etiqueta] = ed
-
-                        edicion_display = ed1.selectbox(
-                            "Grupo",
-                            opciones_ed,
-                            key=f"f_ed_{st.session_state.reset_todo}"
-                        )
-                        edition_id_actual = mapa_ediciones[edicion_display].get("id")
-
+                    ed1, ed2 = st.columns(2)
+                    opciones_ed = [f"{e.get('id')} · {e.get('codigo_curso')} · {e.get('estado', 'pendiente')}" for e in ediciones_docente]
+                    edicion_display = ed1.selectbox("Edición / grupo", opciones_ed, key=f"f_ed_{st.session_state.reset_todo}")
+                    edition_id_actual = edicion_display.split(" · ")[0]
                     try:
-                        alumnos_edicion = (
-                            cliente_sb.table("curso_alumnos")
-                            .select("*")
-                            .eq("id_edicion", edition_id_actual)
-                            .order("created_at")
-                            .execute()
-                            .data
-                        )
+                        alumnos_edicion = cliente_sb.table("curso_alumnos").select("*").eq("id_edicion", edition_id_actual).order("created_at").execute().data
                     except Exception:
                         alumnos_edicion = []
 
@@ -2162,44 +2031,11 @@ elif opcion == T["menu_eval"]:
                 c4, c5 = st.columns(2)
                 nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
                 if alumnos_edicion:
-                    # El UUID del alumno es un identificador interno de Supabase.
-                    # No se muestra al docente: solo se muestra Nombre y Apellidos.
-                    # El ID real sigue conservándose internamente en alumno_id_actual.
-                    opciones_alumnos = []
-                    mapa_alumnos = {}
-
-                    for indice_alu, a in enumerate(alumnos_edicion, start=1):
-                        nombre_completo = (
-                            f"{a.get('nombre', '')} {a.get('apellidos', '')}"
-                        ).strip()
-
-                        # Si hubiera dos alumnos con el mismo nombre, añadimos
-                        # un número únicamente para distinguirlos visualmente.
-                        etiqueta = nombre_completo or f"Alumno {indice_alu:02d}"
-                        if etiqueta in mapa_alumnos:
-                            etiqueta = f"{etiqueta} · Alumno {indice_alu:02d}"
-
-                        opciones_alumnos.append(etiqueta)
-                        mapa_alumnos[etiqueta] = a
-
-                    alumno_display = c5.selectbox(
-                        T["alumno"],
-                        opciones_alumnos,
-                        key=f"f_alu_sel_{st.session_state.reset_todo}"
-                    )
-
-                    alumno_seleccionado = mapa_alumnos[alumno_display]
-                    alumno_id_actual = alumno_seleccionado.get("id")
-                    alumno = (
-                        f"{alumno_seleccionado.get('nombre', '')} "
-                        f"{alumno_seleccionado.get('apellidos', '')}"
-                    ).strip()
+                    opciones_alumnos = [f"{a.get('id')} · {a.get('nombre', '')} {a.get('apellidos', '')}" for a in alumnos_edicion]
+                    alumno_display = c5.selectbox(T["alumno"], opciones_alumnos, key=f"f_alu_sel_{st.session_state.reset_todo}")
+                    alumno = alumno_display.split(" · ", 1)[1] if " · " in alumno_display else alumno_display
                 else:
-                    alumno_id_actual = None
-                    alumno = c5.text_input(
-                        T["alumno"],
-                        key=f"f_alu_{st.session_state.alumno_key}"
-                    )
+                    alumno = c5.text_input(T["alumno"], key=f"f_alu_{st.session_state.alumno_key}")
 
             if curso_codigo_actual is not None:
                 criterios = [
@@ -2217,93 +2053,45 @@ elif opcion == T["menu_eval"]:
                 descripciones_rubrica = cargar_rubrica()
 
                 st.subheader(T["subt_puntuacion"])
+                cols = st.columns(4)
+                notas = {}
 
-                # IMPORTANTE:
-                # Los radios están dentro de un formulario de Streamlit.
-                # Así, cambiar una puntuación NO ejecuta la aplicación ni hace
-                # consultas a Supabase. Todas las 13 puntuaciones se envían
-                # juntas al pulsar "Guardar evaluación".
-                with st.form(key=f"form_eval_{st.session_state.alumno_key}_{st.session_state.reset_todo}"):
-                    cols = st.columns(4)
-                    notas = {}
+                for i, crit in enumerate(criterios):
+                    with cols[i % 4]:
+                        with st.container(border=True):
+                            col_t, col_b = st.columns([0.82, 0.18])
 
-                    for i, crit in enumerate(criterios):
-                        with cols[i % 4]:
-                            with st.container(border=True):
-                                col_t, col_b = st.columns([0.82, 0.18])
+                            with col_t:
+                                st.markdown(f"**{crit}**")
 
-                                with col_t:
-                                    st.markdown(f"**{crit}**")
+                            with col_b:
+                                info_crit = descripciones_rubrica.get(crit, {
+                                    "que_se_mide": "Información detallada en desarrollo.",
+                                    "nivel_rubrica": "Pendiente de definir rúbrica."
+                                })
 
-                                with col_b:
-                                    info_crit = descripciones_rubrica.get(crit, {
-                                        "que_se_mide": "Información detallada en desarrollo.",
-                                        "nivel_rubrica": "Pendiente de definir rúbrica."
-                                    })
+                                with st.popover("ℹ️", help="Ver rúbrica"):
+                                    st.markdown(f"**{T['que_se_mide']}**\n\n{info_crit['que_se_mide']}")
+                                    st.markdown("---")
+                                    st.markdown(f"**{T['nivel_rubrica']}**")
+                                    st.markdown(info_crit['nivel_rubrica'])
 
-                                    with st.popover("ℹ️", help="Ver rúbrica"):
-                                        st.markdown(
-                                            f"**{T['que_se_mide']}**\n\n"
-                                            f"{info_crit['que_se_mide']}"
-                                        )
-                                        st.markdown("---")
-                                        st.markdown(f"**{T['nivel_rubrica']}**")
-                                        st.markdown(info_crit["nivel_rubrica"])
+                            notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
 
-                                notas[crit] = st.radio(
-                                    "p",
-                                    [1, 2, 3, 4, 5],
-                                    horizontal=True,
-                                    key=f"rad_{crit}_{st.session_state.alumno_key}",
-                                    index=None,
-                                    label_visibility="collapsed"
-                                )
+                if None not in notas.values() and alumno:
+                    nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
+                    res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
+                    st.metric(T["nota_final"], f"{nota_final} - {res}")
+                else:
+                    nota_final, res = None, None
 
-                    if None not in notas.values() and alumno:
-                        nota_final = round(
-                            sum((notas[c] - 1) * 2.5 for c in criterios)
-                            / len(criterios),
-                            1
-                        )
-                        res = (
-                            "SUSPENSO (Línea Roja)"
-                            if notas["10. Seguridad y normativas"] == 1
-                            else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
-                        )
-                        st.metric(
-                            T["nota_final"],
-                            f"{nota_final} - {res}"
-                        )
-                    else:
-                        nota_final, res = None, None
-
-                    guardar_evaluacion = st.form_submit_button(
-                        T["guardar_alumno"],
-                        type="primary",
-                        use_container_width=False
-                    )
-
-                if guardar_evaluacion:
-                    if nota_final is None:
-                        st.warning(
-                            "Debes seleccionar una puntuación del 1 al 5 "
-                            "en los 13 criterios antes de guardar."
-                        )
-                    elif not alumno:
-                        st.warning("Debes seleccionar un alumno antes de guardar.")
-                    else:
+                if st.button(T["guardar_alumno"]):
+                    if nota_final is not None:
                         registro = {
-                            "Alumno": alumno,
-                            "Profesor": nombre_docente,
-                            "Usuario": docente_info.get("usuario", ""),
-                            "Curso": curso_seleccionado_full,
-                            "CursoCodigo": curso_codigo_actual,
-                            "Modulo": modulo_codigo_actual,
-                            "Nivel": nivel,
-                            "Nota": nota_final,
-                            "Estado": res,
-                            "EditionId": edition_id_actual,
-                            "AlumnoId": alumno_id_actual
+                            "Alumno": alumno, "Profesor": nombre_docente, "Usuario": docente_info.get("usuario", ""),
+                            "Curso": curso_seleccionado_full, "CursoCodigo": curso_codigo_actual,
+                            "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res,
+                            "EditionId": edition_id_actual
                         }
                         registro.update(notas)
                         st.session_state.lista_alumnos.append(registro)
@@ -2376,7 +2164,6 @@ elif opcion == T["menu_eval"]:
                             if edition_id_actual and _sb_table_exists("curso_ediciones"):
                                 cliente_sb.table("curso_ediciones").update({
                                     "estado": "cerrado",
-                                    "bloqueado": True,
                                     "cerrado_at": date.today().isoformat()
                                 }).eq("id", edition_id_actual).execute()
 
