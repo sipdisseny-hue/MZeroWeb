@@ -2101,12 +2101,39 @@ elif opcion == T["menu_eval"]:
                         ediciones_docente = []
 
                 if ediciones_docente:
-                    ed1, ed2 = st.columns(2)
-                    opciones_ed = [f"{e.get('id')} · {e.get('codigo_curso')} · {e.get('estado', 'pendiente')}" for e in ediciones_docente]
-                    edicion_display = ed1.selectbox("Edición / grupo", opciones_ed, key=f"f_ed_{st.session_state.reset_todo}")
-                    edition_id_actual = edicion_display.split(" · ")[0]
+                    # El UUID de la edición es un identificador interno y NO se muestra
+                    # al docente. Si solo existe un grupo, se selecciona automáticamente.
+                    if len(ediciones_docente) == 1:
+                        edicion_actual = ediciones_docente[0]
+                        edition_id_actual = edicion_actual.get("id")
+                    else:
+                        ed1, _ = st.columns([0.45, 0.55])
+                        opciones_ed = []
+                        mapa_ediciones = {}
+
+                        for indice_ed, ed in enumerate(ediciones_docente, start=1):
+                            estado_ed = str(ed.get("estado", "pendiente")).strip().lower()
+                            estado_visible = "Cerrado" if estado_ed == "cerrado" else "Activo"
+                            etiqueta = f"Grupo {indice_ed:02d} · {estado_visible}"
+                            opciones_ed.append(etiqueta)
+                            mapa_ediciones[etiqueta] = ed
+
+                        edicion_display = ed1.selectbox(
+                            "Grupo",
+                            opciones_ed,
+                            key=f"f_ed_{st.session_state.reset_todo}"
+                        )
+                        edition_id_actual = mapa_ediciones[edicion_display].get("id")
+
                     try:
-                        alumnos_edicion = cliente_sb.table("curso_alumnos").select("*").eq("id_edicion", edition_id_actual).order("created_at").execute().data
+                        alumnos_edicion = (
+                            cliente_sb.table("curso_alumnos")
+                            .select("*")
+                            .eq("id_edicion", edition_id_actual)
+                            .order("created_at")
+                            .execute()
+                            .data
+                        )
                     except Exception:
                         alumnos_edicion = []
 
@@ -2157,44 +2184,91 @@ elif opcion == T["menu_eval"]:
                 descripciones_rubrica = cargar_rubrica()
 
                 st.subheader(T["subt_puntuacion"])
-                cols = st.columns(4)
-                notas = {}
 
-                for i, crit in enumerate(criterios):
-                    with cols[i % 4]:
-                        with st.container(border=True):
-                            col_t, col_b = st.columns([0.82, 0.18])
+                # IMPORTANTE:
+                # Los radios están dentro de un formulario de Streamlit.
+                # Así, cambiar una puntuación NO ejecuta la aplicación ni hace
+                # consultas a Supabase. Todas las 13 puntuaciones se envían
+                # juntas al pulsar "Guardar evaluación".
+                with st.form(key=f"form_eval_{st.session_state.alumno_key}_{st.session_state.reset_todo}"):
+                    cols = st.columns(4)
+                    notas = {}
 
-                            with col_t:
-                                st.markdown(f"**{crit}**")
+                    for i, crit in enumerate(criterios):
+                        with cols[i % 4]:
+                            with st.container(border=True):
+                                col_t, col_b = st.columns([0.82, 0.18])
 
-                            with col_b:
-                                info_crit = descripciones_rubrica.get(crit, {
-                                    "que_se_mide": "Información detallada en desarrollo.",
-                                    "nivel_rubrica": "Pendiente de definir rúbrica."
-                                })
+                                with col_t:
+                                    st.markdown(f"**{crit}**")
 
-                                with st.popover("ℹ️", help="Ver rúbrica"):
-                                    st.markdown(f"**{T['que_se_mide']}**\n\n{info_crit['que_se_mide']}")
-                                    st.markdown("---")
-                                    st.markdown(f"**{T['nivel_rubrica']}**")
-                                    st.markdown(info_crit['nivel_rubrica'])
+                                with col_b:
+                                    info_crit = descripciones_rubrica.get(crit, {
+                                        "que_se_mide": "Información detallada en desarrollo.",
+                                        "nivel_rubrica": "Pendiente de definir rúbrica."
+                                    })
 
-                            notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
+                                    with st.popover("ℹ️", help="Ver rúbrica"):
+                                        st.markdown(
+                                            f"**{T['que_se_mide']}**\n\n"
+                                            f"{info_crit['que_se_mide']}"
+                                        )
+                                        st.markdown("---")
+                                        st.markdown(f"**{T['nivel_rubrica']}**")
+                                        st.markdown(info_crit["nivel_rubrica"])
 
-                if None not in notas.values() and alumno:
-                    nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
-                    res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
-                    st.metric(T["nota_final"], f"{nota_final} - {res}")
-                else:
-                    nota_final, res = None, None
+                                notas[crit] = st.radio(
+                                    "p",
+                                    [1, 2, 3, 4, 5],
+                                    horizontal=True,
+                                    key=f"rad_{crit}_{st.session_state.alumno_key}",
+                                    index=None,
+                                    label_visibility="collapsed"
+                                )
 
-                if st.button(T["guardar_alumno"]):
-                    if nota_final is not None:
+                    if None not in notas.values() and alumno:
+                        nota_final = round(
+                            sum((notas[c] - 1) * 2.5 for c in criterios)
+                            / len(criterios),
+                            1
+                        )
+                        res = (
+                            "SUSPENSO (Línea Roja)"
+                            if notas["10. Seguridad y normativas"] == 1
+                            else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
+                        )
+                        st.metric(
+                            T["nota_final"],
+                            f"{nota_final} - {res}"
+                        )
+                    else:
+                        nota_final, res = None, None
+
+                    guardar_evaluacion = st.form_submit_button(
+                        T["guardar_alumno"],
+                        type="primary",
+                        use_container_width=False
+                    )
+
+                if guardar_evaluacion:
+                    if nota_final is None:
+                        st.warning(
+                            "Debes seleccionar una puntuación del 1 al 5 "
+                            "en los 13 criterios antes de guardar."
+                        )
+                    elif not alumno:
+                        st.warning("Debes seleccionar un alumno antes de guardar.")
+                    else:
                         registro = {
-                            "Alumno": alumno, "Profesor": nombre_docente, "Usuario": docente_info.get("usuario", ""),
-                            "Curso": curso_seleccionado_full, "CursoCodigo": curso_codigo_actual,
-                            "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res,
+                            "Alumno": alumno,
+                            "Profesor": nombre_docente,
+                            "Usuario": docente_info.get("usuario", ""),
+                            "Curso": curso_seleccionado_full,
+                            "CursoCodigo": curso_codigo_actual,
+                            "Modulo": modulo_codigo_actual,
+                            "Nivel": nivel,
+                            "Nota": nota_final,
+                            "Estado": res,
                             "EditionId": edition_id_actual
                         }
                         registro.update(notas)
