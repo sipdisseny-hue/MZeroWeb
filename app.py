@@ -117,7 +117,78 @@ TEXTOS = {
         "sin_cursos_propios": "Primero añade un curso para poder relacionarle un docente.",
         "descargar_pdf": "📄 Descargar PDF antes de enviar",
         "fpdf_no_disponible": "Para poder descargar el PDF, añade 'fpdf2' al archivo requirements.txt de la app.",
-        "titulos_func": ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"]
+        "titulos_func": ["Argumentos M-Zero", "¿Por qué ser Asociado o Colaborador?", "Metodología M0", "El sello M-Zero 'Certificación de calidad'"],
+        "campo_nombre_alumno": "Nombre",
+        "campo_apellidos_alumno": "Apellidos",
+        "campo_localidad": "Localidad",
+        "campo_tablas_faltan": "Faltan tablas de gestión de cursos en Supabase: {tablas}.",
+        "campo_migracion_cursos": "La conexión actual con SUPABASE_URL y SUPABASE_KEY no cambia. Ejecuta el SQL de migración de cursos para crear estas tablas.",
+        "estado_pendiente": "pendiente",
+        "estado_activo": "activo",
+        "plan_basic": "BASIC",
+        "plan_standard": "STANDARD",
+        "plan_basic_precio": "50 €/curso",
+        "plan_standard_precio": "38 €/mes",
+        "plan_promocion": "Promoción 2026",
+        "plan_uso_app": "Uso de la app",
+        "plan_etiqueta_web": "Etiqueta enlace a su web",
+        "plan_impuestos": "Impuestos incluidos",
+        "plan_standard_inactivo": "De momento no disponible",
+        "plan_seleccionar_basic": "Seleccionar BASIC",
+        "plan_standard_bloqueado": "STANDARD no disponible",
+        "plan_volver": "← Volver a las opciones",
+        "reg_plan_seleccionado": "Plan seleccionado: BASIC",
+        "plan_subtitulo": "Selecciona una modalidad para continuar con el registro.",
+        "gestion_cursos": 'Gestión de cursos',
+        "gestion_cursos_desc": 'Crea una nueva edición de un curso, reutiliza la información que ya exista y gestiona posteriormente sus docentes y alumnos.',
+        "crear_nuevo_curso": '➕ Crear nuevo curso',
+        "mis_cursos": '📚 Mis cursos',
+        "selecciona_curso": '1. Selecciona el curso',
+        "help_codigo": 'Introduce el código del curso. Si ya existe, se reutilizará su ficha.',
+        "curso_existente": '✅ Curso existente encontrado: **{ref} — {nombre}**. Se reutilizará su información y no tendrás que volver a describirlo.',
+        "codigo_nuevo_info": 'Si es un código nuevo, completa la ficha del curso.',
+        "docentes_edicion": '2. Docentes de esta edición',
+        "docentes_reutilizables": 'Estos docentes ya están relacionados con este código de curso. Puedes reutilizarlos sin volver a introducir sus datos.',
+        "sin_docentes_curso": 'Este código existe, pero todavía no tiene docentes relacionados.',
+        "anadir_docentes_nuevos": 'Añadir docentes nuevos',
+        "nombre_docente": 'Nombre del docente',
+        "usuario_docente": 'Usuario del docente',
+        "email_docente": 'Email del docente',
+        "anadir_docente_nuevo": '➕ Añadir docente nuevo a la edición',
+        "rellena_docente": 'Rellena nombre, usuario y email del docente.',
+        "docentes_tendra": 'Docentes que tendrá esta edición: **{total}**',
+        "alumnos_edicion": '3. Alumnos de la nueva edición',
+        "alumnos_info": 'Los alumnos pertenecen a cada edición/grupo. Aunque reutilices el mismo código y los mismos docentes, los alumnos de esta nueva edición deben añadirse aquí.',
+        "anadir_alumno_edicion": '➕ Añadir alumno a la nueva edición',
+        "todos_campos_alumno": 'Todos los campos del alumno son obligatorios.',
+        "enviar_peticion_curso": '4. Enviar petición del curso',
+        "enviar_peticion_curso_btn": '🚀 ENVIAR PETICIÓN DEL CURSO',
+        "indica_codigo": 'Indica el código del curso.',
+        "codigo_nuevo_nombre": 'Al ser un código nuevo, debes indicar el nombre del curso.',
+        "al_menos_docente": 'Añade o reutiliza al menos un docente para esta edición.',
+        "al_menos_alumno": 'Debes añadir al menos un alumno a la nueva edición.',
+        "peticion_curso_ok": "Petición del curso enviada correctamente. Puedes consultar y ampliar esta edición desde 'Mis cursos'.",
+        "error_peticion_curso": 'No se pudo enviar la petición del curso: {error}',
+        "mis_cursos_info": 'Todavía no tienes cursos enviados.',
+        "estado": 'Estado:',
+        "cerrado": '🔒 CERRADO',
+        "abierto": '🟢 ABIERTO',
+        "resumen_doc_alu": '{docentes} docentes · {alumnos} alumnos',
+        "seccion_docentes": 'Docentes',
+        "seccion_alumnos": 'Alumnos',
+        "sin_alumnos": 'No hay alumnos registrados.',
+        "edicion_abierta": 'Esta edición está abierta. Puedes añadir docentes o alumnos hasta que el docente envíe las evaluaciones.',
+        "anadir_docente": 'Añadir docente',
+        "usuario": 'Usuario',
+        "email": 'Email',
+        "docente_anadido": 'Docente añadido a esta edición.',
+        "error_anadir_docente": 'No se pudo añadir el docente: {error}',
+        "anadir_alumno": 'Añadir alumno',
+        "alumno_anadido": 'Alumno añadido a esta edición.',
+        "error_anadir_alumno": 'No se pudo añadir el alumno: {error}',
+        "edicion_cerrada": '🔒 Esta edición está cerrada porque el docente ya ha enviado las evaluaciones. Ya no se pueden añadir docentes ni alumnos.',
+        "codigo_curso_nuevo": 'Si el código ya existe, se reutilizará su ficha.',
+
     },
     "ca": {
         "nav_titulo": "Navegació",
@@ -207,25 +278,77 @@ TEXTOS = {
         "docente_enviado": "Docent enviat. Quan l'activem, li enviarem la seva clau d'accés per email.",
         "campo_vacio_docente": "Omple el nom, usuari i email del docent.",
         "sin_cursos_propios": "Primer afegeix un curs per poder-hi relacionar un docent.",
-        "anadir_curso": "Afegir curs",
-        "campo_referencia_curso": "Referència del curs",
-        "campo_nombre_curso": "Nom del curs",
-        "campo_nombre_modulo": "Nom del mòdul",
-        "campo_horas_totales": "Hores totals del curs",
-        "campo_competencias": "Competències adquirides",
-        "enviar_curso": "Enviar curs",
-        "curso_enviado": "Curs enviat. Quedarà visible quan l'aprovem.",
-        "campo_vacio_curso": "Omple almenys la referència i el nom del curs.",
-        "anadir_docente": "Afegir docent",
-        "campo_nombre_docente": "Nom del docent",
-        "campo_curso_relacionado": "Curs al qual està relacionat",
-        "enviar_docente": "Enviar docent",
-        "docente_enviado": "Docent enviat. Quan l'activem, li enviarem la seva clau d'accés per email.",
-        "campo_vacio_docente": "Omple el nom, usuari i email del docent.",
-        "sin_cursos_propios": "Primer afegeix un curs per poder-hi relacionar un docent.",
         "descargar_pdf": "📄 Descarregar PDF abans d'enviar",
         "fpdf_no_disponible": "Per poder descarregar el PDF, afegeix 'fpdf2' a l'arxiu requirements.txt de l'app.",
-        "titulos_func": ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"]
+        "titulos_func": ["Arguments M-Zero", "Per què ser Associat o Colaborador?", "Metodologia M0", "El segell M-Zero 'Certificació de qualitat'"],
+        "campo_nombre_alumno": "Nom",
+        "campo_apellidos_alumno": "Cognoms",
+        "campo_localidad": "Localitat",
+        "campo_tablas_faltan": "Falten taules de gestió de cursos a Supabase: {tablas}.",
+        "campo_migracion_cursos": "La connexió actual amb SUPABASE_URL i SUPABASE_KEY no canvia. Executa l’SQL de migració de cursos per crear aquestes taules.",
+        "estado_pendiente": "pendent",
+        "estado_activo": "actiu",
+        "plan_basic": "BASIC",
+        "plan_standard": "STANDARD",
+        "plan_basic_precio": "50 €/curs",
+        "plan_standard_precio": "38 €/mes",
+        "plan_promocion": "Promoció 2026",
+        "plan_uso_app": "Ús de l'app",
+        "plan_etiqueta_web": "Etiqueta amb enllaç al seu web",
+        "plan_impuestos": "Impostos inclosos",
+        "plan_standard_inactivo": "De moment no disponible",
+        "plan_seleccionar_basic": "Seleccionar BASIC",
+        "plan_standard_bloqueado": "STANDARD no disponible",
+        "plan_volver": "← Tornar a les opcions",
+        "reg_plan_seleccionado": "Pla seleccionat: BASIC",
+        "plan_subtitulo": "Selecciona una modalitat per continuar amb el registre.",
+        "gestion_cursos": 'Gestió de cursos',
+        "gestion_cursos_desc": 'Crea una nova edició d’un curs, reutilitza la informació que ja existeixi i gestiona posteriorment els seus docents i alumnes.',
+        "crear_nuevo_curso": '➕ Crear nou curs',
+        "mis_cursos": '📚 Els meus cursos',
+        "selecciona_curso": '1. Selecciona el curs',
+        "help_codigo": 'Introdueix el codi del curs. Si ja existeix, se’n reutilitzarà la fitxa.',
+        "curso_existente": '✅ Curs existent trobat: **{ref} — {nombre}**. Se’n reutilitzarà la informació i no hauràs de tornar a descriure’l.',
+        "codigo_nuevo_info": 'Si és un codi nou, completa la fitxa del curs.',
+        "docentes_edicion": '2. Docents d’aquesta edició',
+        "docentes_reutilizables": 'Aquests docents ja estan relacionats amb aquest codi de curs. Pots reutilitzar-los sense tornar a introduir-ne les dades.',
+        "sin_docentes_curso": 'Aquest codi existeix, però encara no té docents relacionats.',
+        "anadir_docentes_nuevos": 'Afegir docents nous',
+        "nombre_docente": 'Nom del docent',
+        "email_docente": 'Email del docent',
+        "anadir_docente_nuevo": '➕ Afegir docent nou a l’edició',
+        "rellena_docente": 'Omple nom, usuari i email del docent.',
+        "docentes_tendra": 'Docents que tindrà aquesta edició: **{total}**',
+        "alumnos_edicion": '3. Alumnes de la nova edició',
+        "alumnos_info": 'Els alumnes pertanyen a cada edició/grup. Encara que reutilitzis el mateix codi i els mateixos docents, els alumnes d’aquesta nova edició s’han d’afegir aquí.',
+        "anadir_alumno_edicion": '➕ Afegir alumne a la nova edició',
+        "todos_campos_alumno": 'Tots els camps de l’alumne són obligatoris.',
+        "enviar_peticion_curso": '4. Enviar petició del curs',
+        "enviar_peticion_curso_btn": '🚀 ENVIAR PETICIÓ DEL CURS',
+        "indica_codigo": 'Indica el codi del curs.',
+        "codigo_nuevo_nombre": 'En ser un codi nou, has d’indicar el nom del curs.',
+        "al_menos_docente": 'Afegeix o reutilitza almenys un docent per a aquesta edició.',
+        "al_menos_alumno": 'Has d’afegir almenys un alumne a la nova edició.',
+        "peticion_curso_ok": 'Petició del curs enviada correctament. Pots consultar i ampliar aquesta edició des de «Els meus cursos».',
+        "error_peticion_curso": 'No s’ha pogut enviar la petició del curs: {error}',
+        "mis_cursos_info": 'Encara no tens cursos enviats.',
+        "estado": 'Estat:',
+        "cerrado": '🔒 TANCAT',
+        "abierto": '🟢 OBERT',
+        "resumen_doc_alu": '{docentes} docents · {alumnos} alumnes',
+        "seccion_docentes": 'Docents',
+        "seccion_alumnos": 'Alumnes',
+        "sin_alumnos": 'No hi ha alumnes registrats.',
+        "edicion_abierta": 'Aquesta edició està oberta. Pots afegir docents o alumnes fins que el docent enviï les avaluacions.',
+        "email": 'Email',
+        "docente_anadido": 'Docent afegit a aquesta edició.',
+        "error_anadir_docente": 'No s’ha pogut afegir el docent: {error}',
+        "anadir_alumno": 'Afegir alumne',
+        "alumno_anadido": 'Alumne afegit a aquesta edició.',
+        "error_anadir_alumno": 'No s’ha pogut afegir l’alumne: {error}',
+        "edicion_cerrada": '🔒 Aquesta edició està tancada perquè el docent ja ha enviat les avaluacions. Ja no es poden afegir docents ni alumnes.',
+        "codigo_curso_nuevo": 'Si el codi ja existeix, se’n reutilitzarà la fitxa.',
+
     }
 }
 
@@ -377,13 +500,11 @@ def enviar_peticion_participar(tipo, id_empresa, texto):
         try:
             data = response.json()
         except Exception:
-            # El script devolvió texto plano (p. ej. "OK"), lo damos por válido.
-            crear_notificacion("peticion", f"Nueva petición de {tipo} (empresa {id_empresa}): {str(texto).strip()[:200]}")
+            # El script devolvió texto plano (p. ej. "OK"), lo damos por válido
             return True
         if isinstance(data, dict) and data.get("ok") is False:
             st.error(f"No se pudo guardar la petición: {data.get('error', 'error desconocido')}")
             return False
-        crear_notificacion("peticion", f"Nueva petición de {tipo} (empresa {id_empresa}): {str(texto).strip()[:200]}")
         return True
     except Exception as e:
         st.error(f"Error de conexión al enviar la petición: {e}")
@@ -398,10 +519,7 @@ def enviar_peticion_registro(tipo, campos):
     payload = {"accion": "registro", "tipo": tipo, "campos": campos}
     try:
         response = requests.post(url_script, json=payload, timeout=20)
-        if response.status_code == 200:
-            crear_notificacion("registro", f"Nueva solicitud de registro ({tipo}) enviada desde la app.")
-            return True
-        return False
+        return response.status_code == 200
     except Exception:
         return False
 
@@ -828,21 +946,6 @@ with st.sidebar:
                 except Exception as e:
                     st.error(f"Error de acceso: {e}")
 
-    # --- NUEVO: PRUEBA DE CONEXIÓN A SUPABASE (temporal) -----------------------
-    # No afecta a nada de lo que ya funciona. Es solo para comprobar que la
-    # app puede hablar con la base de datos nueva antes de migrar nada.
-    st.divider()
-    with st.expander("🔧 Prueba de conexión Supabase (temporal)"):
-        if not SUPABASE_DISPONIBLE:
-            st.warning("Añade 'supabase' a requirements.txt para poder probar la conexión.")
-        elif st.button("Probar conexión"):
-            try:
-                cliente_supabase = create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
-                resultado = cliente_supabase.table("admin_credenciales").select("*").limit(1).execute()
-                st.success(f"✅ Conexión correcta. Filas encontradas en admin_credenciales: {len(resultado.data)}")
-            except Exception as e:
-                st.error(f"❌ Error de conexión: {e}")
-
     # --- NUEVO: PANEL DE APROBACIÓN DE PETICIONES PENDIENTES -------------------
     if SUPABASE_DISPONIBLE and st.session_state.autenticado:
         st.divider()
@@ -943,12 +1046,15 @@ with st.sidebar:
                     st.divider()
 
 # --- LÓGICA DE PANTALLAS ---
-def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False):
-    """Formulario para pedir el alta como Asociado o Colaborador nuevo
-    (usuario todavía no inscrito en Credenciales Asociados/Colaboradores)."""
+def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False, mostrar_en_expander=True):
+    """Formulario para pedir el alta como Asociado o Colaborador nuevo.
+
+    Para Colaboradores, el formulario se muestra después de seleccionar el plan BASIC.
+    """
     version = st.session_state.get(f"{key_prefix}_reg_version", 0)
 
-    with st.expander(T["solicitar_alta"]):
+    contenedor = st.expander(T["solicitar_alta"]) if mostrar_en_expander else st.container()
+    with contenedor:
         nombre_empresa = st.text_input(T["campo_nombre_empresa"], key=f"{key_prefix}_reg_empresa_{version}")
 
         nombre_centro = ""
@@ -1123,86 +1229,195 @@ def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modul
 
 
 def _crear_edicion_curso(empresa_id, referencia, nombre_curso):
+    """Crea una nueva edición del curso en curso_ediciones.
+
+    No utiliza .single(), porque la versión del cliente Supabase usada por
+    esta aplicación puede no exponer ese método en el builder de inserción.
+    """
     cliente = obtener_cliente_supabase()
+
     if not _sb_table_exists("curso_ediciones"):
-        raise RuntimeError("Falta la tabla curso_ediciones. Ejecuta el SQL de actualización de la base de datos.")
-    res = cliente.table("curso_ediciones").insert({
+        raise RuntimeError(
+            "Falta la tabla curso_ediciones. "
+            "Ejecuta el SQL de actualización de la base de datos."
+        )
+
+    datos_edicion = {
         "empresa_id": empresa_id,
-        "codigo_curso": referencia,
-        "nombre_curso": nombre_curso,
-        "estado": "pendiente"
-    }).select("*").single().execute()
-    return res.data
+        "codigo_curso": str(referencia).strip(),
+        "nombre_curso": str(nombre_curso).strip(),
+        "estado": "pendiente",
+    }
+
+    resultado = cliente.table("curso_ediciones").insert(datos_edicion).execute()
+
+    if not resultado.data:
+        raise RuntimeError("Supabase no devolvió la edición creada.")
+
+    return resultado.data[0]
 
 
 def _crear_o_reutilizar_docente(empresa_id, nombre, usuario, email, codigo_curso):
+    """Busca un docente existente o crea uno nuevo y mantiene curso_docente."""
     cliente = obtener_cliente_supabase()
-    existente = cliente.table("docentes").select("*").eq("usuario", usuario.strip()).limit(1).execute().data
+
+    nombre = str(nombre).strip()
+    usuario = str(usuario).strip()
+    email = str(email).strip()
+    codigo_curso = str(codigo_curso).strip()
+
+    if not nombre or not usuario or not email:
+        raise ValueError("Nombre, usuario y email del docente son obligatorios.")
+
+    existente = (
+        cliente.table("docentes")
+        .select("*")
+        .eq("usuario", usuario)
+        .limit(1)
+        .execute()
+        .data
+    )
+
     if existente:
         docente = existente[0]
         id_docente = docente["id_docente"]
     else:
-        id_docente = usuario.strip()
-        docente = cliente.table("docentes").insert({
+        id_docente = usuario
+        datos_docente = {
             "id_docente": id_docente,
-            "nombre": nombre.strip(),
-            "usuario": usuario.strip(),
-            "email": email.strip(),
+            "nombre": nombre,
+            "usuario": usuario,
+            "email": email,
             "estado": "pendiente",
-            "empresa_id": empresa_id
-        }).select("*").single().execute().data
+            "empresa_id": empresa_id,
+        }
 
-    ya = cliente.table("curso_docente").select("id_docente").eq("id_docente", id_docente).eq("codigo_curso", codigo_curso).execute().data
-    if not ya:
-        cliente.table("curso_docente").insert({"id_docente": id_docente, "codigo_curso": codigo_curso}).execute()
+        resultado = cliente.table("docentes").insert(datos_docente).execute()
+
+        if not resultado.data:
+            raise RuntimeError("Supabase no devolvió el docente creado.")
+
+        docente = resultado.data[0]
+
+    # Mantener la relación histórica del docente con el código del curso.
+    if codigo_curso:
+        ya = (
+            cliente.table("curso_docente")
+            .select("id_docente")
+            .eq("id_docente", id_docente)
+            .eq("codigo_curso", codigo_curso)
+            .execute()
+            .data
+        )
+        if not ya:
+            cliente.table("curso_docente").insert({
+                "id_docente": id_docente,
+                "codigo_curso": codigo_curso,
+            }).execute()
+
     return docente
 
 
 def _vincular_docente_edicion(edition_id, docente_id):
+    """Relaciona un docente con una edición concreta."""
     cliente = obtener_cliente_supabase()
+
     if not _sb_table_exists("curso_edicion_docente"):
-        raise RuntimeError("Falta la tabla curso_edicion_docente. Ejecuta el SQL de actualización de la base de datos.")
-    ya = cliente.table("curso_edicion_docente").select("id_edicion").eq("id_edicion", edition_id).eq("id_docente", docente_id).execute().data
+        raise RuntimeError(
+            "Falta la tabla curso_edicion_docente. "
+            "Ejecuta el SQL de actualización de la base de datos."
+        )
+
+    ya = (
+        cliente.table("curso_edicion_docente")
+        .select("id_edicion")
+        .eq("id_edicion", edition_id)
+        .eq("id_docente", docente_id)
+        .execute()
+        .data
+    )
+
     if not ya:
-        cliente.table("curso_edicion_docente").insert({"id_edicion": edition_id, "id_docente": docente_id}).execute()
+        cliente.table("curso_edicion_docente").insert({
+            "id_edicion": edition_id,
+            "id_docente": docente_id,
+        }).execute()
 
 
 def _anadir_alumno_edicion(edition_id, datos):
+    """Añade un alumno a curso_alumnos para una edición concreta.
+
+    IMPORTANTE: la aplicación utiliza curso_alumnos, NO alumnos_cursos.
+    """
     cliente = obtener_cliente_supabase()
+
     if not _sb_table_exists("curso_alumnos"):
-        raise RuntimeError("Falta la tabla curso_alumnos. Ejecuta el SQL de actualización de la base de datos.")
-    return cliente.table("curso_alumnos").insert({
+        raise RuntimeError(
+            "Falta la tabla curso_alumnos. "
+            "Ejecuta el SQL de actualización de la base de datos."
+        )
+
+    campos_obligatorios = [
+        "nombre",
+        "apellidos",
+        "provincia",
+        "localidad",
+        "telefono",
+        "email",
+    ]
+
+    for campo in campos_obligatorios:
+        if not str(datos.get(campo, "")).strip():
+            raise ValueError(f"El campo '{campo}' del alumno es obligatorio.")
+
+    datos_alumno = {
         "id_edicion": edition_id,
-        "nombre": datos["nombre"].strip(),
-        "apellidos": datos["apellidos"].strip(),
-        "provincia": datos["provincia"].strip(),
-        "localidad": datos["localidad"].strip(),
-        "telefono": datos["telefono"].strip(),
-        "email": datos["email"].strip(),
-        "estado": "pendiente"
-    }).select("*").single().execute().data
+        "nombre": str(datos["nombre"]).strip(),
+        "apellidos": str(datos["apellidos"]).strip(),
+        "provincia": str(datos["provincia"]).strip(),
+        "localidad": str(datos["localidad"]).strip(),
+        "telefono": str(datos["telefono"]).strip(),
+        "email": str(datos["email"]).strip(),
+        "estado": "pendiente",
+    }
+
+    resultado = cliente.table("curso_alumnos").insert(datos_alumno).execute()
+
+    if not resultado.data:
+        raise RuntimeError("Supabase no devolvió el alumno creado.")
+
+    return resultado.data[0]
 
 
 def _cargar_ediciones_colaborador(empresa_id):
     if not SUPABASE_DISPONIBLE or not _sb_table_exists("curso_ediciones"):
         return []
     try:
-        return obtener_cliente_supabase().table("curso_ediciones").select("*").eq("empresa_id", empresa_id).order("created_at", desc=True).execute().data
+        return (
+            obtener_cliente_supabase()
+            .table("curso_ediciones")
+            .select("*")
+            .eq("empresa_id", empresa_id)
+            .order("created_at", desc=True)
+            .execute()
+            .data
+        )
     except Exception:
         return []
 
 
-def _render_formulario_alumno(prefix, version, titulo="Añadir alumno"):
+def _render_formulario_alumno(prefix, version, titulo=None):
+    titulo = titulo or ("Añadir alumno" if lang == "es" else "Afegir alumne")
     st.markdown(f"### {titulo}")
     a1, a2 = st.columns(2)
-    nombre = a1.text_input("Nombre", key=f"{prefix}_nombre_{version}")
-    apellidos = a2.text_input("Apellidos", key=f"{prefix}_apellidos_{version}")
+    nombre = a1.text_input(T["campo_nombre_alumno"], key=f"{prefix}_nombre_{version}")
+    apellidos = a2.text_input(T["campo_apellidos_alumno"], key=f"{prefix}_apellidos_{version}")
     a3, a4 = st.columns(2)
-    provincia = a3.text_input("Provincia", key=f"{prefix}_provincia_{version}")
-    localidad = a4.text_input("Localidad", key=f"{prefix}_localidad_{version}")
+    provincia = a3.text_input(T["campo_provincia"], key=f"{prefix}_provincia_{version}")
+    localidad = a4.text_input(T["campo_localidad"], key=f"{prefix}_localidad_{version}")
     a5, a6 = st.columns(2)
-    telefono = a5.text_input("Teléfono", key=f"{prefix}_telefono_{version}")
-    email = a6.text_input("Email", key=f"{prefix}_email_{version}")
+    telefono = a5.text_input(T["campo_telefono"], key=f"{prefix}_telefono_{version}")
+    email = a6.text_input(T["campo_email"], key=f"{prefix}_email_{version}")
     return {"nombre": nombre, "apellidos": apellidos, "provincia": provincia, "localidad": localidad, "telefono": telefono, "email": email}
 
 
@@ -1219,37 +1434,31 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
     - Una vez que el docente envía las evaluaciones de esa edición, ésta pasa
       a cerrada y el colaborador ya no puede añadir docentes/alumnos.
     """
-    st.markdown("## Gestión de cursos")
+    st.markdown(f"## {T['gestion_cursos']}")
     st.caption(
-        "Crea una nueva edición de un curso, reutiliza la información que ya exista "
-        "y gestiona posteriormente sus docentes y alumnos."
+        T["gestion_cursos_desc"]
     )
 
     tablas_necesarias = ["curso_ediciones", "curso_alumnos", "curso_edicion_docente"]
     faltan_tablas = [t for t in tablas_necesarias if not _sb_table_exists(t)]
     if faltan_tablas:
-        st.error(
-            "Faltan tablas de gestión de cursos en Supabase: " + ", ".join(faltan_tablas) + "."
-        )
-        st.info(
-            "La conexión actual con SUPABASE_URL y SUPABASE_KEY no cambia. "
-            "Ejecuta el SQL de migración de cursos para crear estas tablas."
-        )
+        st.error(T["campo_tablas_faltan"].format(tablas=", ".join(faltan_tablas)))
+        st.info(T["campo_migracion_cursos"])
         return
 
-    tab_crear, tab_mis = st.tabs(["➕ Crear nuevo curso", "📚 Mis cursos"])
+    tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])
 
     # ---------------------------------------------------------------
     # CREAR NUEVA EDICIÓN
     # ---------------------------------------------------------------
     with tab_crear:
-        st.markdown("### 1. Selecciona el curso")
+        st.markdown(f"### {T['selecciona_curso']}")
         cv = st.session_state.get(f"{key_prefix}_nuevo_version", 0)
 
         referencia = st.text_input(
             T["campo_referencia_curso"],
             key=f"{key_prefix}_nuevo_ref_{cv}",
-            help="Introduce el código del curso. Si ya existe, se reutilizará su ficha."
+            help=T["help_codigo"]
         )
 
         curso_existente = _cargar_curso_por_codigo(referencia.strip()) if referencia.strip() else None
@@ -1257,11 +1466,10 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         if curso_existente:
             nombre_catalogo = curso_existente.get("nombre_es") or curso_existente.get("nombre_ca") or referencia.strip()
             st.success(
-                f"✅ Curso existente encontrado: **{referencia.strip()} — {nombre_catalogo}**. "
-                "Se reutilizará su información y no tendrás que volver a describirlo."
+                T["curso_existente"].format(ref=referencia.strip(), nombre=nombre_catalogo)
             )
         else:
-            st.info("Si es un código nuevo, completa la ficha del curso.")
+            st.info(T["codigo_nuevo_info"])
             nombre_curso = st.text_input(
                 T["campo_nombre_curso"], key=f"{key_prefix}_nuevo_nombre_{cv}"
             )
@@ -1275,18 +1483,17 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         # -----------------------------------------------------------
         # DOCENTES
         # -----------------------------------------------------------
-        st.markdown("### 2. Docentes de esta edición")
+        st.markdown(f"### {T['docentes_edicion']}")
 
         docentes_existentes = _cargar_docentes_curso(referencia.strip()) if curso_existente else []
         docentes_seleccionados = []
 
         if curso_existente and docentes_existentes:
             st.caption(
-                "Estos docentes ya están relacionados con este código de curso. "
-                "Puedes reutilizarlos sin volver a introducir sus datos."
+                T["docentes_reutilizables"]
             )
             for i, d in enumerate(docentes_existentes):
-                nombre_d = d.get("nombre") or d.get("usuario") or "Docente"
+                nombre_d = d.get("nombre") or d.get("usuario") or T["nombre_docente"]
                 usuario_d = d.get("usuario") or ""
                 email_d = d.get("email") or ""
                 marcado = st.checkbox(
@@ -1303,25 +1510,25 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                         "existente": True,
                     })
         elif curso_existente:
-            st.info("Este código existe, pero todavía no tiene docentes relacionados.")
+            st.info(T["sin_docentes_curso"])
 
-        st.markdown("#### Añadir docentes nuevos (opcional)")
+        st.markdown(f"#### {T['anadir_docentes_nuevos']}")
         if f"{key_prefix}_draft_docentes" not in st.session_state:
             st.session_state[f"{key_prefix}_draft_docentes"] = []
         docentes_draft = st.session_state[f"{key_prefix}_draft_docentes"]
         dv = st.session_state.get(f"{key_prefix}_docente_draft_version", 0)
 
         d1, d2, d3 = st.columns(3)
-        dn = d1.text_input("Nombre del docente", key=f"{key_prefix}_draft_doc_nombre_{dv}")
-        du = d2.text_input("Usuario del docente", key=f"{key_prefix}_draft_doc_usuario_{dv}")
-        de = d3.text_input("Email del docente", key=f"{key_prefix}_draft_doc_email_{dv}")
-        if st.button("➕ Añadir docente nuevo a la edición", key=f"{key_prefix}_draft_doc_btn_{dv}"):
+        dn = d1.text_input(T["nombre_docente"], key=f"{key_prefix}_draft_doc_nombre_{dv}")
+        du = d2.text_input(T["usuario_docente"], key=f"{key_prefix}_draft_doc_usuario_{dv}")
+        de = d3.text_input(T["email_docente"], key=f"{key_prefix}_draft_doc_email_{dv}")
+        if st.button(T["anadir_docente_nuevo"], key=f"{key_prefix}_draft_doc_btn_{dv}"):
             if dn.strip() and du.strip() and de.strip():
                 docentes_draft.append({"nombre": dn.strip(), "usuario": du.strip(), "email": de.strip()})
                 st.session_state[f"{key_prefix}_docente_draft_version"] = dv + 1
                 st.rerun()
             else:
-                st.warning("Rellena nombre, usuario y email del docente.")
+                st.warning(T["rellena_docente"])
 
         for i, d in enumerate(docentes_draft):
             cc1, cc2 = st.columns([0.9, 0.1])
@@ -1331,15 +1538,14 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                 st.rerun()
 
         total_docentes = len(docentes_seleccionados) + len(docentes_draft)
-        st.caption(f"Docentes que tendrá esta edición: **{total_docentes}**")
+        st.caption(T["docentes_tendra"].format(total=total_docentes))
 
         # -----------------------------------------------------------
         # ALUMNOS: SIEMPRE NUEVOS PARA CADA EDICIÓN
         # -----------------------------------------------------------
-        st.markdown("### 3. Alumnos de la nueva edición")
+        st.markdown(f"### {T['alumnos_edicion']}")
         st.info(
-            "Los alumnos pertenecen a cada edición/grupo. Aunque reutilices el mismo código "
-            "y los mismos docentes, los alumnos de esta nueva edición deben añadirse aquí."
+            T["alumnos_info"]
         )
 
         if f"{key_prefix}_draft_alumnos" not in st.session_state:
@@ -1348,13 +1554,13 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         av = st.session_state.get(f"{key_prefix}_alumno_draft_version", 0)
         datos_alumno = _render_formulario_alumno(f"{key_prefix}_draft_alumno", av)
 
-        if st.button("➕ Añadir alumno a la nueva edición", key=f"{key_prefix}_draft_alu_btn_{av}"):
+        if st.button(T["anadir_alumno_edicion"], key=f"{key_prefix}_draft_alu_btn_{av}"):
             if _alumno_valido(datos_alumno):
                 alumnos_draft.append({k: v.strip() for k, v in datos_alumno.items()})
                 st.session_state[f"{key_prefix}_alumno_draft_version"] = av + 1
                 st.rerun()
             else:
-                st.warning("Todos los campos del alumno son obligatorios.")
+                st.warning(T["todos_campos_alumno"])
 
         for i, a in enumerate(alumnos_draft):
             cc1, cc2 = st.columns([0.9, 0.1])
@@ -1369,20 +1575,20 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         # -----------------------------------------------------------
         # ENVIAR NUEVA EDICIÓN
         # -----------------------------------------------------------
-        st.markdown("### 4. Enviar petición del curso")
+        st.markdown(f"### {T['enviar_peticion_curso']}")
         if st.button(
-            "🚀 ENVIAR PETICIÓN DEL CURSO",
+            T["enviar_peticion_curso_btn"],
             type="primary",
             key=f"{key_prefix}_crear_edicion_btn"
         ):
             if not referencia.strip():
-                st.warning("Indica el código del curso.")
+                st.warning(T["indica_codigo"])
             elif not curso_existente and not nombre_curso.strip():
-                st.warning("Al ser un código nuevo, debes indicar el nombre del curso.")
+                st.warning(T["codigo_nuevo_nombre"])
             elif total_docentes == 0:
-                st.warning("Añade o reutiliza al menos un docente para esta edición.")
+                st.warning(T["al_menos_docente"])
             elif not alumnos_draft:
-                st.warning("Debes añadir al menos un alumno a la nueva edición.")
+                st.warning(T["al_menos_alumno"])
             else:
                 try:
                     if curso_existente:
@@ -1405,7 +1611,7 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                             nombre_empresa,
                         )
                         if not curso:
-                            raise RuntimeError("No se pudo crear el curso.")
+                            raise RuntimeError("No se pudo crear el curso." if lang == "es" else "No s’ha pogut crear el curs.")
                         nombre_edicion = nombre_curso.strip()
 
                     edicion = _crear_edicion_curso(
@@ -1443,8 +1649,7 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                     )
 
                     st.success(
-                        "Petición del curso enviada correctamente. "
-                        "Puedes consultar y ampliar esta edición desde 'Mis cursos'."
+                        T["peticion_curso_ok"]
                     )
                     st.session_state[f"{key_prefix}_draft_docentes"] = []
                     st.session_state[f"{key_prefix}_draft_alumnos"] = []
@@ -1453,7 +1658,7 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                     st.session_state[f"{key_prefix}_alumno_draft_version"] = 0
                     st.rerun()
                 except Exception as e:
-                    st.error(f"No se pudo enviar la petición del curso: {e}")
+                    st.error(T["error_peticion_curso"].format(error=e))
 
     # ---------------------------------------------------------------
     # MIS CURSOS
@@ -1461,19 +1666,24 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
     with tab_mis:
         ediciones = _cargar_ediciones_colaborador(empresa_id)
         if not ediciones:
-            st.info("Todavía no tienes cursos enviados.")
+            st.info(T["mis_cursos_info"])
 
         for ed in ediciones:
             eid = ed.get("id")
             estado = (ed.get("estado") or "pendiente").lower()
             cerrado = estado == "cerrado"
-            titulo_estado = "🔒 CERRADO" if cerrado else "🟢 ABIERTO"
+            titulo_estado = T["cerrado"] if cerrado else T["abierto"]
 
             with st.expander(
                 f"{ed.get('codigo_curso', '')} · {ed.get('nombre_curso', '')} · {titulo_estado}",
                 expanded=False,
             ):
-                st.write(f"**Estado:** {estado}")
+                estado_visible = {
+                    "pendiente": T["estado_pendiente"],
+                    "activo": T["estado_activo"],
+                    "cerrado": T["cerrado"].replace("🔒 ", "").lower(),
+                }.get(estado, estado)
+                st.write(f"**{T['estado']}** {estado_visible}")
 
                 try:
                     alumnos = (
@@ -1507,15 +1717,15 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                 except Exception:
                     docentes = []
 
-                st.markdown(f"**{len(docentes)} docentes · {len(alumnos)} alumnos**")
+                st.markdown(T["resumen_doc_alu"].format(docentes=len(docentes), alumnos=len(alumnos)))
 
-                st.markdown("#### Docentes")
+                st.markdown(f"#### {T['seccion_docentes']}")
                 for d in docentes:
                     st.write(
                         f"• {d.get('nombre', '')} — {d.get('email', '')} — {d.get('estado', '')}"
                     )
 
-                st.markdown("#### Alumnos")
+                st.markdown(f"#### {T['seccion_alumnos']}")
                 if alumnos:
                     columnas = [
                         "nombre", "apellidos", "provincia", "localidad", "telefono", "email"
@@ -1526,22 +1736,21 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                         hide_index=True,
                     )
                 else:
-                    st.info("No hay alumnos registrados.")
+                    st.info(T["sin_alumnos"])
 
                 if not cerrado:
                     st.success(
-                        "Esta edición está abierta. Puedes añadir docentes o alumnos hasta "
-                        "que el docente envíe las evaluaciones."
+                        T["edicion_abierta"]
                     )
 
-                    st.markdown("### Añadir docente")
+                    st.markdown(f"### {T['anadir_docente']}")
                     mv = st.session_state.get(f"{key_prefix}_manage_doc_{eid}", 0)
                     m1, m2, m3 = st.columns(3)
-                    mn = m1.text_input("Nombre", key=f"{key_prefix}_mdn_{eid}_{mv}")
-                    mu = m2.text_input("Usuario", key=f"{key_prefix}_mdu_{eid}_{mv}")
-                    me = m3.text_input("Email", key=f"{key_prefix}_mde_{eid}_{mv}")
+                    mn = m1.text_input(T["nombre_docente"], key=f"{key_prefix}_mdn_{eid}_{mv}")
+                    mu = m2.text_input(T["usuario"], key=f"{key_prefix}_mdu_{eid}_{mv}")
+                    me = m3.text_input(T["email"], key=f"{key_prefix}_mde_{eid}_{mv}")
 
-                    if st.button("➕ Añadir docente", key=f"{key_prefix}_mdb_{eid}_{mv}"):
+                    if st.button("➕ " + T["anadir_docente"], key=f"{key_prefix}_mdb_{eid}_{mv}"):
                         if mn.strip() and mu.strip() and me.strip():
                             try:
                                 docente = _crear_o_reutilizar_docente(
@@ -1553,33 +1762,87 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                                 )
                                 _vincular_docente_edicion(eid, docente["id_docente"])
                                 st.session_state[f"{key_prefix}_manage_doc_{eid}"] = mv + 1
-                                st.success("Docente añadido a esta edición.")
+                                st.success(T["docente_anadido"])
                                 st.rerun()
                             except Exception as e:
-                                st.error(f"No se pudo añadir el docente: {e}")
+                                st.error(T["error_anadir_docente"].format(error=e))
                         else:
-                            st.warning("Rellena nombre, usuario y email.")
+                            st.warning(T["rellena_docente"])
 
+                    st.markdown(f"### {T['anadir_alumno']}")
                     mav = st.session_state.get(f"{key_prefix}_manage_alu_{eid}", 0)
                     datos_nuevo = _render_formulario_alumno(
                         f"{key_prefix}_manage_alumno_{eid}", mav
                     )
-                    if st.button("➕ Añadir alumno", key=f"{key_prefix}_mab_{eid}_{mav}"):
+                    if st.button("➕ " + T["anadir_alumno"], key=f"{key_prefix}_mab_{eid}_{mav}"):
                         if _alumno_valido(datos_nuevo):
                             try:
                                 _anadir_alumno_edicion(eid, datos_nuevo)
                                 st.session_state[f"{key_prefix}_manage_alu_{eid}"] = mav + 1
-                                st.success("Alumno añadido a esta edición.")
+                                st.success(T["alumno_anadido"])
                                 st.rerun()
                             except Exception as e:
-                                st.error(f"No se pudo añadir el alumno: {e}")
+                                st.error(T["error_anadir_alumno"].format(error=e))
                         else:
-                            st.warning("Todos los campos del alumno son obligatorios.")
+                            st.warning(T["todos_campos_alumno"])
                 else:
                     st.warning(
-                        "🔒 Esta edición está cerrada porque el docente ya ha enviado las "
-                        "evaluaciones. Ya no se pueden añadir docentes ni alumnos."
+                        T["edicion_cerrada"]
                     )
+
+def bloque_seleccion_plan_colaborador(key_prefix):
+    """Muestra el selector de planes antes del formulario de alta de Colaboradores."""
+    plan_key = f"{key_prefix}_plan_registro"
+    if plan_key not in st.session_state:
+        st.session_state[plan_key] = None
+
+    if st.session_state.get(plan_key) == "basic":
+        st.markdown(
+            f"<div style=\"padding:10px 14px;border-radius:10px;background:#eef6ff;border:1px solid #b8d8ff;margin:10px 0 16px 0;\"><b>{T['reg_plan_seleccionado']}</b></div>",
+            unsafe_allow_html=True,
+        )
+        if st.button(T["plan_volver"], key=f"{key_prefix}_plan_volver"):
+            st.session_state[plan_key] = None
+            st.rerun()
+        return True
+
+    st.markdown(
+        f"<div style=\"margin:10px 0 18px 0;\"><h3 style=\"margin-bottom:4px;\">{T['solicitar_alta']}</h3><p style=\"color:#667085;margin-top:0;\">{T['plan_subtitulo']}</p></div>",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """<style>
+        .plan-card { border:1px solid #d0d5dd; border-radius:12px; overflow:hidden; background:white; min-height:315px; box-shadow:0 2px 8px rgba(16,24,40,.08); }
+        .plan-head-basic { background:#252525; color:white; padding:10px; text-align:center; font-weight:700; }
+        .plan-head-standard { background:#e6b800; color:white; padding:10px; text-align:center; font-weight:700; }
+        .plan-price { font-size:26px; font-weight:800; text-align:center; padding:14px 8px 4px; color:#111827; }
+        .plan-promo { text-align:center; color:red; font-weight:700; font-size:14px; padding-bottom:6px; }
+        .plan-list { padding:4px 20px 14px 34px; color:#111827; line-height:1.6; }
+        .plan-list li { margin-bottom:5px; }
+        .plan-disabled { opacity:.78; }
+        </style>""", unsafe_allow_html=True,
+    )
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(
+            f"""<div class=\"plan-card\"><div class=\"plan-head-basic\">{T['plan_basic']}</div><div class=\"plan-price\">{T['plan_basic_precio']}</div><div class=\"plan-promo\">{T['plan_promocion']}</div><ul class=\"plan-list\"><li>{T['plan_uso_app']}</li><li>{T['plan_etiqueta_web']}</li><li>{T['plan_impuestos']}</li></ul></div>""",
+            unsafe_allow_html=True,
+        )
+        if st.button(T["plan_seleccionar_basic"], key=f"{key_prefix}_plan_basic", type="primary", use_container_width=True):
+            st.session_state[plan_key] = "basic"
+            st.rerun()
+
+    with c2:
+        st.markdown(
+            f"""<div class=\"plan-card plan-disabled\"><div class=\"plan-head-standard\">{T['plan_standard']}</div><div class=\"plan-price\">{T['plan_standard_precio']}</div><div class=\"plan-promo\">{T['plan_standard_inactivo']}</div><ul class=\"plan-list\"><li>{T['plan_uso_app']}</li><li>{T['plan_etiqueta_web']}</li><li>{T['plan_impuestos']}</li></ul></div>""",
+            unsafe_allow_html=True,
+        )
+        st.button(T["plan_standard_bloqueado"], key=f"{key_prefix}_plan_standard", disabled=True, use_container_width=True)
+
+    return False
+
 
 def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir_centro_registro=False, usar_supabase=False):
     login_key = f"{key_prefix}_login_ok"
@@ -1612,7 +1875,12 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
                 else:
                     st.error(T["error_acceso_participar"])
 
-        bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase)
+        if tipo == "colaborador" and usar_supabase:
+            mostrar_formulario_registro = bloque_seleccion_plan_colaborador(key_prefix)
+            if mostrar_formulario_registro:
+                bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase, mostrar_en_expander=False)
+        else:
+            bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase)
     else:
         nombre_empresa = st.session_state.get(nombre_key, "")
         id_empresa = st.session_state.get(id_key, "")
@@ -1997,12 +2265,39 @@ elif opcion == T["menu_eval"]:
                         ediciones_docente = []
 
                 if ediciones_docente:
-                    ed1, ed2 = st.columns(2)
-                    opciones_ed = [f"{e.get('id')} · {e.get('codigo_curso')} · {e.get('estado', 'pendiente')}" for e in ediciones_docente]
-                    edicion_display = ed1.selectbox("Edición / grupo", opciones_ed, key=f"f_ed_{st.session_state.reset_todo}")
-                    edition_id_actual = edicion_display.split(" · ")[0]
+                    # El UUID de la edición es un identificador interno y NO se muestra
+                    # al docente. Si solo existe un grupo, se selecciona automáticamente.
+                    if len(ediciones_docente) == 1:
+                        edicion_actual = ediciones_docente[0]
+                        edition_id_actual = edicion_actual.get("id")
+                    else:
+                        ed1, _ = st.columns([0.45, 0.55])
+                        opciones_ed = []
+                        mapa_ediciones = {}
+
+                        for indice_ed, ed in enumerate(ediciones_docente, start=1):
+                            estado_ed = str(ed.get("estado", "pendiente")).strip().lower()
+                            estado_visible = "Cerrado" if estado_ed == "cerrado" else "Activo"
+                            etiqueta = f"Grupo {indice_ed:02d} · {estado_visible}"
+                            opciones_ed.append(etiqueta)
+                            mapa_ediciones[etiqueta] = ed
+
+                        edicion_display = ed1.selectbox(
+                            "Grupo",
+                            opciones_ed,
+                            key=f"f_ed_{st.session_state.reset_todo}"
+                        )
+                        edition_id_actual = mapa_ediciones[edicion_display].get("id")
+
                     try:
-                        alumnos_edicion = cliente_sb.table("curso_alumnos").select("*").eq("id_edicion", edition_id_actual).order("created_at").execute().data
+                        alumnos_edicion = (
+                            cliente_sb.table("curso_alumnos")
+                            .select("*")
+                            .eq("id_edicion", edition_id_actual)
+                            .order("created_at")
+                            .execute()
+                            .data
+                        )
                     except Exception:
                         alumnos_edicion = []
 
@@ -2053,44 +2348,91 @@ elif opcion == T["menu_eval"]:
                 descripciones_rubrica = cargar_rubrica()
 
                 st.subheader(T["subt_puntuacion"])
-                cols = st.columns(4)
-                notas = {}
 
-                for i, crit in enumerate(criterios):
-                    with cols[i % 4]:
-                        with st.container(border=True):
-                            col_t, col_b = st.columns([0.82, 0.18])
+                # IMPORTANTE:
+                # Los radios están dentro de un formulario de Streamlit.
+                # Así, cambiar una puntuación NO ejecuta la aplicación ni hace
+                # consultas a Supabase. Todas las 13 puntuaciones se envían
+                # juntas al pulsar "Guardar evaluación".
+                with st.form(key=f"form_eval_{st.session_state.alumno_key}_{st.session_state.reset_todo}"):
+                    cols = st.columns(4)
+                    notas = {}
 
-                            with col_t:
-                                st.markdown(f"**{crit}**")
+                    for i, crit in enumerate(criterios):
+                        with cols[i % 4]:
+                            with st.container(border=True):
+                                col_t, col_b = st.columns([0.82, 0.18])
 
-                            with col_b:
-                                info_crit = descripciones_rubrica.get(crit, {
-                                    "que_se_mide": "Información detallada en desarrollo.",
-                                    "nivel_rubrica": "Pendiente de definir rúbrica."
-                                })
+                                with col_t:
+                                    st.markdown(f"**{crit}**")
 
-                                with st.popover("ℹ️", help="Ver rúbrica"):
-                                    st.markdown(f"**{T['que_se_mide']}**\n\n{info_crit['que_se_mide']}")
-                                    st.markdown("---")
-                                    st.markdown(f"**{T['nivel_rubrica']}**")
-                                    st.markdown(info_crit['nivel_rubrica'])
+                                with col_b:
+                                    info_crit = descripciones_rubrica.get(crit, {
+                                        "que_se_mide": "Información detallada en desarrollo.",
+                                        "nivel_rubrica": "Pendiente de definir rúbrica."
+                                    })
 
-                            notas[crit] = st.radio("p", [1, 2, 3, 4, 5], horizontal=True, key=f"rad_{crit}_{st.session_state.alumno_key}", index=None, label_visibility="collapsed")
+                                    with st.popover("ℹ️", help="Ver rúbrica"):
+                                        st.markdown(
+                                            f"**{T['que_se_mide']}**\n\n"
+                                            f"{info_crit['que_se_mide']}"
+                                        )
+                                        st.markdown("---")
+                                        st.markdown(f"**{T['nivel_rubrica']}**")
+                                        st.markdown(info_crit["nivel_rubrica"])
 
-                if None not in notas.values() and alumno:
-                    nota_final = round(sum((notas[c] - 1) * 2.5 for c in criterios) / len(criterios), 1)
-                    res = "SUSPENSO (Línea Roja)" if notas["10. Seguridad y normativas"] == 1 else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
-                    st.metric(T["nota_final"], f"{nota_final} - {res}")
-                else:
-                    nota_final, res = None, None
+                                notas[crit] = st.radio(
+                                    "p",
+                                    [1, 2, 3, 4, 5],
+                                    horizontal=True,
+                                    key=f"rad_{crit}_{st.session_state.alumno_key}",
+                                    index=None,
+                                    label_visibility="collapsed"
+                                )
 
-                if st.button(T["guardar_alumno"]):
-                    if nota_final is not None:
+                    if None not in notas.values() and alumno:
+                        nota_final = round(
+                            sum((notas[c] - 1) * 2.5 for c in criterios)
+                            / len(criterios),
+                            1
+                        )
+                        res = (
+                            "SUSPENSO (Línea Roja)"
+                            if notas["10. Seguridad y normativas"] == 1
+                            else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
+                        )
+                        st.metric(
+                            T["nota_final"],
+                            f"{nota_final} - {res}"
+                        )
+                    else:
+                        nota_final, res = None, None
+
+                    guardar_evaluacion = st.form_submit_button(
+                        T["guardar_alumno"],
+                        type="primary",
+                        use_container_width=False
+                    )
+
+                if guardar_evaluacion:
+                    if nota_final is None:
+                        st.warning(
+                            "Debes seleccionar una puntuación del 1 al 5 "
+                            "en los 13 criterios antes de guardar."
+                        )
+                    elif not alumno:
+                        st.warning("Debes seleccionar un alumno antes de guardar.")
+                    else:
                         registro = {
-                            "Alumno": alumno, "Profesor": nombre_docente, "Usuario": docente_info.get("usuario", ""),
-                            "Curso": curso_seleccionado_full, "CursoCodigo": curso_codigo_actual,
-                            "Modulo": modulo_codigo_actual, "Nivel": nivel, "Nota": nota_final, "Estado": res,
+                            "Alumno": alumno,
+                            "Profesor": nombre_docente,
+                            "Usuario": docente_info.get("usuario", ""),
+                            "Curso": curso_seleccionado_full,
+                            "CursoCodigo": curso_codigo_actual,
+                            "Modulo": modulo_codigo_actual,
+                            "Nivel": nivel,
+                            "Nota": nota_final,
+                            "Estado": res,
                             "EditionId": edition_id_actual
                         }
                         registro.update(notas)
@@ -2164,6 +2506,7 @@ elif opcion == T["menu_eval"]:
                             if edition_id_actual and _sb_table_exists("curso_ediciones"):
                                 cliente_sb.table("curso_ediciones").update({
                                     "estado": "cerrado",
+                                    "bloqueado": True,
                                     "cerrado_at": date.today().isoformat()
                                 }).eq("id", edition_id_actual).execute()
 
