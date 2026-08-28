@@ -139,6 +139,19 @@ TEXTOS = {
         "plan_volver": "← Volver a las opciones",
         "reg_plan_seleccionado": "Plan seleccionado: BASIC",
         "plan_subtitulo": "Selecciona una modalidad para continuar con el registro.",
+        "asoc_plan_basic_precio": "70 €/informe",
+        "asoc_plan_standard_precio": "100 €/mes",
+        "asoc_plan_promocion": "PROMOCIÓN",
+        "asoc_plan_uso_app": "Uso de la app para peticiones de candidatos o formaciones",
+        "asoc_plan_etiqueta_web": "Etiqueta enlace a su web",
+        "asoc_plan_informe_max": "Informe máximo de 20 alumnos",
+        "asoc_plan_informe_mensual": "Informe mensual de candidatos del sector",
+        "asoc_plan_standard_inactivo": "De momento no disponible",
+        "asoc_plan_seleccionar_basic": "Seleccionar BASIC",
+        "asoc_plan_standard_bloqueado": "STANDARD no disponible",
+        "asoc_plan_volver": "← Volver a las opciones",
+        "asoc_plan_subtitulo": "Selecciona una modalidad para continuar con el registro.",
+        "asoc_reg_plan_seleccionado": "Plan seleccionado: BASIC",
         "gestion_cursos": 'Gestión de cursos',
         "gestion_cursos_desc": 'Crea una nueva edición de un curso, reutiliza la información que ya exista y gestiona posteriormente sus docentes y alumnos.',
         "crear_nuevo_curso": '➕ Crear nuevo curso',
@@ -302,6 +315,19 @@ TEXTOS = {
         "plan_volver": "← Tornar a les opcions",
         "reg_plan_seleccionado": "Pla seleccionat: BASIC",
         "plan_subtitulo": "Selecciona una modalitat per continuar amb el registre.",
+        "asoc_plan_basic_precio": "70 €/informe",
+        "asoc_plan_standard_precio": "100 €/mes",
+        "asoc_plan_promocion": "PROMOCIÓ",
+        "asoc_plan_uso_app": "Ús de l'app per a peticions de candidats o formacions",
+        "asoc_plan_etiqueta_web": "Etiqueta amb enllaç al seu web",
+        "asoc_plan_informe_max": "Informe màxim de 20 alumnes",
+        "asoc_plan_informe_mensual": "Informe mensual de candidats del sector",
+        "asoc_plan_standard_inactivo": "De moment no disponible",
+        "asoc_plan_seleccionar_basic": "Seleccionar BASIC",
+        "asoc_plan_standard_bloqueado": "STANDARD no disponible",
+        "asoc_plan_volver": "← Tornar a les opcions",
+        "asoc_plan_subtitulo": "Selecciona una modalitat per continuar amb el registre.",
+        "asoc_reg_plan_seleccionado": "Pla seleccionat: BASIC",
         "gestion_cursos": 'Gestió de cursos',
         "gestion_cursos_desc": 'Crea una nova edició d’un curs, reutilitza la informació que ja existeixi i gestiona posteriorment els seus docents i alumnes.',
         "crear_nuevo_curso": '➕ Crear nou curs',
@@ -1790,6 +1816,62 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                         T["edicion_cerrada"]
                     )
 
+# === PLANES ASOCIADOS: BASIC / STANDARD ===
+def bloque_seleccion_plan_asociado(key_prefix):
+    """Muestra el selector de planes antes del formulario de alta de Asociados."""
+    plan_key = f"{key_prefix}_plan_registro"
+    if plan_key not in st.session_state:
+        st.session_state[plan_key] = None
+
+    if st.session_state.get(plan_key) == "basic":
+        st.markdown(
+            f"<div style=\"padding:10px 14px;border-radius:10px;background:#eef6ff;border:1px solid #b8d8ff;margin:10px 0 16px 0;\"><b>{T['asoc_reg_plan_seleccionado']}</b></div>",
+            unsafe_allow_html=True,
+        )
+        if st.button(T["asoc_plan_volver"], key=f"{key_prefix}_plan_volver"):
+            st.session_state[plan_key] = None
+            st.rerun()
+        return True
+
+    st.markdown(
+        f"<div style=\"margin:10px 0 18px 0;\"><h3 style=\"margin-bottom:4px;\">{T['solicitar_alta']}</h3><p style=\"color:#667085;margin-top:0;\">{T['asoc_plan_subtitulo']}</p></div>",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """<style>
+        .asoc-plan-card { border:1px solid #d0d5dd; border-radius:12px; overflow:hidden; background:white; min-height:355px; box-shadow:0 2px 8px rgba(16,24,40,.08); }
+        .asoc-plan-head-basic { background:#252525; color:white; padding:10px; text-align:center; font-weight:700; }
+        .asoc-plan-head-standard { background:#e6b800; color:white; padding:10px; text-align:center; font-weight:700; }
+        .asoc-plan-price { font-size:26px; font-weight:800; text-align:center; padding:14px 8px 8px; color:#111827; }
+        .asoc-plan-divider { border-top:2px solid #d0d5dd; margin:4px 20px 10px; }
+        .asoc-plan-promo { text-align:center; color:red; font-weight:700; font-size:14px; padding:0 8px 4px; }
+        .asoc-plan-list { padding:4px 20px 14px 34px; color:#111827; line-height:1.55; }
+        .asoc-plan-list li { margin-bottom:6px; }
+        .asoc-plan-disabled { opacity:.78; }
+        </style>""", unsafe_allow_html=True,
+    )
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(
+            f"""<div class=\"asoc-plan-card\"><div class=\"asoc-plan-head-basic\">{T['plan_basic']}</div><div class=\"asoc-plan-price\">{T['asoc_plan_basic_precio']}</div><div class=\"asoc-plan-divider\"></div><div class=\"asoc-plan-promo\">{T['asoc_plan_promocion']}</div><ul class=\"asoc-plan-list\"><li>{T['asoc_plan_uso_app']}</li><li>{T['asoc_plan_etiqueta_web']}</li><li>{T['asoc_plan_informe_max']}</li><li>{T['plan_impuestos']}</li></ul></div>""",
+            unsafe_allow_html=True,
+        )
+        if st.button(T["asoc_plan_seleccionar_basic"], key=f"{key_prefix}_plan_basic", type="primary", use_container_width=True):
+            st.session_state[plan_key] = "basic"
+            st.rerun()
+
+    with c2:
+        st.markdown(
+            f"""<div class=\"asoc-plan-card asoc-plan-disabled\"><div class=\"asoc-plan-head-standard\">{T['plan_standard']}</div><div class=\"asoc-plan-price\">{T['asoc_plan_standard_precio']}</div><div class=\"asoc-plan-divider\"></div><div class=\"asoc-plan-promo\">{T['asoc_plan_standard_inactivo']}</div><ul class=\"asoc-plan-list\"><li>{T['asoc_plan_uso_app']}</li><li>{T['asoc_plan_etiqueta_web']}</li><li>{T['asoc_plan_informe_mensual']}</li><li>{T['plan_impuestos']}</li></ul></div>""",
+            unsafe_allow_html=True,
+        )
+        st.button(T["asoc_plan_standard_bloqueado"], key=f"{key_prefix}_plan_standard", disabled=True, use_container_width=True)
+
+    return False
+
+
 def bloque_seleccion_plan_colaborador(key_prefix):
     """Muestra el selector de planes antes del formulario de alta de Colaboradores."""
     plan_key = f"{key_prefix}_plan_registro"
@@ -1877,6 +1959,10 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
 
         if tipo == "colaborador" and usar_supabase:
             mostrar_formulario_registro = bloque_seleccion_plan_colaborador(key_prefix)
+            if mostrar_formulario_registro:
+                bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase, mostrar_en_expander=False)
+        elif tipo == "asociado":
+            mostrar_formulario_registro = bloque_seleccion_plan_asociado(key_prefix)
             if mostrar_formulario_registro:
                 bloque_solicitud_alta(tipo, key_prefix, incluir_centro=incluir_centro_registro, usar_supabase=usar_supabase, mostrar_en_expander=False)
         else:
@@ -2437,7 +2523,19 @@ elif opcion == T["menu_eval"]:
                         }
                         registro.update(notas)
                         st.session_state.lista_alumnos.append(registro)
+                        st.session_state.ultimo_resultado_alumno = {
+                            "Alumno": alumno,
+                            "Nota": nota_final,
+                            "Estado": res,
+                        }
                         st.session_state.alumno_key += 1
+                        st.rerun()
+
+                ultimo = st.session_state.get("ultimo_resultado_alumno")
+                if ultimo:
+                    st.success(f"Resultado de {ultimo['Alumno']}: {ultimo['Nota']} — {ultimo['Estado']}")
+                    if st.button("Ocultar resultado", key="ocultar_ultimo_resultado"):
+                        st.session_state.pop("ultimo_resultado_alumno", None)
                         st.rerun()
 
                 if st.session_state.lista_alumnos:
