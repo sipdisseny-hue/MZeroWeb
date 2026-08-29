@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import re
+import hashlib
 from datetime import date
 from io import StringIO
 
@@ -131,6 +132,7 @@ TEXTOS = {
         "plan_standard_precio": "38 €/mes",
         "plan_promocion": "Promoción 2026",
         "plan_uso_app": "Uso indefinido de la app",
+        "plan_basic_uso_app": "Uso por curso",
         "plan_etiqueta_web": "Etiqueta enlace a su web",
         "plan_impuestos": "Impuestos incluidos",
         "plan_standard_inactivo": "De momento no disponible",
@@ -307,6 +309,7 @@ TEXTOS = {
         "plan_standard_precio": "38 €/mes",
         "plan_promocion": "Promoció 2026",
         "plan_uso_app": "Ús indefinit de l'app",
+        "plan_basic_uso_app": "Ús per curs",
         "plan_etiqueta_web": "Etiqueta amb enllaç al seu web",
         "plan_impuestos": "Impostos inclosos",
         "plan_standard_inactivo": "De moment no disponible",
@@ -738,6 +741,13 @@ def _pdf_texto_seguro(valor):
     se sustituye por el más parecido en vez de romper la generación del PDF."""
     return str(valor).encode("latin-1", "replace").decode("latin-1")
 
+
+def _edition_ref_corta(valor):
+    """Referencia visual de 5 dígitos; no modifica el EditionId real."""
+    if valor is None or str(valor).strip() == "":
+        return ""
+    digest = hashlib.sha256(str(valor).encode("utf-8")).hexdigest()
+    return f"{int(digest[:12], 16) % 100000:05d}"
 
 def generar_pdf_resumen(lista_alumnos, lang="es"):
     criterios = [
@@ -1909,7 +1919,7 @@ def bloque_seleccion_plan_colaborador(key_prefix):
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(
-            f"""<div class=\"plan-card\"><div class=\"plan-head-basic\">{T['plan_basic']}</div><div class=\"plan-price\">{T['plan_basic_precio']}</div><div class=\"plan-promo\">{T['plan_promocion']}</div><ul class=\"plan-list\"><li>{T['plan_uso_app']}</li><li>{T['plan_etiqueta_web']}</li><li>{T['plan_impuestos']}</li></ul></div>""",
+            f"""<div class=\"plan-card\"><div class=\"plan-head-basic\">{T['plan_basic']}</div><div class=\"plan-price\">{T['plan_basic_precio']}</div><div class=\"plan-promo\">{T['plan_promocion']}</div><ul class=\"plan-list\"><li>{T['plan_basic_uso_app']}</li><li>{T['plan_etiqueta_web']}</li><li>{T['plan_impuestos']}</li></ul></div>""",
             unsafe_allow_html=True,
         )
         if st.button(T["plan_seleccionar_basic"], key=f"{key_prefix}_plan_basic", type="primary", use_container_width=True):
@@ -2438,6 +2448,30 @@ elif opcion == T["menu_eval"]:
                 cols = st.columns(4)
                 notas = {}
 
+                # IMPORTANTE: los criterios 1-12 NO actualizan el resultado.
+                # SOLO el clic del criterio 13 ejecuta este cálculo.
+                resultado_eval_key = f"resultado_eval_{st.session_state.alumno_key}"
+                if resultado_eval_key not in st.session_state:
+                    st.session_state[resultado_eval_key] = None
+
+                def _mostrar_resultado_al_marcar_13():
+                    valores = {
+                        crit: st.session_state.get(f"rad_{crit}_{st.session_state.alumno_key}")
+                        for crit in criterios
+                    }
+                    if None not in valores.values() and alumno:
+                        nota = round(
+                            sum((valores[c] - 1) * 2.5 for c in criterios)
+                            / len(criterios),
+                            1
+                        )
+                        estado = (
+                            "SUSPENSO (Línea Roja)"
+                            if valores["10. Seguridad y normativas"] == 1
+                            else ("APROBADO" if nota >= 5 else "SUSPENSO")
+                        )
+                        st.session_state[resultado_eval_key] = (nota, estado)
+
                 for i, crit in enumerate(criterios):
                     with cols[i % 4]:
                         with st.container(border=True):
@@ -2467,20 +2501,12 @@ elif opcion == T["menu_eval"]:
                                 horizontal=True,
                                 key=f"rad_{crit}_{st.session_state.alumno_key}",
                                 index=None,
-                                label_visibility="collapsed"
+                                label_visibility="collapsed",
+                                on_change=_mostrar_resultado_al_marcar_13 if i == 12 else None
                             )
 
-                if None not in notas.values() and alumno:
-                    nota_final = round(
-                        sum((notas[c] - 1) * 2.5 for c in criterios)
-                        / len(criterios),
-                        1
-                    )
-                    res = (
-                        "SUSPENSO (Línea Roja)"
-                        if notas["10. Seguridad y normativas"] == 1
-                        else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
-                    )
+                if st.session_state[resultado_eval_key] is not None:
+                    nota_final, res = st.session_state[resultado_eval_key]
                     st.metric(
                         T["nota_final"],
                         f"{nota_final} - {res}"
@@ -2535,6 +2561,8 @@ elif opcion == T["menu_eval"]:
                 if st.session_state.lista_alumnos:
                     st.subheader(T["resumen_alumnos"])
                     df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoCodigo"], errors="ignore")
+                    if "EditionId" in df_resumen.columns:
+                        df_resumen["EditionId"] = df_resumen["EditionId"].apply(_edition_ref_corta)
                     if lang == "ca":
                         df_resumen = df_resumen.rename(columns=traduccion_columnas_ca)
                     st.table(df_resumen)
