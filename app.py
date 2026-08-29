@@ -749,6 +749,13 @@ def _edition_ref_corta(valor):
     digest = hashlib.sha256(str(valor).encode("utf-8")).hexdigest()
     return f"{int(digest[:12], 16) % 100000:05d}"
 
+def _alumno_ref_corta(valor):
+    """Referencia visual estable de 5 dígitos para el alumno; no modifica su ID real."""
+    if valor is None or str(valor).strip() == "":
+        return ""
+    digest = hashlib.sha256(str(valor).encode("utf-8")).hexdigest()
+    return f"{int(digest[:12], 16) % 100000:05d}"
+
 def generar_pdf_resumen(lista_alumnos, lang="es"):
     criterios = [
         "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
@@ -2422,7 +2429,7 @@ elif opcion == T["menu_eval"]:
                 c4, c5 = st.columns(2)
                 nivel = c4.text_input(T["nivel_bloque"], value=nivel_sugerido, key=f"f_niv_{st.session_state.reset_todo}")
                 if alumnos_edicion:
-                    opciones_alumnos = [f"{a.get('id')} · {a.get('nombre', '')} {a.get('apellidos', '')}" for a in alumnos_edicion]
+                    opciones_alumnos = [f"{_alumno_ref_corta(a.get('id'))} · {a.get('nombre', '')} {a.get('apellidos', '')}" for a in alumnos_edicion]
                     alumno_display = c5.selectbox(T["alumno"], opciones_alumnos, key=f"f_alu_sel_{st.session_state.reset_todo}")
                     alumno = alumno_display.split(" · ", 1)[1] if " · " in alumno_display else alumno_display
                 else:
@@ -2445,72 +2452,73 @@ elif opcion == T["menu_eval"]:
 
                 st.subheader(T["subt_puntuacion"])
 
-                cols = st.columns(4)
-                notas = {}
+                # Solo el bloque de criterios se ejecuta al cambiar una puntuación.
+                # Así cada clic NO vuelve a ejecutar el resto de la aplicación ni
+                # repite las consultas lentas a Supabase.
+                @st.fragment
+                def _bloque_criterios_evaluacion():
+                    cols = st.columns(4)
+                    resultado_key = f"resultado_eval_{st.session_state.alumno_key}"
+                    if resultado_key not in st.session_state:
+                        st.session_state[resultado_key] = None
 
-                # IMPORTANTE: los criterios 1-12 NO actualizan el resultado.
-                # SOLO el clic del criterio 13 ejecuta este cálculo.
-                resultado_eval_key = f"resultado_eval_{st.session_state.alumno_key}"
-                if resultado_eval_key not in st.session_state:
-                    st.session_state[resultado_eval_key] = None
+                    def _limpiar_resultado():
+                        st.session_state[resultado_key] = None
 
-                def _mostrar_resultado_al_marcar_13():
-                    valores = {
-                        crit: st.session_state.get(f"rad_{crit}_{st.session_state.alumno_key}")
-                        for crit in criterios
-                    }
-                    if None not in valores.values() and alumno:
-                        nota = round(
-                            sum((valores[c] - 1) * 2.5 for c in criterios)
-                            / len(criterios),
-                            1
-                        )
-                        estado = (
-                            "SUSPENSO (Línea Roja)"
-                            if valores["10. Seguridad y normativas"] == 1
-                            else ("APROBADO" if nota >= 5 else "SUSPENSO")
-                        )
-                        st.session_state[resultado_eval_key] = (nota, estado)
-
-                for i, crit in enumerate(criterios):
-                    with cols[i % 4]:
-                        with st.container(border=True):
-                            col_t, col_b = st.columns([0.82, 0.18])
-
-                            with col_t:
-                                st.markdown(f"**{crit}**")
-
-                            with col_b:
-                                info_crit = descripciones_rubrica.get(crit, {
-                                    "que_se_mide": "Información detallada en desarrollo.",
-                                    "nivel_rubrica": "Pendiente de definir rúbrica."
-                                })
-
-                                with st.popover("ℹ️", help="Ver rúbrica"):
-                                    st.markdown(
-                                        f"**{T['que_se_mide']}**\n\n"
-                                        f"{info_crit['que_se_mide']}"
-                                    )
-                                    st.markdown("---")
-                                    st.markdown(f"**{T['nivel_rubrica']}**")
-                                    st.markdown(info_crit["nivel_rubrica"])
-
-                            notas[crit] = st.radio(
-                                "p",
-                                [1, 2, 3, 4, 5],
-                                horizontal=True,
-                                key=f"rad_{crit}_{st.session_state.alumno_key}",
-                                index=None,
-                                label_visibility="collapsed",
-                                on_change=_mostrar_resultado_al_marcar_13 if i == 12 else None
+                    def _mostrar_resultado_al_marcar_13():
+                        valores = {
+                            crit: st.session_state.get(f"rad_{crit}_{st.session_state.alumno_key}")
+                            for crit in criterios
+                        }
+                        if None not in valores.values() and alumno:
+                            nota = round(
+                                sum((valores[c] - 1) * 2.5 for c in criterios)
+                                / len(criterios),
+                                1
                             )
+                            estado = (
+                                "SUSPENSO (Línea Roja)"
+                                if valores["10. Seguridad y normativas"] == 1
+                                else ("APROBADO" if nota >= 5 else "SUSPENSO")
+                            )
+                            st.session_state[resultado_key] = (nota, estado)
 
-                if st.session_state[resultado_eval_key] is not None:
+                    for i, crit in enumerate(criterios):
+                        with cols[i % 4]:
+                            with st.container(border=True):
+                                col_t, col_b = st.columns([0.82, 0.18])
+                                with col_t:
+                                    st.markdown(f"**{crit}**")
+                                with col_b:
+                                    info_crit = descripciones_rubrica.get(crit, {
+                                        "que_se_mide": "Información detallada en desarrollo.",
+                                        "nivel_rubrica": "Pendiente de definir rúbrica."
+                                    })
+                                    with st.popover("ℹ️", help="Ver rúbrica"):
+                                        st.markdown(
+                                            f"**{T['que_se_mide']}**\n\n"
+                                            f"{info_crit['que_se_mide']}"
+                                        )
+                                        st.markdown("---")
+                                        st.markdown(f"**{T['nivel_rubrica']}**")
+                                        st.markdown(info_crit["nivel_rubrica"])
+
+                                st.radio(
+                                    "p", [1, 2, 3, 4, 5], horizontal=True,
+                                    key=f"rad_{crit}_{st.session_state.alumno_key}",
+                                    index=None, label_visibility="collapsed",
+                                    on_change=_mostrar_resultado_al_marcar_13 if i == 12 else _limpiar_resultado
+                                )
+
+                    if st.session_state[resultado_key] is not None:
+                        nota, estado = st.session_state[resultado_key]
+                        st.metric(T["nota_final"], f"{nota} - {estado}")
+
+                _bloque_criterios_evaluacion()
+
+                resultado_eval_key = f"resultado_eval_{st.session_state.alumno_key}"
+                if st.session_state.get(resultado_eval_key) is not None:
                     nota_final, res = st.session_state[resultado_eval_key]
-                    st.metric(
-                        T["nota_final"],
-                        f"{nota_final} - {res}"
-                    )
                 else:
                     nota_final, res = None, None
 
@@ -2531,6 +2539,7 @@ elif opcion == T["menu_eval"]:
                     else:
                         registro = {
                             "Alumno": alumno,
+                            "AlumnoId": next((a.get("id") for a in alumnos_edicion if f"{_alumno_ref_corta(a.get('id'))} · {a.get('nombre', '')} {a.get('apellidos', '')}" == alumno_display), None) if alumnos_edicion else None,
                             "Profesor": nombre_docente,
                             "Usuario": docente_info.get("usuario", ""),
                             "Curso": curso_seleccionado_full,
@@ -2560,7 +2569,9 @@ elif opcion == T["menu_eval"]:
 
                 if st.session_state.lista_alumnos:
                     st.subheader(T["resumen_alumnos"])
-                    df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoCodigo"], errors="ignore")
+                    df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoCodigo", "AlumnoId"], errors="ignore")
+                    if st.session_state.lista_alumnos and any(r.get("AlumnoId") for r in st.session_state.lista_alumnos):
+                        df_resumen.insert(0, "Ref. alumno", [_alumno_ref_corta(r.get("AlumnoId")) for r in st.session_state.lista_alumnos])
                     if "EditionId" in df_resumen.columns:
                         df_resumen["EditionId"] = df_resumen["EditionId"].apply(_edition_ref_corta)
                     if lang == "ca":
