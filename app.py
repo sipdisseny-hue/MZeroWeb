@@ -2550,7 +2550,7 @@ elif opcion == T["menu_eval"]:
                             "Estado": res,
                             "EditionId": edition_id_actual
                         }
-                        registro.update(notas)
+                        registro.update({crit: st.session_state.get(f"rad_{crit}_{st.session_state.alumno_key}") for crit in criterios})
                         st.session_state.lista_alumnos.append(registro)
                         st.session_state.ultimo_resultado_alumno = {
                             "Alumno": alumno,
