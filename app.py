@@ -2310,8 +2310,15 @@ elif opcion == T["menu_eval"]:
             col_bienv, col_cerrar = st.columns([0.8, 0.2])
             col_bienv.success(f"{T['acceso_concedido']} {nombre_docente}")
             if col_cerrar.button(T["cerrar_sesion"], key="docente_btn_cerrar"):
+                # Al cerrar sesión se limpia ÚNICAMENTE el estado temporal de la evaluación.
+                # El resumen/lista de alumnos ya guardados se conserva.
                 st.session_state.docente_login_ok = False
                 st.session_state.docente_info = None
+                st.session_state.alumno_key += 1
+                st.session_state.pop("ultimo_resultado_alumno", None)
+                for _k in list(st.session_state.keys()):
+                    if str(_k).startswith("resultado_eval_"):
+                        st.session_state.pop(_k, None)
                 st.rerun()
 
             # --- Cursos asignados a este docente (vía curso_docente) ---
