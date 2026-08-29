@@ -130,7 +130,7 @@ TEXTOS = {
         "plan_basic_precio": "50 €/curso",
         "plan_standard_precio": "38 €/mes",
         "plan_promocion": "Promoción 2026",
-        "plan_uso_app": "Uso de la app",
+        "plan_uso_app": "Uso indefinido de la app",
         "plan_etiqueta_web": "Etiqueta enlace a su web",
         "plan_impuestos": "Impuestos incluidos",
         "plan_standard_inactivo": "De momento no disponible",
@@ -306,7 +306,7 @@ TEXTOS = {
         "plan_basic_precio": "50 €/curs",
         "plan_standard_precio": "38 €/mes",
         "plan_promocion": "Promoció 2026",
-        "plan_uso_app": "Ús de l'app",
+        "plan_uso_app": "Ús indefinit de l'app",
         "plan_etiqueta_web": "Etiqueta amb enllaç al seu web",
         "plan_impuestos": "Impostos inclosos",
         "plan_standard_inactivo": "De moment no disponible",
@@ -2435,70 +2435,64 @@ elif opcion == T["menu_eval"]:
 
                 st.subheader(T["subt_puntuacion"])
 
-                # IMPORTANTE:
-                # Los radios están dentro de un formulario de Streamlit.
-                # Así, cambiar una puntuación NO ejecuta la aplicación ni hace
-                # consultas a Supabase. Todas las 13 puntuaciones se envían
-                # juntas al pulsar "Guardar evaluación".
-                with st.form(key=f"form_eval_{st.session_state.alumno_key}_{st.session_state.reset_todo}"):
-                    cols = st.columns(4)
-                    notas = {}
+                cols = st.columns(4)
+                notas = {}
 
-                    for i, crit in enumerate(criterios):
-                        with cols[i % 4]:
-                            with st.container(border=True):
-                                col_t, col_b = st.columns([0.82, 0.18])
+                for i, crit in enumerate(criterios):
+                    with cols[i % 4]:
+                        with st.container(border=True):
+                            col_t, col_b = st.columns([0.82, 0.18])
 
-                                with col_t:
-                                    st.markdown(f"**{crit}**")
+                            with col_t:
+                                st.markdown(f"**{crit}**")
 
-                                with col_b:
-                                    info_crit = descripciones_rubrica.get(crit, {
-                                        "que_se_mide": "Información detallada en desarrollo.",
-                                        "nivel_rubrica": "Pendiente de definir rúbrica."
-                                    })
+                            with col_b:
+                                info_crit = descripciones_rubrica.get(crit, {
+                                    "que_se_mide": "Información detallada en desarrollo.",
+                                    "nivel_rubrica": "Pendiente de definir rúbrica."
+                                })
 
-                                    with st.popover("ℹ️", help="Ver rúbrica"):
-                                        st.markdown(
-                                            f"**{T['que_se_mide']}**\n\n"
-                                            f"{info_crit['que_se_mide']}"
-                                        )
-                                        st.markdown("---")
-                                        st.markdown(f"**{T['nivel_rubrica']}**")
-                                        st.markdown(info_crit["nivel_rubrica"])
+                                with st.popover("ℹ️", help="Ver rúbrica"):
+                                    st.markdown(
+                                        f"**{T['que_se_mide']}**\n\n"
+                                        f"{info_crit['que_se_mide']}"
+                                    )
+                                    st.markdown("---")
+                                    st.markdown(f"**{T['nivel_rubrica']}**")
+                                    st.markdown(info_crit["nivel_rubrica"])
 
-                                notas[crit] = st.radio(
-                                    "p",
-                                    [1, 2, 3, 4, 5],
-                                    horizontal=True,
-                                    key=f"rad_{crit}_{st.session_state.alumno_key}",
-                                    index=None,
-                                    label_visibility="collapsed"
-                                )
+                            notas[crit] = st.radio(
+                                "p",
+                                [1, 2, 3, 4, 5],
+                                horizontal=True,
+                                key=f"rad_{crit}_{st.session_state.alumno_key}",
+                                index=None,
+                                label_visibility="collapsed"
+                            )
 
-                    if None not in notas.values() and alumno:
-                        nota_final = round(
-                            sum((notas[c] - 1) * 2.5 for c in criterios)
-                            / len(criterios),
-                            1
-                        )
-                        res = (
-                            "SUSPENSO (Línea Roja)"
-                            if notas["10. Seguridad y normativas"] == 1
-                            else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
-                        )
-                        st.metric(
-                            T["nota_final"],
-                            f"{nota_final} - {res}"
-                        )
-                    else:
-                        nota_final, res = None, None
-
-                    guardar_evaluacion = st.form_submit_button(
-                        T["guardar_alumno"],
-                        type="primary",
-                        use_container_width=False
+                if None not in notas.values() and alumno:
+                    nota_final = round(
+                        sum((notas[c] - 1) * 2.5 for c in criterios)
+                        / len(criterios),
+                        1
                     )
+                    res = (
+                        "SUSPENSO (Línea Roja)"
+                        if notas["10. Seguridad y normativas"] == 1
+                        else ("APROBADO" if nota_final >= 5 else "SUSPENSO")
+                    )
+                    st.metric(
+                        T["nota_final"],
+                        f"{nota_final} - {res}"
+                    )
+                else:
+                    nota_final, res = None, None
+
+                guardar_evaluacion = st.button(
+                    T["guardar_alumno"],
+                    type="primary",
+                    use_container_width=False
+                )
 
                 if guardar_evaluacion:
                     if nota_final is None:
@@ -2545,6 +2539,12 @@ elif opcion == T["menu_eval"]:
                         df_resumen = df_resumen.rename(columns=traduccion_columnas_ca)
                     st.table(df_resumen)
 
+                    with st.expander(T["gestionar_alumnos"]):
+                        for i, reg in enumerate(st.session_state.lista_alumnos):
+                            if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
+                                st.session_state.lista_alumnos.pop(i)
+                                st.rerun()
+
                     if FPDF_DISPONIBLE:
                         pdf_bytes = generar_pdf_resumen(st.session_state.lista_alumnos, lang=lang)
                         st.download_button(
@@ -2555,12 +2555,6 @@ elif opcion == T["menu_eval"]:
                         )
                     else:
                         st.info(T["fpdf_no_disponible"])
-
-                    with st.expander(T["gestionar_alumnos"]):
-                        for i, reg in enumerate(st.session_state.lista_alumnos):
-                            if st.button(f"🗑️ Eliminar a {reg['Alumno']}", key=f"del_{i}"):
-                                st.session_state.lista_alumnos.pop(i)
-                                st.rerun()
 
                     if st.button(T["enviar_sheets"], type="primary"):
                         try:
