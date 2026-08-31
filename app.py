@@ -2552,21 +2552,9 @@ elif opcion == T["menu_eval"]:
                         }
                         registro.update({crit: st.session_state.get(f"rad_{crit}_{st.session_state.alumno_key}") for crit in criterios})
                         st.session_state.lista_alumnos.append(registro)
-                        st.session_state.ultimo_resultado_alumno = {
-                            "Alumno": alumno,
-                            "Nota": nota_final,
-                            "Estado": res,
-                        }
                         st.session_state.alumno_key += 1
                         st.rerun()
-
-                ultimo = st.session_state.get("ultimo_resultado_alumno")
-                if ultimo:
-                    st.success(f"Resultado de {ultimo['Alumno']}: {ultimo['Nota']} — {ultimo['Estado']}")
-                    if st.button("Ocultar resultado", key="ocultar_ultimo_resultado"):
-                        st.session_state.pop("ultimo_resultado_alumno", None)
-                        st.rerun()
-
+                
                 if st.session_state.lista_alumnos:
                     st.subheader(T["resumen_alumnos"])
                     df_resumen = pd.DataFrame(st.session_state.lista_alumnos).drop(columns=["CursoCodigo", "AlumnoId"], errors="ignore")
