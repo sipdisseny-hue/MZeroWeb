@@ -447,6 +447,8 @@ TRADUCCION_CATEGORIAS_CA = {
     "Gremios": "Gremis",
     "Asociaciones": "Associacions"
     ```python
+}
+
 # ============================================================
 # INFORMACIÓN LEGAL Y PROTECCIÓN DE DATOS
 # ============================================================
@@ -841,9 +843,6 @@ aplicables.
 Consulta la Política de privacidad para obtener la información
 completa sobre el tratamiento de los datos personales.
 """)
-```
-
-}
 
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=120)
