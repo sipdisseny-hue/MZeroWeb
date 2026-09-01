@@ -203,6 +203,20 @@ TEXTOS = {
         "error_anadir_alumno": 'No se pudo añadir el alumno: {error}',
         "edicion_cerrada": '🔒 Esta edición está cerrada porque el docente ya ha enviado las evaluaciones. Ya no se pueden añadir docentes ni alumnos.',
         "codigo_curso_nuevo": 'Si el código ya existe, se reutilizará su ficha.',
+        "legal_titulo": "Información legal y protección de datos",
+        "aviso_legal": "Aviso legal",
+        "politica_privacidad": "Política de privacidad",
+        "politica_cookies": "Política de cookies",
+        "legal_responsable": "Responsable: Joan Carles Ros (autónomo)",
+        "legal_nombre_comercial": "Nombre comercial: Mzero",
+        "legal_nif": "NIF: 77735854V",
+        "legal_domicilio": "Domicilio: Avda. Generalitat, 14, Barcelona",
+        "legal_email": "Email: contacto.mzero@gmail.com",
+        "legal_aviso_texto": "Mzero es el nombre comercial bajo el que Joan Carles Ros, como profesional autónomo, presta los servicios ofrecidos mediante esta aplicación. Esta aplicación proporciona funcionalidades de documentación, gestión de cursos, gestión de docentes y alumnos y evaluación formativa o profesional, según el acceso utilizado.",
+        "legal_privacidad_texto": "Los datos personales se tratarán para gestionar las solicitudes de alta, los accesos, la relación con asociados y colaboradores, la gestión de cursos, docentes y alumnos, y la realización y conservación de evaluaciones cuando corresponda. La base jurídica podrá ser la ejecución de una relación contractual o precontractual, el cumplimiento de obligaciones legales y, cuando sea necesario, el consentimiento del interesado. Solo se solicitarán los datos necesarios para cada finalidad. Los datos se conservarán durante el tiempo necesario para cumplir la finalidad y atender las obligaciones legales y posibles responsabilidades. Podrán intervenir proveedores tecnológicos necesarios para prestar el servicio, como alojamiento, base de datos y herramientas de gestión de información, aplicándose las garantías exigibles en materia de protección de datos. No se realizarán cesiones con fines comerciales ajenos a la prestación del servicio salvo obligación legal o consentimiento cuando corresponda.",
+        "legal_derechos_texto": "Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y, cuando proceda, portabilidad, escribiendo a contacto.mzero@gmail.com. También puedes presentar una reclamación ante la Agencia Española de Protección de Datos (AEPD) si consideras que el tratamiento no se ajusta a la normativa aplicable.",
+        "legal_cookies_texto": "Esta aplicación utiliza únicamente las tecnologías de almacenamiento o cookies necesarias para su funcionamiento, mantenimiento de la sesión y prestación de las funcionalidades solicitadas. No se utilizarán cookies no necesarias para publicidad comportamental o seguimiento comercial sin obtener previamente el consentimiento exigible. Si en el futuro se incorporan cookies o tecnologías de terceros que requieran consentimiento, se informará de forma específica y se ofrecerán opciones equivalentes para aceptar o rechazar dicho uso.",
+        "legal_actualizacion": "Esta información podrá actualizarse cuando cambien la aplicación, los tratamientos de datos o la normativa aplicable.",
 
     },
     "ca": {
@@ -377,6 +391,20 @@ TEXTOS = {
         "error_anadir_alumno": 'No s’ha pogut afegir l’alumne: {error}',
         "edicion_cerrada": '🔒 Aquesta edició està tancada perquè el docent ja ha enviat les avaluacions. Ja no es poden afegir docents ni alumnes.',
         "codigo_curso_nuevo": 'Si el codi ja existeix, se’n reutilitzarà la fitxa.',
+        "legal_titulo": "Informació legal i protecció de dades",
+        "aviso_legal": "Avís legal",
+        "politica_privacidad": "Política de privacitat",
+        "politica_cookies": "Política de cookies",
+        "legal_responsable": "Responsable: Joan Carles Ros (autònom)",
+        "legal_nombre_comercial": "Nom comercial: Mzero",
+        "legal_nif": "NIF: 77735854V",
+        "legal_domicilio": "Domicili: Avda. Generalitat, 14, Barcelona",
+        "legal_email": "Email: contacto.mzero@gmail.com",
+        "legal_aviso_texto": "Mzero és el nom comercial sota el qual Joan Carles Ros, com a professional autònom, presta els serveis oferts mitjançant aquesta aplicació. Aquesta aplicació proporciona funcionalitats de documentació, gestió de cursos, gestió de docents i alumnes i avaluació formativa o professional, segons l’accés utilitzat.",
+        "legal_privacidad_texto": "Les dades personals es tractaran per gestionar les sol·licituds d’alta, els accessos, la relació amb associats i col·laboradors, la gestió de cursos, docents i alumnes, i la realització i conservació d’avaluacions quan correspongui. La base jurídica podrà ser l’execució d’una relació contractual o precontractual, el compliment d’obligacions legals i, quan sigui necessari, el consentiment de la persona interessada. Només se sol·licitaran les dades necessàries per a cada finalitat. Les dades es conservaran durant el temps necessari per complir la finalitat i atendre les obligacions legals i possibles responsabilitats. Poden intervenir proveïdors tecnològics necessaris per prestar el servei, com ara allotjament, base de dades i eines de gestió d’informació, aplicant les garanties exigibles en matèria de protecció de dades. No es faran cessions amb finalitats comercials alienes a la prestació del servei excepte per obligació legal o amb el consentiment quan correspongui.",
+        "legal_derechos_texto": "Pots exercir els drets d’accés, rectificació, supressió, oposició, limitació del tractament i, quan correspongui, portabilitat, escrivint a contacto.mzero@gmail.com. També pots presentar una reclamació davant l’Agència Espanyola de Protecció de Dades (AEPD) si consideres que el tractament no s’ajusta a la normativa aplicable.",
+        "legal_cookies_texto": "Aquesta aplicació utilitza únicament les tecnologies d’emmagatzematge o cookies necessàries per al seu funcionament, manteniment de la sessió i prestació de les funcionalitats sol·licitades. No s’utilitzaran cookies no necessàries per a publicitat comportamental o seguiment comercial sense obtenir prèviament el consentiment exigible. Si en el futur s’incorporen cookies o tecnologies de tercers que requereixin consentiment, s’informarà de manera específica i s’oferiran opcions equivalents per acceptar o rebutjar aquest ús.",
+        "legal_actualizacion": "Aquesta informació podrà actualitzar-se quan canviïn l’aplicació, els tractaments de dades o la normativa aplicable.",
 
     }
 }
@@ -1614,8 +1642,7 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
             if cc2.button("🗑️", key=f"{key_prefix}_draft_alu_del_{i}"):
                 alumnos_draft.pop(i)
                 st.rerun()
-
-        # -----------------------------------------------------------
+ # -----------------------------------------------------------
         # ENVIAR NUEVA EDICIÓN
         # -----------------------------------------------------------
         st.markdown(f"### {T['enviar_peticion_curso']}")
@@ -2263,6 +2290,32 @@ elif opcion == T["menu_docs"]:
         return bloque.get(lang, "")
 
     # Los accesos se muestran en pantallas independientes desde el sidebar.
+
+    # --- BLOQUE: INFORMACIÓN LEGAL Y PROTECCIÓN DE DATOS ---
+    st.markdown(f"## {T['legal_titulo']}")
+
+    with st.expander(T["aviso_legal"]):
+        st.markdown(f"**{T['legal_nombre_comercial']}**")
+        st.markdown(f"**{T['legal_responsable']}**")
+        st.markdown(f"**{T['legal_nif']}**")
+        st.markdown(f"**{T['legal_domicilio']}**")
+        st.markdown(f"**{T['legal_email']}**")
+        st.write(T["legal_aviso_texto"])
+
+    with st.expander(T["politica_privacidad"]):
+        st.markdown("### Responsable del tratamiento")
+        st.write(f"{T['legal_responsable']}. {T['legal_email']}")
+        st.markdown("### Finalidades")
+        st.write(T["legal_privacidad_texto"])
+        st.markdown("### Derechos")
+        st.write(T["legal_derechos_texto"])
+        st.markdown("### Actualización")
+        st.write(T["legal_actualizacion"])
+
+    with st.expander(T["politica_cookies"]):
+        st.write(T["legal_cookies_texto"])
+        st.write(T["legal_actualizacion"])
+
     st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
 elif opcion == T["menu_eval"]:
