@@ -203,18 +203,6 @@ TEXTOS = {
         "error_anadir_alumno": 'No se pudo añadir el alumno: {error}',
         "edicion_cerrada": '🔒 Esta edición está cerrada porque el docente ya ha enviado las evaluaciones. Ya no se pueden añadir docentes ni alumnos.',
         "codigo_curso_nuevo": 'Si el código ya existe, se reutilizará su ficha.',
-        "legal_titulo": "🔒 Información legal y protección de datos",
-        "aviso_legal": "Aviso legal",
-        "politica_privacidad": "Política de privacidad",
-        "politica_cookies": "Política de cookies",
-        "legal_responsable": "Responsable",
-        "legal_nombre_comercial": "Nombre comercial",
-        "legal_nif": "NIF",
-        "legal_domicilio": "Domicilio",
-        "legal_email": "Email de contacto",
-        "legal_info_privacidad": "Información sobre protección de datos",
-        "legal_derechos": "Tus derechos",
-        "legal_contacto_derechos": "Para ejercer tus derechos puedes contactar mediante el email indicado.",
 
     },
     "ca": {
@@ -389,18 +377,7 @@ TEXTOS = {
         "error_anadir_alumno": 'No s’ha pogut afegir l’alumne: {error}',
         "edicion_cerrada": '🔒 Aquesta edició està tancada perquè el docent ja ha enviat les avaluacions. Ja no es poden afegir docents ni alumnes.',
         "codigo_curso_nuevo": 'Si el codi ja existeix, se’n reutilitzarà la fitxa.',
-        "legal_titulo": "🔒 Informació legal i protecció de dades",
-        "aviso_legal": "Avís legal",
-        "politica_privacidad": "Política de privacitat",
-        "politica_cookies": "Política de cookies",
-        "legal_responsable": "Responsable",
-        "legal_nombre_comercial": "Nom comercial",
-        "legal_nif": "NIF",
-        "legal_domicilio": "Domicili",
-        "legal_email": "Email de contacte",
-        "legal_info_privacidad": "Informació sobre protecció de dades",
-        "legal_derechos": "Els teus drets",
-        "legal_contacto_derechos": "Per exercir els teus drets pots contactar mitjançant l'email indicat.",
+
     }
 }
 
@@ -430,7 +407,6 @@ TRADUCCION_EVAL_CA = {
 # --- TRADUCCIÓN SOLO VISUAL (Català) de las categorías de Asociados/Colaboradores ---
 # El filtrado sigue comparando contra el texto original en castellano (columna
 # Sector/Categoría del Excel); esto solo cambia la etiqueta que se ve en pantalla.
-
 TRADUCCION_CATEGORIAS_CA = {
     "Mecanizado": "Mecanitzat",
     "Climatización": "Climatització",
@@ -447,7 +423,6 @@ TRADUCCION_CATEGORIAS_CA = {
     "Gremios": "Gremis",
     "Asociaciones": "Associacions"
 }
-
 
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=120)
@@ -2278,41 +2253,6 @@ elif opcion == T["menu_docs"]:
                         refrescar_app()
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
-     # --- BLOQUE 4: PROTECCIÓN DE DATOS Y PRIVACIDAD ---
-    st.markdown(
-        f"<h3 style='color: #0066cc;'><b>{T['privacidad_titulo']}</b></h3>",
-        unsafe_allow_html=True
-    )
-
-    with st.expander(T["privacidad_responsable"]):
-        st.markdown(
-            f"""
-            **{T["privacidad_nombre_comercial"]}:** Mzero  
-            **{T["privacidad_responsable_dato"]}:** Joan Carles Ros  
-            **{T["privacidad_nif"]}:** 77735854V  
-            **{T["privacidad_domicilio"]}:** Avda. Generalitat, 14, Barcelona  
-            **{T["privacidad_email"]}:** contacto.mzero@gmail.com
-            """
-        )
-
-    with st.expander(T["privacidad_finalidad_titulo"]):
-        st.markdown(T["privacidad_finalidad"])
-
-    with st.expander(T["privacidad_base_titulo"]):
-        st.markdown(T["privacidad_base"])
-
-    with st.expander(T["privacidad_conservacion_titulo"]):
-        st.markdown(T["privacidad_conservacion"])
-
-    with st.expander(T["privacidad_derechos_titulo"]):
-        st.markdown(T["privacidad_derechos"])
-
-    with st.expander(T["privacidad_seguridad_titulo"]):
-        st.markdown(T["privacidad_seguridad"])
-
-    with st.expander(T["privacidad_contacto_titulo"]):
-        st.markdown(T["privacidad_contacto"])
-    
     # --- BLOQUE: CÓMO PARTICIPAR ---
     st.markdown(f"## {T['como_participar']}")
 
