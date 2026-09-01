@@ -401,7 +401,6 @@ TEXTOS = {
         "legal_info_privacidad": "Informació sobre protecció de dades",
         "legal_derechos": "Els teus drets",
         "legal_contacto_derechos": "Per exercir els teus drets pots contactar mitjançant l'email indicat.",
-
     }
 }
 
