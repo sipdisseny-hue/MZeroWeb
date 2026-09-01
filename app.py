@@ -431,6 +431,7 @@ TRADUCCION_EVAL_CA = {
 # --- TRADUCCIÓN SOLO VISUAL (Català) de las categorías de Asociados/Colaboradores ---
 # El filtrado sigue comparando contra el texto original en castellano (columna
 # Sector/Categoría del Excel); esto solo cambia la etiqueta que se ve en pantalla.
+
 TRADUCCION_CATEGORIAS_CA = {
     "Mecanizado": "Mecanitzat",
     "Climatización": "Climatització",
@@ -446,7 +447,6 @@ TRADUCCION_CATEGORIAS_CA = {
     "Centros de formación": "Centres de formació",
     "Gremios": "Gremis",
     "Asociaciones": "Associacions"
-    ```python
 }
 
 # ============================================================
