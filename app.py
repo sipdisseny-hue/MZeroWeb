@@ -203,6 +203,18 @@ TEXTOS = {
         "error_anadir_alumno": 'No se pudo añadir el alumno: {error}',
         "edicion_cerrada": '🔒 Esta edición está cerrada porque el docente ya ha enviado las evaluaciones. Ya no se pueden añadir docentes ni alumnos.',
         "codigo_curso_nuevo": 'Si el código ya existe, se reutilizará su ficha.',
+        "legal_titulo": "🔒 Información legal y protección de datos",
+        "aviso_legal": "Aviso legal",
+        "politica_privacidad": "Política de privacidad",
+        "politica_cookies": "Política de cookies",
+        "legal_responsable": "Responsable",
+        "legal_nombre_comercial": "Nombre comercial",
+        "legal_nif": "NIF",
+        "legal_domicilio": "Domicilio",
+        "legal_email": "Email de contacto",
+        "legal_info_privacidad": "Información sobre protección de datos",
+        "legal_derechos": "Tus derechos",
+        "legal_contacto_derechos": "Para ejercer tus derechos puedes contactar mediante el email indicado.",
 
     },
     "ca": {
@@ -377,6 +389,18 @@ TEXTOS = {
         "error_anadir_alumno": 'No s’ha pogut afegir l’alumne: {error}',
         "edicion_cerrada": '🔒 Aquesta edició està tancada perquè el docent ja ha enviat les avaluacions. Ja no es poden afegir docents ni alumnes.',
         "codigo_curso_nuevo": 'Si el codi ja existeix, se’n reutilitzarà la fitxa.',
+        "legal_titulo": "🔒 Informació legal i protecció de dades",
+        "aviso_legal": "Avís legal",
+        "politica_privacidad": "Política de privacitat",
+        "politica_cookies": "Política de cookies",
+        "legal_responsable": "Responsable",
+        "legal_nombre_comercial": "Nom comercial",
+        "legal_nif": "NIF",
+        "legal_domicilio": "Domicili",
+        "legal_email": "Email de contacte",
+        "legal_info_privacidad": "Informació sobre protecció de dades",
+        "legal_derechos": "Els teus drets",
+        "legal_contacto_derechos": "Per exercir els teus drets pots contactar mitjançant l'email indicat.",
 
     }
 }
