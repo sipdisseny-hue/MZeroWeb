@@ -2277,6 +2277,41 @@ elif opcion == T["menu_docs"]:
                         refrescar_app()
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
+     # --- BLOQUE 4: PROTECCIÓN DE DATOS Y PRIVACIDAD ---
+    st.markdown(
+        f"<h3 style='color: #0066cc;'><b>{T['privacidad_titulo']}</b></h3>",
+        unsafe_allow_html=True
+    )
+
+    with st.expander(T["privacidad_responsable"]):
+        st.markdown(
+            f"""
+            **{T["privacidad_nombre_comercial"]}:** Mzero  
+            **{T["privacidad_responsable_dato"]}:** Joan Carles Ros  
+            **{T["privacidad_nif"]}:** 77735854V  
+            **{T["privacidad_domicilio"]}:** Avda. Generalitat, 14, Barcelona  
+            **{T["privacidad_email"]}:** contacto.mzero@gmail.com
+            """
+        )
+
+    with st.expander(T["privacidad_finalidad_titulo"]):
+        st.markdown(T["privacidad_finalidad"])
+
+    with st.expander(T["privacidad_base_titulo"]):
+        st.markdown(T["privacidad_base"])
+
+    with st.expander(T["privacidad_conservacion_titulo"]):
+        st.markdown(T["privacidad_conservacion"])
+
+    with st.expander(T["privacidad_derechos_titulo"]):
+        st.markdown(T["privacidad_derechos"])
+
+    with st.expander(T["privacidad_seguridad_titulo"]):
+        st.markdown(T["privacidad_seguridad"])
+
+    with st.expander(T["privacidad_contacto_titulo"]):
+        st.markdown(T["privacidad_contacto"])
+    
     # --- BLOQUE: CÓMO PARTICIPAR ---
     st.markdown(f"## {T['como_participar']}")
 
