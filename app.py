@@ -50,6 +50,11 @@ TEXTOS = {
         "contacto": "Contacto",
         "como_participar": "Cómo participar",
         "eslogan": "Conectando talento, transformando la industria",
+        "legal_titulo": "Información legal y protección de datos",
+        "aviso_legal": "Aviso legal",
+        "politica_privacidad": "Política de privacidad",
+        "politica_cookies": "Política de cookies",
+        "legal_info_privacidad": "Información básica de privacidad",
         "aviso_login_eval": "Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.",
         "profesor": "Profesor",
         "id_docente": "Id Docente",
@@ -203,20 +208,6 @@ TEXTOS = {
         "error_anadir_alumno": 'No se pudo añadir el alumno: {error}',
         "edicion_cerrada": '🔒 Esta edición está cerrada porque el docente ya ha enviado las evaluaciones. Ya no se pueden añadir docentes ni alumnos.',
         "codigo_curso_nuevo": 'Si el código ya existe, se reutilizará su ficha.',
-        "legal_titulo": "Información legal y protección de datos",
-        "aviso_legal": "Aviso legal",
-        "politica_privacidad": "Política de privacidad",
-        "politica_cookies": "Política de cookies",
-        "legal_responsable": "Responsable: Joan Carles Ros (autónomo)",
-        "legal_nombre_comercial": "Nombre comercial: Mzero",
-        "legal_nif": "NIF: 77735854V",
-        "legal_domicilio": "Domicilio: Avda. Generalitat, 14, Barcelona",
-        "legal_email": "Email: contacto.mzero@gmail.com",
-        "legal_aviso_texto": "Mzero es el nombre comercial bajo el que Joan Carles Ros, como profesional autónomo, presta los servicios ofrecidos mediante esta aplicación. Esta aplicación proporciona funcionalidades de documentación, gestión de cursos, gestión de docentes y alumnos y evaluación formativa o profesional, según el acceso utilizado.",
-        "legal_privacidad_texto": "Los datos personales se tratarán para gestionar las solicitudes de alta, los accesos, la relación con asociados y colaboradores, la gestión de cursos, docentes y alumnos, y la realización y conservación de evaluaciones cuando corresponda. La base jurídica podrá ser la ejecución de una relación contractual o precontractual, el cumplimiento de obligaciones legales y, cuando sea necesario, el consentimiento del interesado. Solo se solicitarán los datos necesarios para cada finalidad. Los datos se conservarán durante el tiempo necesario para cumplir la finalidad y atender las obligaciones legales y posibles responsabilidades. Podrán intervenir proveedores tecnológicos necesarios para prestar el servicio, como alojamiento, base de datos y herramientas de gestión de información, aplicándose las garantías exigibles en materia de protección de datos. No se realizarán cesiones con fines comerciales ajenos a la prestación del servicio salvo obligación legal o consentimiento cuando corresponda.",
-        "legal_derechos_texto": "Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y, cuando proceda, portabilidad, escribiendo a contacto.mzero@gmail.com. También puedes presentar una reclamación ante la Agencia Española de Protección de Datos (AEPD) si consideras que el tratamiento no se ajusta a la normativa aplicable.",
-        "legal_cookies_texto": "Esta aplicación utiliza únicamente las tecnologías de almacenamiento o cookies necesarias para su funcionamiento, mantenimiento de la sesión y prestación de las funcionalidades solicitadas. No se utilizarán cookies no necesarias para publicidad comportamental o seguimiento comercial sin obtener previamente el consentimiento exigible. Si en el futuro se incorporan cookies o tecnologías de terceros que requieran consentimiento, se informará de forma específica y se ofrecerán opciones equivalentes para aceptar o rechazar dicho uso.",
-        "legal_actualizacion": "Esta información podrá actualizarse cuando cambien la aplicación, los tratamientos de datos o la normativa aplicable.",
 
     },
     "ca": {
@@ -241,6 +232,11 @@ TEXTOS = {
         "contacto": "Contacte",
         "como_participar": "Com participar",
         "eslogan": "Connectant talent, transformant la indústria",
+        "legal_titulo": "Informació legal i protecció de dades",
+        "aviso_legal": "Avís legal",
+        "politica_privacidad": "Política de privacitat",
+        "politica_cookies": "Política de cookies",
+        "legal_info_privacidad": "Informació bàsica de privacitat",
         "aviso_login_eval": "Has d'iniciar sessió al sidebar per accedir al mòdul d'avaluacions.",
         "profesor": "Professor",
         "id_docente": "Id Docent",
@@ -391,20 +387,6 @@ TEXTOS = {
         "error_anadir_alumno": 'No s’ha pogut afegir l’alumne: {error}',
         "edicion_cerrada": '🔒 Aquesta edició està tancada perquè el docent ja ha enviat les avaluacions. Ja no es poden afegir docents ni alumnes.',
         "codigo_curso_nuevo": 'Si el codi ja existeix, se’n reutilitzarà la fitxa.',
-        "legal_titulo": "Informació legal i protecció de dades",
-        "aviso_legal": "Avís legal",
-        "politica_privacidad": "Política de privacitat",
-        "politica_cookies": "Política de cookies",
-        "legal_responsable": "Responsable: Joan Carles Ros (autònom)",
-        "legal_nombre_comercial": "Nom comercial: Mzero",
-        "legal_nif": "NIF: 77735854V",
-        "legal_domicilio": "Domicili: Avda. Generalitat, 14, Barcelona",
-        "legal_email": "Email: contacto.mzero@gmail.com",
-        "legal_aviso_texto": "Mzero és el nom comercial sota el qual Joan Carles Ros, com a professional autònom, presta els serveis oferts mitjançant aquesta aplicació. Aquesta aplicació proporciona funcionalitats de documentació, gestió de cursos, gestió de docents i alumnes i avaluació formativa o professional, segons l’accés utilitzat.",
-        "legal_privacidad_texto": "Les dades personals es tractaran per gestionar les sol·licituds d’alta, els accessos, la relació amb associats i col·laboradors, la gestió de cursos, docents i alumnes, i la realització i conservació d’avaluacions quan correspongui. La base jurídica podrà ser l’execució d’una relació contractual o precontractual, el compliment d’obligacions legals i, quan sigui necessari, el consentiment de la persona interessada. Només se sol·licitaran les dades necessàries per a cada finalitat. Les dades es conservaran durant el temps necessari per complir la finalitat i atendre les obligacions legals i possibles responsabilitats. Poden intervenir proveïdors tecnològics necessaris per prestar el servei, com ara allotjament, base de dades i eines de gestió d’informació, aplicant les garanties exigibles en matèria de protecció de dades. No es faran cessions amb finalitats comercials alienes a la prestació del servei excepte per obligació legal o amb el consentiment quan correspongui.",
-        "legal_derechos_texto": "Pots exercir els drets d’accés, rectificació, supressió, oposició, limitació del tractament i, quan correspongui, portabilitat, escrivint a contacto.mzero@gmail.com. També pots presentar una reclamació davant l’Agència Espanyola de Protecció de Dades (AEPD) si consideres que el tractament no s’ajusta a la normativa aplicable.",
-        "legal_cookies_texto": "Aquesta aplicació utilitza únicament les tecnologies d’emmagatzematge o cookies necessàries per al seu funcionament, manteniment de la sessió i prestació de les funcionalitats sol·licitades. No s’utilitzaran cookies no necessàries per a publicitat comportamental o seguiment comercial sense obtenir prèviament el consentiment exigible. Si en el futur s’incorporen cookies o tecnologies de tercers que requereixin consentiment, s’informarà de manera específica i s’oferiran opcions equivalents per acceptar o rebutjar aquest ús.",
-        "legal_actualizacion": "Aquesta informació podrà actualitzar-se quan canviïn l’aplicació, els tractaments de dades o la normativa aplicable.",
 
     }
 }
@@ -1116,6 +1098,401 @@ with st.sidebar:
                                 st.error(f"Error al activar: {e}")
                     st.divider()
 
+# ============================================================
+# INFORMACIÓN LEGAL Y PROTECCIÓN DE DATOS
+# ============================================================
+
+def mostrar_informacion_legal(lang="es"):
+    """
+    Muestra la información legal de Mzero.
+
+
+    Esta información se presenta en la propia aplicación para
+    facilitar el acceso permanente a la identificación del
+    responsable y a la información sobre protección de datos.
+    """
+
+    T = TEXTOS[lang]
+
+    st.header(T["legal_titulo"])
+
+    # --------------------------------------------------------
+    # AVISO LEGAL
+    # --------------------------------------------------------
+    with st.expander(f"📄 {T['aviso_legal']}", expanded=False):
+
+        if lang == "ca":
+
+            st.markdown("""
+### Avís legal
+
+**Nom comercial:** Mzero  
+**Responsable:** Joan Carles Ros  
+**NIF:** 77735854V  
+**Domicili:** Avda. Generalitat, 14, Barcelona  
+**Email de contacte:** contacto.mzero@gmail.com
+
+Mzero és el nom comercial utilitzat per Joan Carles Ros
+en el desenvolupament i prestació dels serveis relacionats
+amb aquesta aplicació.
+
+Aquesta aplicació proporciona funcionalitats relacionades
+amb la gestió de formació, cursos, docents, alumnes,
+col·laboradors, associats, candidats i processos
+d'avaluació.
+
+L'accés i utilització de l'aplicació implica el respecte de
+les condicions d'ús i de la normativa aplicable.
+
+La informació identificativa del responsable es facilita
+de manera permanent i accessible dins de l'aplicació.
+""")
+
+        else:
+
+            st.markdown("""
+### Aviso legal
+
+**Nombre comercial:** Mzero  
+**Responsable:** Joan Carles Ros  
+**NIF:** 77735854V  
+**Domicilio:** Avda. Generalitat, 14, Barcelona  
+**Email de contacto:** contacto.mzero@gmail.com
+
+Mzero es el nombre comercial utilizado por Joan Carles Ros
+en el desarrollo y prestación de los servicios relacionados
+con esta aplicación.
+
+Esta aplicación proporciona funcionalidades relacionadas
+con la gestión de formación, cursos, docentes, alumnos,
+colaboradores, asociados, candidatos y procesos
+de evaluación.
+
+El acceso y utilización de la aplicación implica el respeto
+de las condiciones de uso y de la normativa aplicable.
+
+La información identificativa del responsable se facilita
+de forma permanente y accesible dentro de la aplicación.
+""")
+
+    # --------------------------------------------------------
+    # POLÍTICA DE PRIVACIDAD
+    # --------------------------------------------------------
+    with st.expander(f"🔐 {T['politica_privacidad']}", expanded=False):
+
+        if lang == "ca":
+
+            st.markdown("""
+### Política de privacitat
+
+#### 1. Responsable del tractament
+
+**Responsable:** Joan Carles Ros  
+**Nom comercial:** Mzero  
+**NIF:** 77735854V  
+**Domicili:** Avda. Generalitat, 14, Barcelona  
+**Email:** contacto.mzero@gmail.com
+
+#### 2. Quines dades personals es poden tractar
+
+En funció de la funcionalitat utilitzada, Mzero pot tractar
+dades identificatives i de contacte, dades relacionades amb
+la formació, dades relatives a cursos, docents, alumnes,
+col·laboradors, associats i candidats, així com informació
+relacionada amb els processos d'avaluació.
+
+Només se sol·licitaran les dades necessàries per a la
+finalitat corresponent.
+
+#### 3. Finalitats del tractament
+
+Les dades poden ser tractades per a:
+
+- Gestionar l'accés a l'aplicació.
+- Gestionar associats i col·laboradors.
+- Gestionar candidats i peticions.
+- Gestionar cursos i edicions de cursos.
+- Gestionar docents i alumnes.
+- Realitzar i gestionar processos d'avaluació.
+- Gestionar les comunicacions relacionades amb els serveis.
+- Atendre les sol·licituds i consultes dels usuaris.
+- Complir les obligacions legals que siguin aplicables.
+
+#### 4. Base jurídica
+
+La base jurídica del tractament dependrà de la finalitat
+concreta i podrà incloure l'execució d'un contracte o de
+mesures precontractuals, el compliment d'obligacions legals,
+l'interès legítim del responsable quan sigui aplicable o el
+consentiment de la persona interessada quan sigui necessari.
+
+Quan el tractament es basi en el consentiment, aquest es
+sol·licitarà de manera específica i diferenciada.
+
+#### 5. Minimització de dades
+
+Mzero aplicarà el principi de minimització i procurarà que
+només es tractin les dades adequades, pertinents i
+necessàries per a les finalitats corresponents.
+
+#### 6. Conservació
+
+Les dades personals es conservaran durant el temps necesario
+per complir la finalitat per a la qual van ser recollides i,
+posteriorment, durant els terminis necessaris per al
+compliment de les obligacions legals o per a la defensa de
+possibles responsabilitats.
+
+Les dades temporals utilitzades durant una sessió de
+l'aplicació poden mantenir-se mentre sigui necessari per al
+funcionament de la funcionalitat corresponent.
+
+#### 7. Destinataris
+
+Les dades podran ser tractades pels proveïdors tecnològics
+que siguin necessaris per al funcionament de l'aplicació,
+sempre d'acord amb les corresponents garanties i obligacions
+en matèria de protecció de dades.
+
+La identificació concreta dels proveïdors i, si escau, de les
+transferències internacionals, serà objecte de la informació
+corresponent quan sigui aplicable.
+
+#### 8. Drets
+
+La persona interessada pot exercir, quan siguin aplicables,
+els drets d'accés, rectificació, supressió, oposició,
+limitació del tractament i portabilitat.
+
+També pot retirar el consentiment quan el tractament es basi
+en aquest.
+
+Per exercir els seus drets pot contactar amb:
+
+**contacto.mzero@gmail.com**
+
+La sol·licitud haurà d'indicar el dret que es vol exercir i
+aportar la informació necessària per poder identificar la
+persona sol·licitant.
+
+#### 9. Reclamacions
+
+La persona interessada també té dret a presentar una
+reclamació davant l'Agència Espanyola de Protecció de Dades
+(AEPD) si considera que el tractament de les seves dades no
+s'ajusta a la normativa aplicable.
+
+#### 10. Seguretat
+
+Mzero aplicarà mesures tècniques i organitzatives adequades
+per protegir les dades personals davant accessos no
+autoritzats, pèrdua, alteració o divulgació indeguda.
+
+Les mesures concretes s'adaptaran als riscos associats als
+tractaments realitzats.
+""")
+
+        else:
+
+            st.markdown("""
+### Política de privacidad
+
+#### 1. Responsable del tratamiento
+
+**Responsable:** Joan Carles Ros  
+**Nombre comercial:** Mzero  
+**NIF:** 77735854V  
+**Domicilio:** Avda. Generalitat, 14, Barcelona  
+**Email:** contacto.mzero@gmail.com
+
+#### 2. Qué datos personales pueden tratarse
+
+En función de la funcionalidad utilizada, Mzero puede tratar
+datos identificativos y de contacto, datos relacionados con
+la formación, datos relativos a cursos, docentes, alumnos,
+colaboradores, asociados y candidatos, así como información
+relacionada con los procesos de evaluación.
+
+Solo se solicitarán los datos necesarios para la finalidad
+correspondiente.
+
+#### 3. Finalidades del tratamiento
+
+Los datos pueden ser tratados para:
+
+- Gestionar el acceso a la aplicación.
+- Gestionar asociados y colaboradores.
+- Gestionar candidatos y peticiones.
+- Gestionar cursos y ediciones de cursos.
+- Gestionar docentes y alumnos.
+- Realizar y gestionar procesos de evaluación.
+- Gestionar las comunicaciones relacionadas con los servicios.
+- Atender las solicitudes y consultas de los usuarios.
+- Cumplir las obligaciones legales que resulten aplicables.
+
+#### 4. Base jurídica
+
+La base jurídica del tratamiento dependerá de la finalidad
+concreta y podrá incluir la ejecución de un contrato o de
+medidas precontractuales, el cumplimiento de obligaciones
+legales, el interés legítimo del responsable cuando resulte
+aplicable o el consentimiento de la persona interesada cuando
+sea necesario.
+
+Cuando el tratamiento se base en el consentimiento, este se
+solicitará de forma específica y diferenciada.
+
+#### 5. Minimización de datos
+
+Mzero aplicará el principio de minimización y procurará que
+solo se traten los datos adecuados, pertinentes y necesarios
+para las finalidades correspondientes.
+
+#### 6. Conservación
+
+Los datos personales se conservarán durante el tiempo
+necesario para cumplir la finalidad para la que fueron
+recogidos y, posteriormente, durante los plazos necesarios
+para el cumplimiento de las obligaciones legales o para la
+defensa de posibles responsabilidades.
+
+Los datos temporales utilizados durante una sesión de la
+aplicación podrán mantenerse mientras resulte necesario para
+el funcionamiento de la funcionalidad correspondiente.
+
+#### 7. Destinatarios
+
+Los datos podrán ser tratados por los proveedores
+tecnológicos que sean necesarios para el funcionamiento de
+la aplicación, siempre de acuerdo con las correspondientes
+garantías y obligaciones en materia de protección de datos.
+
+La identificación concreta de los proveedores y, en su caso,
+de las transferencias internacionales, será objeto de la
+información correspondiente cuando resulte aplicable.
+
+#### 8. Derechos
+
+La persona interesada puede ejercer, cuando resulten
+aplicables, los derechos de acceso, rectificación, supresión,
+oposición, limitación del tratamiento y portabilidad.
+
+También puede retirar el consentimiento cuando el tratamiento
+se base en este.
+
+Para ejercer sus derechos puede contactar mediante:
+
+**contacto.mzero@gmail.com**
+
+La solicitud deberá indicar el derecho que desea ejercer y
+aportar la información necesaria para poder identificar a la
+persona solicitante.
+
+#### 9. Reclamaciones
+
+La persona interesada también tiene derecho a presentar una
+reclamación ante la Agencia Española de Protección de Datos
+(AEPD) si considera que el tratamiento de sus datos no se
+ajusta a la normativa aplicable.
+
+#### 10. Seguridad
+
+Mzero aplicará medidas técnicas y organizativas adecuadas
+para proteger los datos personales frente a accesos no
+autorizados, pérdida, alteración o divulgación indebida.
+
+Las medidas concretas se adaptarán a los riesgos asociados a
+los tratamientos realizados.
+""")
+
+    # --------------------------------------------------------
+    # POLÍTICA DE COOKIES
+    # --------------------------------------------------------
+    with st.expander(f"🍪 {T['politica_cookies']}", expanded=False):
+
+        if lang == "ca":
+
+            st.markdown("""
+### Política de cookies
+
+Aquesta aplicació pot utilitzar mecanismes tècnics necessaris
+per al seu correcte funcionament.
+
+Abans d'identificar i descriure de manera definitiva altres
+cookies o tecnologies similars, s'haurà de comprovar quins
+serveis externs utilitza efectivament l'aplicació i quines
+tecnologies d'emmagatzematge o identificació utilitzen.
+
+No s'afirma en aquesta política l'existència de cookies
+analítiques, publicitàries o de tercers que no hagin estat
+prèviament verificades.
+
+Aquesta política s'actualitzarà quan es determinin les
+tecnologies concretes utilitzades per l'aplicació.
+""")
+
+        else:
+
+            st.markdown("""
+### Política de cookies
+
+Esta aplicación puede utilizar mecanismos técnicos necesarios
+para su correcto funcionamiento.
+
+Antes de identificar y describir definitivamente otras
+cookies o tecnologías similares, deberá comprobarse qué
+servicios externos utiliza efectivamente la aplicación y qué
+tecnologías de almacenamiento o identificación emplean.
+
+No se afirma en esta política la existencia de cookies
+analíticas, publicitarias o de terceros que no hayan sido
+previamente verificadas.
+
+Esta política se actualizará cuando se determinen las
+tecnologías concretas utilizadas por la aplicación.
+""")
+
+    # --------------------------------------------------------
+    # INFORMACIÓN BÁSICA DE PRIVACIDAD
+    # --------------------------------------------------------
+    st.divider()
+
+    st.subheader(f"ℹ️ {T['legal_info_privacidad']}")
+
+    if lang == "ca":
+        st.info("""
+**Responsable:** Joan Carles Ros (Mzero)
+
+**Finalitat:** gestió de l'accés, cursos, formació, usuaris,
+docents, alumnes, candidats, associats, col·laboradors i
+processos d'avaluació.
+
+**Drets:** pots sol·licitar l'accés, rectificació, supressió,
+oposició, limitació o portabilitat quan siguin aplicables.
+
+**Contacte:** contacto.mzero@gmail.com
+
+Consulta la Política de privacitat per obtenir la informació
+completa sobre el tractament de les dades personals.
+""")
+    else:
+        st.info("""
+**Responsable:** Joan Carles Ros (Mzero)
+
+**Finalidad:** gestión del acceso, cursos, formación, usuarios,
+docentes, alumnos, candidatos, asociados, colaboradores y
+procesos de evaluación.
+
+**Derechos:** puedes solicitar el acceso, rectificación,
+supresión, oposición, limitación o portabilidad cuando sean
+aplicables.
+
+**Contacto:** contacto.mzero@gmail.com
+
+Consulta la Política de privacidad para obtener la información
+completa sobre el tratamiento de los datos personales.
+""")
+
 # --- LÓGICA DE PANTALLAS ---
 def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False, mostrar_en_expander=True):
     """Formulario para pedir el alta como Asociado o Colaborador nuevo.
@@ -1642,7 +2019,7 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
             if cc2.button("🗑️", key=f"{key_prefix}_draft_alu_del_{i}"):
                 alumnos_draft.pop(i)
                 st.rerun()
- # -----------------------------------------------------------
+      # -----------------------------------------------------------
         # ENVIAR NUEVA EDICIÓN
         # -----------------------------------------------------------
         st.markdown(f"### {T['enviar_peticion_curso']}")
@@ -2290,33 +2667,11 @@ elif opcion == T["menu_docs"]:
         return bloque.get(lang, "")
 
     # Los accesos se muestran en pantallas independientes desde el sidebar.
+    st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
 
     # --- BLOQUE: INFORMACIÓN LEGAL Y PROTECCIÓN DE DATOS ---
-    st.markdown(f"## {T['legal_titulo']}")
-
-    with st.expander(T["aviso_legal"]):
-        st.markdown(f"**{T['legal_nombre_comercial']}**")
-        st.markdown(f"**{T['legal_responsable']}**")
-        st.markdown(f"**{T['legal_nif']}**")
-        st.markdown(f"**{T['legal_domicilio']}**")
-        st.markdown(f"**{T['legal_email']}**")
-        st.write(T["legal_aviso_texto"])
-
-    with st.expander(T["politica_privacidad"]):
-        st.markdown("### Responsable del tratamiento")
-        st.write(f"{T['legal_responsable']}. {T['legal_email']}")
-        st.markdown("### Finalidades")
-        st.write(T["legal_privacidad_texto"])
-        st.markdown("### Derechos")
-        st.write(T["legal_derechos_texto"])
-        st.markdown("### Actualización")
-        st.write(T["legal_actualizacion"])
-
-    with st.expander(T["politica_cookies"]):
-        st.write(T["legal_cookies_texto"])
-        st.write(T["legal_actualizacion"])
-
-    st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
+    st.divider()
+    mostrar_informacion_legal(lang)
 
 elif opcion == T["menu_eval"]:
     if 'envio_resultado' in st.session_state:
