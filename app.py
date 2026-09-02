@@ -2298,150 +2298,107 @@ elif opcion == T["menu_docs"]:
         unsafe_allow_html=True
     )
 
-    # --- BLOQUE LEGAL INFERIOR ---
-    # Todo el contenido legal queda oculto. Solo se muestran los títulos.
-    # El usuario debe clicar en cada título para desplegar su contenido.
-    import html as _html
-
-    _legal_aviso = (
-        f"<strong>{_html.escape(T['legal_nombre_comercial'])}</strong><br>"
-        f"<strong>{_html.escape(T['legal_responsable'])}</strong><br>"
-        f"<strong>{_html.escape(T['legal_nif'])}</strong><br>"
-        f"<strong>{_html.escape(T['legal_domicilio'])}</strong><br>"
-        f"<strong>{_html.escape(T['legal_email'])}</strong><br><br>"
-        f"{_html.escape(T['legal_aviso_texto'])}"
-    )
-
-    _legal_privacidad = (
-        f"<h4>Responsable del tratamiento</h4>"
-        f"<p>{_html.escape(T['legal_responsable'])}. {_html.escape(T['legal_email'])}</p>"
-        f"<h4>Finalidades</h4>"
-        f"<p>{_html.escape(T['legal_privacidad_texto'])}</p>"
-        f"<h4>Derechos</h4>"
-        f"<p>{_html.escape(T['legal_derechos_texto'])}</p>"
-        f"<h4>Actualización</h4>"
-        f"<p>{_html.escape(T['legal_actualizacion'])}</p>"
-    )
-
-    _legal_cookies = (
-        f"<p>{_html.escape(T['legal_cookies_texto'])}</p>"
-        f"<p>{_html.escape(T['legal_actualizacion'])}</p>"
-    )
+    # ============================================================
+    # BLOQUE LEGAL INFERIOR
+    # IMPORTANTE: se utilizan los expander NATIVOS de Streamlit.
+    # No se escribe <details>, <summary>, CSS ni HTML dentro del
+    # contenido visible, evitando que el usuario vea "códigos".
+    # ============================================================
 
     st.markdown(
-        f"""
+        """
         <style>
-        .mzero-legal-box {{
+        /* Título del bloque legal */
+        .mzero-legal-heading {
             background: #172033;
-            border-radius: 0px;
-            padding: 18px 28px 22px 28px;
+            color: white;
+            padding: 16px 24px 8px 24px;
             margin-top: 10px;
-            margin-bottom: 0px;
-            width: 100%;
-            box-sizing: border-box;
-        }}
-
-        .mzero-legal-title {{
-            color: #ffffff;
+            margin-bottom: 0;
             text-align: center;
             font-size: 18px;
             font-weight: 700;
-            margin: 0 0 14px 0;
-        }}
+        }
 
-        .mzero-legal-box details {{
-            border-top: 1px solid rgba(255,255,255,0.20);
-        }}
+        /* Cada desplegable legal */
+        div[data-testid="stExpander"] {
+            background: #172033 !important;
+            border: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+        }
 
-        .mzero-legal-box details:last-child {{
-            border-bottom: 1px solid rgba(255,255,255,0.20);
-        }}
+        div[data-testid="stExpander"] details {
+            background: #172033 !important;
+            border: none !important;
+            border-top: 1px solid rgba(255,255,255,0.20) !important;
+            border-radius: 0 !important;
+        }
 
-        .mzero-legal-box summary {{
-            color: #ffffff;
-            cursor: pointer;
-            list-style: none;
-            padding: 14px 4px;
-            font-size: 15px;
-            font-weight: 600;
-            text-align: center;
-        }}
+        div[data-testid="stExpander"] summary {
+            background: #172033 !important;
+            color: #ffffff !important;
+            padding: 14px 24px !important;
+            font-size: 15px !important;
+            font-weight: 600 !important;
+        }
 
-        .mzero-legal-box summary::-webkit-details-marker {{
-            display: none;
-        }}
+        div[data-testid="stExpander"] summary p,
+        div[data-testid="stExpander"] summary span {
+            color: #ffffff !important;
+        }
 
-        .mzero-legal-box summary::after {{
-            content: "＋";
-            float: right;
-            font-size: 18px;
-            font-weight: 400;
-        }}
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+            background: #172033 !important;
+            color: #ffffff !important;
+            padding: 0 24px 18px 24px !important;
+        }
 
-        .mzero-legal-box details[open] summary::after {{
-            content: "−";
-        }}
+        /* Texto que aparece SOLO después de abrir */
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li {
+            color: #f1f3f7 !important;
+        }
 
-        .mzero-legal-content {{
-            color: #f1f3f7;
-            background: rgba(255,255,255,0.06);
-            padding: 18px 22px;
-            margin: 0 0 12px 0;
-            border-radius: 3px;
-            line-height: 1.65;
-            font-size: 14px;
-        }}
-
-        .mzero-legal-content h4 {{
-            color: #ffffff;
-            margin: 8px 0 5px 0;
-            font-size: 15px;
-        }}
-
-        .mzero-legal-content p {{
-            margin: 0 0 12px 0;
-        }}
-
-        @media (max-width: 700px) {{
-            .mzero-legal-box {{
-                padding: 16px 14px 20px 14px;
-            }}
-            .mzero-legal-box summary {{
-                text-align: left;
-            }}
-            .mzero-legal-content {{
-                padding: 14px;
-            }}
-        }}
+        .mzero-legal-bottom {
+            background: #172033;
+            padding-bottom: 8px;
+            margin-bottom: 0;
+        }
         </style>
-
-        <div class="mzero-legal-box">
-            <div class="mzero-legal-title">{_html.escape(T['legal_titulo'])}</div>
-
-            <details>
-                <summary>{_html.escape(T['aviso_legal'])}</summary>
-                <div class="mzero-legal-content">
-                    {_legal_aviso}
-                </div>
-            </details>
-
-            <details>
-                <summary>{_html.escape(T['politica_privacidad'])}</summary>
-                <div class="mzero-legal-content">
-                    {_legal_privacidad}
-                </div>
-            </details>
-
-            <details>
-                <summary>{_html.escape(T['politica_cookies'])}</summary>
-                <div class="mzero-legal-content">
-                    {_legal_cookies}
-                </div>
-            </details>
-        </div>
         """,
         unsafe_allow_html=True
     )
+
+    st.markdown(
+        f"<div class='mzero-legal-heading'>{T['legal_titulo']}</div>",
+        unsafe_allow_html=True
+    )
+
+    # SOLO ESTOS TÍTULOS SE VEN AL CARGAR LA PÁGINA.
+    # El contenido permanece completamente cerrado.
+    with st.expander(T["aviso_legal"], expanded=False):
+        st.markdown(f"**{T['legal_nombre_comercial']}**")
+        st.markdown(f"**{T['legal_responsable']}**")
+        st.markdown(f"**{T['legal_nif']}**")
+        st.markdown(f"**{T['legal_domicilio']}**")
+        st.markdown(f"**{T['legal_email']}**")
+        st.write(T["legal_aviso_texto"])
+
+    with st.expander(T["politica_privacidad"], expanded=False):
+        st.markdown("### Responsable del tratamiento")
+        st.write(f"{T['legal_responsable']}. {T['legal_email']}")
+        st.markdown("### Finalidades")
+        st.write(T["legal_privacidad_texto"])
+        st.markdown("### Derechos")
+        st.write(T["legal_derechos_texto"])
+        st.markdown("### Actualización")
+        st.write(T["legal_actualizacion"])
+
+    with st.expander(T["politica_cookies"], expanded=False):
+        st.write(T["legal_cookies_texto"])
+        st.write(T["legal_actualizacion"])
 
 elif opcion == T["menu_eval"]:
     if 'envio_resultado' in st.session_state:
