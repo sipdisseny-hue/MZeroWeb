@@ -2292,112 +2292,156 @@ elif opcion == T["menu_docs"]:
     # Los accesos se muestran en pantallas independientes desde el sidebar.
 
     # --- ESLOGAN ---
-    st.markdown(f"<h3 align='center' style='color: #0066cc; margin-top: 30px; margin-bottom: 24px;'><b>{T['eslogan']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(
+        f"<h3 align='center' style='color: #0066cc; margin-top: 30px; margin-bottom: 24px;'>"
+        f"<b>{T['eslogan']}</b></h3>",
+        unsafe_allow_html=True
+    )
 
-    # --- PIE LEGAL ---
-    # Se muestra en la parte inferior de la pantalla dentro de un único
-    # recuadro azul oscuro. Solo se ven los títulos; el contenido aparece
-    # al pulsar cada uno. No modifica ninguna funcionalidad de la aplicación.
-    st.markdown("""
-    <style>
-        .mzero-legal-footer {
+    # --- BLOQUE LEGAL INFERIOR ---
+    # Todo el contenido legal queda oculto. Solo se muestran los títulos.
+    # El usuario debe clicar en cada título para desplegar su contenido.
+    import html as _html
+
+    _legal_aviso = (
+        f"<strong>{_html.escape(T['legal_nombre_comercial'])}</strong><br>"
+        f"<strong>{_html.escape(T['legal_responsable'])}</strong><br>"
+        f"<strong>{_html.escape(T['legal_nif'])}</strong><br>"
+        f"<strong>{_html.escape(T['legal_domicilio'])}</strong><br>"
+        f"<strong>{_html.escape(T['legal_email'])}</strong><br><br>"
+        f"{_html.escape(T['legal_aviso_texto'])}"
+    )
+
+    _legal_privacidad = (
+        f"<h4>Responsable del tratamiento</h4>"
+        f"<p>{_html.escape(T['legal_responsable'])}. {_html.escape(T['legal_email'])}</p>"
+        f"<h4>Finalidades</h4>"
+        f"<p>{_html.escape(T['legal_privacidad_texto'])}</p>"
+        f"<h4>Derechos</h4>"
+        f"<p>{_html.escape(T['legal_derechos_texto'])}</p>"
+        f"<h4>Actualización</h4>"
+        f"<p>{_html.escape(T['legal_actualizacion'])}</p>"
+    )
+
+    _legal_cookies = (
+        f"<p>{_html.escape(T['legal_cookies_texto'])}</p>"
+        f"<p>{_html.escape(T['legal_actualizacion'])}</p>"
+    )
+
+    st.markdown(
+        f"""
+        <style>
+        .mzero-legal-box {{
             background: #172033;
-            border-radius: 2px;
-            padding: 10px 22px;
-            margin-top: 28px;
-            margin-bottom: 0;
+            border-radius: 0px;
+            padding: 18px 28px 22px 28px;
+            margin-top: 10px;
+            margin-bottom: 0px;
             width: 100%;
             box-sizing: border-box;
-        }
+        }}
 
-        .mzero-legal-footer details {
-            border-bottom: 1px solid rgba(255,255,255,0.16);
-        }
-
-        .mzero-legal-footer details:last-child {
-            border-bottom: none;
-        }
-
-        .mzero-legal-footer summary {
+        .mzero-legal-title {{
             color: #ffffff;
-            font-size: 15px;
-            font-weight: 600;
-            padding: 14px 4px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 14px 0;
+        }}
+
+        .mzero-legal-box details {{
+            border-top: 1px solid rgba(255,255,255,0.20);
+        }}
+
+        .mzero-legal-box details:last-child {{
+            border-bottom: 1px solid rgba(255,255,255,0.20);
+        }}
+
+        .mzero-legal-box summary {{
+            color: #ffffff;
             cursor: pointer;
             list-style: none;
-            outline: none;
-        }
+            padding: 14px 4px;
+            font-size: 15px;
+            font-weight: 600;
+            text-align: center;
+        }}
 
-        .mzero-legal-footer summary::-webkit-details-marker {
+        .mzero-legal-box summary::-webkit-details-marker {{
             display: none;
-        }
+        }}
 
-        .mzero-legal-footer summary::after {
-            content: '＋';
+        .mzero-legal-box summary::after {{
+            content: "＋";
             float: right;
             font-size: 18px;
             font-weight: 400;
-            opacity: 0.85;
-        }
+        }}
 
-        .mzero-legal-footer details[open] summary::after {
-            content: '−';
-        }
+        .mzero-legal-box details[open] summary::after {{
+            content: "−";
+        }}
 
-        .mzero-legal-footer .legal-content {
-            color: #e6e9ef;
-            font-size: 14px;
+        .mzero-legal-content {{
+            color: #f1f3f7;
+            background: rgba(255,255,255,0.06);
+            padding: 18px 22px;
+            margin: 0 0 12px 0;
+            border-radius: 3px;
             line-height: 1.65;
-            padding: 0 4px 17px 4px;
-        }
+            font-size: 14px;
+        }}
 
-        .mzero-legal-footer .legal-content strong {
+        .mzero-legal-content h4 {{
             color: #ffffff;
-        }
+            margin: 8px 0 5px 0;
+            font-size: 15px;
+        }}
 
-        .mzero-legal-footer .legal-content p {
-            margin: 7px 0;
-        }
-    </style>
-    """, unsafe_allow_html=True)
+        .mzero-legal-content p {{
+            margin: 0 0 12px 0;
+        }}
 
-    st.markdown(f"""
-    <div class="mzero-legal-footer">
-        <details>
-            <summary>{T['aviso_legal']}</summary>
-            <div class="legal-content">
-                <p><strong>{T['legal_nombre_comercial']}</strong></p>
-                <p><strong>{T['legal_responsable']}</strong></p>
-                <p><strong>{T['legal_nif']}</strong></p>
-                <p><strong>{T['legal_domicilio']}</strong></p>
-                <p><strong>{T['legal_email']}</strong></p>
-                <p>{T['legal_aviso_texto']}</p>
-            </div>
-        </details>
+        @media (max-width: 700px) {{
+            .mzero-legal-box {{
+                padding: 16px 14px 20px 14px;
+            }}
+            .mzero-legal-box summary {{
+                text-align: left;
+            }}
+            .mzero-legal-content {{
+                padding: 14px;
+            }}
+        }}
+        </style>
 
-        <details>
-            <summary>{T['politica_privacidad']}</summary>
-            <div class="legal-content">
-                <p><strong>Responsable del tratamiento</strong></p>
-                <p>{T['legal_responsable']}. {T['legal_email']}</p>
-                <p><strong>Finalidades</strong></p>
-                <p>{T['legal_privacidad_texto']}</p>
-                <p><strong>Derechos</strong></p>
-                <p>{T['legal_derechos_texto']}</p>
-                <p><strong>Actualización</strong></p>
-                <p>{T['legal_actualizacion']}</p>
-            </div>
-        </details>
+        <div class="mzero-legal-box">
+            <div class="mzero-legal-title">{_html.escape(T['legal_titulo'])}</div>
 
-        <details>
-            <summary>{T['politica_cookies']}</summary>
-            <div class="legal-content">
-                <p>{T['legal_cookies_texto']}</p>
-                <p>{T['legal_actualizacion']}</p>
-            </div>
-        </details>
-    </div>
-    """, unsafe_allow_html=True)
+            <details>
+                <summary>{_html.escape(T['aviso_legal'])}</summary>
+                <div class="mzero-legal-content">
+                    {_legal_aviso}
+                </div>
+            </details>
+
+            <details>
+                <summary>{_html.escape(T['politica_privacidad'])}</summary>
+                <div class="mzero-legal-content">
+                    {_legal_privacidad}
+                </div>
+            </details>
+
+            <details>
+                <summary>{_html.escape(T['politica_cookies'])}</summary>
+                <div class="mzero-legal-content">
+                    {_legal_cookies}
+                </div>
+            </details>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 elif opcion == T["menu_eval"]:
     if 'envio_resultado' in st.session_state:
