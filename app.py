@@ -2257,25 +2257,20 @@ elif opcion == T["menu_docs"]:
     st.markdown(
         """
         <style>
-        /* Cabecera de las pestañas: se mantiene el aspecto oscuro
-           con texto blanco, como en el resto de la app. */
         .st-key-funcionalidad-contacto div[data-testid="stExpander"],
         .st-key-funcionalidad-contacto div[data-testid="stExpander"] details,
-        .st-key-funcionalidad-contacto div[data-testid="stExpander"] summary {
-            background: #172033 !important;
+        .st-key-funcionalidad-contacto div[data-testid="stExpander"] summary,
+        .st-key-funcionalidad-contacto div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+            background: #ffffff !important;
         }
 
         .st-key-funcionalidad-contacto div[data-testid="stExpander"] summary,
         .st-key-funcionalidad-contacto div[data-testid="stExpander"] summary p,
         .st-key-funcionalidad-contacto div[data-testid="stExpander"] summary span {
-            color: #ffffff !important;
+            color: #222222 !important;
         }
 
-        /* Al abrir: cuerpo blanco.
-           NO se fija color al contenido para respetar los colores
-           que vienen escritos en el Excel. */
         .st-key-funcionalidad-contacto div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-            background: #ffffff !important;
             color: inherit !important;
         }
         </style>
