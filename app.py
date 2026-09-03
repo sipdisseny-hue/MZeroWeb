@@ -445,7 +445,7 @@ TRADUCCION_CATEGORIAS_CA = {
     "Electromecánica": "Electromecànica",
     "Renovables": "Renovables",
     "Hidráulica": "Hidràulica",
-    "Construcción Mecánica": "Construcció Mecànica",
+    "Construcción Metálica": "Construcció Metàl·lica",
     "Asociaciones y Gremios": "Associacions i Gremis",
     "Centros de formación": "Centres de formació",
     "Gremios": "Gremis",
