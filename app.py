@@ -2220,6 +2220,17 @@ elif opcion == T["menu_docs"]:
                             mostrar_provincia_poblacion_empresa(datos_categoria, f"{key_prefix}_{titulo}")
 
         # --- BLOQUE 1: ASOCIADOS ---
+        # Mantener Asociados y Colaboradores oscuros; solo texto/enlaces en blanco.
+        st.markdown("""<style>
+        div[data-testid="stExpander"] summary p,
+        div[data-testid="stExpander"] summary span,
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
+            color: #ffffff !important;
+        }
+        </style>""", unsafe_allow_html=True)
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
 
         titulos_asociados = [
@@ -2244,6 +2255,31 @@ elif opcion == T["menu_docs"]:
         mostrar_bloque_categorias(colaboradores_db, titulos_colaboradores, "colab")
 
     # --- BLOQUE 2: FUNCIONALIDAD ---
+    # Funcionalidad y Contacto: título oscuro; contenido del desplegable blanco.
+    st.markdown("""<style>
+    div[data-testid="stExpander"] {
+        background: #ffffff !important;
+    }
+    div[data-testid="stExpander"] summary {
+        background: #172033 !important;
+        color: #ffffff !important;
+    }
+    div[data-testid="stExpander"] summary p,
+    div[data-testid="stExpander"] summary span {
+        color: #ffffff !important;
+    }
+    div[data-testid="stExpander"] details { background: #ffffff !important; }
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        background: #ffffff !important;
+        color: #111827 !important;
+    }
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
+    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
+        color: #111827 !important;
+    }
+    </style>""", unsafe_allow_html=True)
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
@@ -2321,21 +2357,21 @@ elif opcion == T["menu_docs"]:
         }
 
         /* Cada desplegable legal */
-        div[data-testid="stExpander"] {
+        .st-key-mzero-legal-footer div[data-testid="stExpander"] {
             background: #172033 !important;
             border: none !important;
             border-radius: 0 !important;
             margin: 0 !important;
         }
 
-        div[data-testid="stExpander"] details {
+        .st-key-mzero-legal-footer div[data-testid="stExpander"] details {
             background: #172033 !important;
             border: none !important;
             border-top: 1px solid rgba(255,255,255,0.20) !important;
             border-radius: 0 !important;
         }
 
-        div[data-testid="stExpander"] summary {
+        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary {
             background: #172033 !important;
             color: #ffffff !important;
             padding: 14px 24px !important;
@@ -2343,21 +2379,21 @@ elif opcion == T["menu_docs"]:
             font-weight: 600 !important;
         }
 
-        div[data-testid="stExpander"] summary p,
-        div[data-testid="stExpander"] summary span {
+        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary p,
+        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary span {
             color: #ffffff !important;
         }
 
-        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
             background: #172033 !important;
             color: #ffffff !important;
             padding: 0 24px 18px 24px !important;
         }
 
         /* Texto que aparece SOLO después de abrir */
-        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
-        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
-        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li {
+        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
+        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
+        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li {
             color: #f1f3f7 !important;
         }
 
@@ -2371,35 +2407,35 @@ elif opcion == T["menu_docs"]:
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        f"<div class='mzero-legal-heading'>{T['legal_titulo']}</div>",
-        unsafe_allow_html=True
-    )
+    with st.container(key="mzero-legal-footer"):
+        st.markdown(
+            f"<div class='mzero-legal-heading'>{T['legal_titulo']}</div>",
+            unsafe_allow_html=True
+        )
 
-    # SOLO ESTOS TÍTULOS SE VEN AL CARGAR LA PÁGINA.
-    # El contenido permanece completamente cerrado.
-    with st.expander(T["aviso_legal"], expanded=False):
-        st.markdown(f"**{T['legal_nombre_comercial']}**")
-        st.markdown(f"**{T['legal_responsable']}**")
-        st.markdown(f"**{T['legal_nif']}**")
-        st.markdown(f"**{T['legal_domicilio']}**")
-        st.markdown(f"**{T['legal_email']}**")
-        st.write(T["legal_aviso_texto"])
+        # SOLO ESTOS TÍTULOS SE VEN AL CARGAR LA PÁGINA.
+        # El contenido permanece completamente cerrado.
+        with st.expander(T["aviso_legal"], expanded=False):
+            st.markdown(f"**{T['legal_nombre_comercial']}**")
+            st.markdown(f"**{T['legal_responsable']}**")
+            st.markdown(f"**{T['legal_nif']}**")
+            st.markdown(f"**{T['legal_domicilio']}**")
+            st.markdown(f"**{T['legal_email']}**")
+            st.write(T["legal_aviso_texto"])
 
-    with st.expander(T["politica_privacidad"], expanded=False):
-        st.markdown("### Responsable del tratamiento")
-        st.write(f"{T['legal_responsable']}. {T['legal_email']}")
-        st.markdown("### Finalidades")
-        st.write(T["legal_privacidad_texto"])
-        st.markdown("### Derechos")
-        st.write(T["legal_derechos_texto"])
-        st.markdown("### Actualización")
-        st.write(T["legal_actualizacion"])
+        with st.expander(T["politica_privacidad"], expanded=False):
+            st.markdown("### Responsable del tratamiento")
+            st.write(f"{T['legal_responsable']}. {T['legal_email']}")
+            st.markdown("### Finalidades")
+            st.write(T["legal_privacidad_texto"])
+            st.markdown("### Derechos")
+            st.write(T["legal_derechos_texto"])
+            st.markdown("### Actualización")
+            st.write(T["legal_actualizacion"])
 
-    with st.expander(T["politica_cookies"], expanded=False):
-        st.write(T["legal_cookies_texto"])
-        st.write(T["legal_actualizacion"])
-
+        with st.expander(T["politica_cookies"], expanded=False):
+            st.write(T["legal_cookies_texto"])
+            st.write(T["legal_actualizacion"])
 elif opcion == T["menu_eval"]:
     if 'envio_resultado' in st.session_state:
         tipo_msg, texto_msg = st.session_state.pop('envio_resultado')
