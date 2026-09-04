@@ -2171,139 +2171,79 @@ elif opcion == T["menu_docs"]:
                 st.info("No hay empresas registradas en esta población.")
                 return
 
-            for indice_emp, emp in enumerate(empresas):
+            for emp in empresas:
                 nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
-                # ÚNICO CAMBIO: solo el texto de la pestaña del nombre de la empresa se muestra en blanco.
-                # No se modifica ninguna otra pestaña ni ningún otro bloque.
-                clave_empresa = f"empresa_nombre_{key_prefix}_{indice_emp}"
-                with st.container(key=clave_empresa):
-                    st.markdown(f"""<style>
-                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary {
-                        background: #808080 !important;
-                        background-color: #808080 !important;
-                    }
-                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary:hover {
-                        background: #808080 !important;
-                        background-color: #808080 !important;
-                    }
-                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary,
-                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary *,
-                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary p,
-                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary span,
-                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary div,
-                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary button,
-                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary button * {
-                        color: #ffffff !important;
-                        -webkit-text-fill-color: #ffffff !important;
-                    }
-                    </style>""", unsafe_allow_html=True)
-                    with st.expander(nombre):
-                        logo_url = emp.get("logo", "").strip()
-                        if logo_url:
-                            st.image(logo_url, width=150)
+                with st.expander(nombre):
+                    logo_url = emp.get("logo", "").strip()
+                    if logo_url:
+                        st.image(logo_url, width=150)
 
-                        empresa_html = emp.get("empresa_html", "").strip()
-                        if empresa_html:
-                            st.markdown(f"#### {empresa_html}", unsafe_allow_html=True)
+                    empresa_html = emp.get("empresa_html", "").strip()
+                    if empresa_html:
+                        st.markdown(f"#### {empresa_html}", unsafe_allow_html=True)
 
-                        if lang == "ca":
-                            descripcion = emp.get("descripcion_ca", "").strip() or emp.get("descripcion", "").strip()
-                        else:
-                            descripcion = emp.get("descripcion", "").strip()
-                        if descripcion:
-                            st.markdown(descripcion, unsafe_allow_html=True)
-                        enlace = emp.get("enlace", "").strip()
-                        if enlace:
-                            st.markdown(f"🔗 [Visitar web]({enlace})")
+                    if lang == "ca":
+                        descripcion = emp.get("descripcion_ca", "").strip() or emp.get("descripcion", "").strip()
+                    else:
+                        descripcion = emp.get("descripcion", "").strip()
+                    if descripcion:
+                        st.markdown(descripcion, unsafe_allow_html=True)
+                    enlace = emp.get("enlace", "").strip()
+                    if enlace:
+                        st.markdown(f"🔗 [Visitar web]({enlace})")
 
-            def mostrar_bloque_categorias(datos, titulos_por_columna, key_prefix):
-                """Pinta los títulos de categoría en columnas (como antes) y,
-                al desplegar cada uno, muestra el buscador Provincia/Población/Empresa
-                filtrado a esa categoría."""
-                columnas = st.columns(len(titulos_por_columna))
-                for i, col in enumerate(columnas):
-                    with col:
-                        for titulo in titulos_por_columna[i]:
-                            etiqueta_visible = TRADUCCION_CATEGORIAS_CA.get(titulo, titulo) if lang == "ca" else titulo
-                            with st.expander(etiqueta_visible):
-                                if lang == "ca":
-                                    # Filtramos por la columna "Sector cat" del Excel,
-                                    # comparándola con la etiqueta catalana mostrada
-                                    # (para que coincida, esa celda debe llevar el
-                                    # mismo texto catalán que ves en el título).
-                                    objetivo = etiqueta_visible.strip().lower()
-                                    datos_categoria = [
-                                        d for d in datos
-                                        if d.get("categoria_ca", "").strip().lower() == objetivo
-                                    ]
-                                else:
-                                    datos_categoria = [
-                                        d for d in datos
-                                        if d.get("categoria", "").strip().lower() == titulo.strip().lower()
-                                    ]
-                                mostrar_provincia_poblacion_empresa(datos_categoria, f"{key_prefix}_{titulo}")
+        def mostrar_bloque_categorias(datos, titulos_por_columna, key_prefix):
+            """Pinta los títulos de categoría en columnas (como antes) y,
+            al desplegar cada uno, muestra el buscador Provincia/Población/Empresa
+            filtrado a esa categoría."""
+            columnas = st.columns(len(titulos_por_columna))
+            for i, col in enumerate(columnas):
+                with col:
+                    for titulo in titulos_por_columna[i]:
+                        etiqueta_visible = TRADUCCION_CATEGORIAS_CA.get(titulo, titulo) if lang == "ca" else titulo
+                        with st.expander(etiqueta_visible):
+                            if lang == "ca":
+                                # Filtramos por la columna "Sector cat" del Excel,
+                                # comparándola con la etiqueta catalana mostrada
+                                # (para que coincida, esa celda debe llevar el
+                                # mismo texto catalán que ves en el título).
+                                objetivo = etiqueta_visible.strip().lower()
+                                datos_categoria = [
+                                    d for d in datos
+                                    if d.get("categoria_ca", "").strip().lower() == objetivo
+                                ]
+                            else:
+                                datos_categoria = [
+                                    d for d in datos
+                                    if d.get("categoria", "").strip().lower() == titulo.strip().lower()
+                                ]
+                            mostrar_provincia_poblacion_empresa(datos_categoria, f"{key_prefix}_{titulo}")
 
-            # --- BLOQUE 1: ASOCIADOS ---
-            # Mantener Asociados y Colaboradores oscuros; solo texto/enlaces en blanco.
-            st.markdown("""<style>
-            div[data-testid="stExpander"] summary p,
-            div[data-testid="stExpander"] summary span,
-            div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
-            div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
-            div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
-            div[data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
-                color: #ffffff !important;
-            }
-            </style>""", unsafe_allow_html=True)
-            st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
+        # --- BLOQUE 1: ASOCIADOS ---
+        st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
 
-            titulos_asociados = [
-                ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
-                ["Electricidad", "Obra", "Electromecánica", "Renovables"],
-                ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]
-            ]
+        titulos_asociados = [
+            ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
+            ["Electricidad", "Obra", "Electromecánica", "Renovables"],
+            ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]
+        ]
 
-            mostrar_bloque_categorias(asociados_db, titulos_asociados, "asoc")
+        mostrar_bloque_categorias(asociados_db, titulos_asociados, "asoc")
 
-            st.divider()
+        st.divider()
 
-            # --- BLOQUE 2: COLABORADORES ---
-            st.markdown(f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
+        # --- BLOQUE 2: COLABORADORES ---
+        st.markdown(f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
 
-            titulos_colaboradores = [
-                ["Centros de formación"],
-                ["Gremios"],
-                ["Asociaciones"]
-            ]
+        titulos_colaboradores = [
+            ["Centros de formación"],
+            ["Gremios"],
+            ["Asociaciones"]
+        ]
 
-            mostrar_bloque_categorias(colaboradores_db, titulos_colaboradores, "colab")
+        mostrar_bloque_categorias(colaboradores_db, titulos_colaboradores, "colab")
 
     # --- BLOQUE 2: FUNCIONALIDAD ---
-    # Funcionalidad y Contacto: título oscuro; contenido del desplegable blanco.
-    st.markdown("""<style>
-    div[data-testid="stExpander"] {
-        background: #ffffff !important;
-    }
-    div[data-testid="stExpander"] summary {
-        background: #172033 !important;
-        color: #ffffff !important;
-    }
-    div[data-testid="stExpander"] summary p,
-    div[data-testid="stExpander"] summary span {
-        color: #ffffff !important;
-    }
-    div[data-testid="stExpander"] details { background: #ffffff !important; }
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-        background: #ffffff !important;
-        color: #111827 !important;
-    }
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
-        color: #111827 !important;
-    }
-    </style>""", unsafe_allow_html=True)
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
@@ -2381,21 +2321,21 @@ elif opcion == T["menu_docs"]:
         }
 
         /* Cada desplegable legal */
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] {
+        div[data-testid="stExpander"] {
             background: #172033 !important;
             border: none !important;
             border-radius: 0 !important;
             margin: 0 !important;
         }
 
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] details {
+        div[data-testid="stExpander"] details {
             background: #172033 !important;
             border: none !important;
             border-top: 1px solid rgba(255,255,255,0.20) !important;
             border-radius: 0 !important;
         }
 
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary {
+        div[data-testid="stExpander"] summary {
             background: #172033 !important;
             color: #ffffff !important;
             padding: 14px 24px !important;
@@ -2403,21 +2343,21 @@ elif opcion == T["menu_docs"]:
             font-weight: 600 !important;
         }
 
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary p,
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary span {
+        div[data-testid="stExpander"] summary p,
+        div[data-testid="stExpander"] summary span {
             color: #ffffff !important;
         }
 
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
             background: #172033 !important;
             color: #ffffff !important;
             padding: 0 24px 18px 24px !important;
         }
 
         /* Texto que aparece SOLO después de abrir */
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li {
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
+        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li {
             color: #f1f3f7 !important;
         }
 
@@ -2431,35 +2371,35 @@ elif opcion == T["menu_docs"]:
         unsafe_allow_html=True
     )
 
-    with st.container(key="mzero-legal-footer"):
-        st.markdown(
-            f"<div class='mzero-legal-heading'>{T['legal_titulo']}</div>",
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        f"<div class='mzero-legal-heading'>{T['legal_titulo']}</div>",
+        unsafe_allow_html=True
+    )
 
-        # SOLO ESTOS TÍTULOS SE VEN AL CARGAR LA PÁGINA.
-        # El contenido permanece completamente cerrado.
-        with st.expander(T["aviso_legal"], expanded=False):
-            st.markdown(f"**{T['legal_nombre_comercial']}**")
-            st.markdown(f"**{T['legal_responsable']}**")
-            st.markdown(f"**{T['legal_nif']}**")
-            st.markdown(f"**{T['legal_domicilio']}**")
-            st.markdown(f"**{T['legal_email']}**")
-            st.write(T["legal_aviso_texto"])
+    # SOLO ESTOS TÍTULOS SE VEN AL CARGAR LA PÁGINA.
+    # El contenido permanece completamente cerrado.
+    with st.expander(T["aviso_legal"], expanded=False):
+        st.markdown(f"**{T['legal_nombre_comercial']}**")
+        st.markdown(f"**{T['legal_responsable']}**")
+        st.markdown(f"**{T['legal_nif']}**")
+        st.markdown(f"**{T['legal_domicilio']}**")
+        st.markdown(f"**{T['legal_email']}**")
+        st.write(T["legal_aviso_texto"])
 
-        with st.expander(T["politica_privacidad"], expanded=False):
-            st.markdown("### Responsable del tratamiento")
-            st.write(f"{T['legal_responsable']}. {T['legal_email']}")
-            st.markdown("### Finalidades")
-            st.write(T["legal_privacidad_texto"])
-            st.markdown("### Derechos")
-            st.write(T["legal_derechos_texto"])
-            st.markdown("### Actualización")
-            st.write(T["legal_actualizacion"])
+    with st.expander(T["politica_privacidad"], expanded=False):
+        st.markdown("### Responsable del tratamiento")
+        st.write(f"{T['legal_responsable']}. {T['legal_email']}")
+        st.markdown("### Finalidades")
+        st.write(T["legal_privacidad_texto"])
+        st.markdown("### Derechos")
+        st.write(T["legal_derechos_texto"])
+        st.markdown("### Actualización")
+        st.write(T["legal_actualizacion"])
 
-        with st.expander(T["politica_cookies"], expanded=False):
-            st.write(T["legal_cookies_texto"])
-            st.write(T["legal_actualizacion"])
+    with st.expander(T["politica_cookies"], expanded=False):
+        st.write(T["legal_cookies_texto"])
+        st.write(T["legal_actualizacion"])
+
 elif opcion == T["menu_eval"]:
     if 'envio_resultado' in st.session_state:
         tipo_msg, texto_msg = st.session_state.pop('envio_resultado')
