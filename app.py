@@ -1860,7 +1860,6 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                         T["edicion_cerrada"]
                     )
 
-
 # === PLANES ASOCIADOS: BASIC / STANDARD ===
 def bloque_seleccion_plan_asociado(key_prefix):
     """Muestra el selector de planes antes del formulario de alta de Asociados."""
@@ -2230,10 +2229,6 @@ elif opcion == T["menu_docs"]:
         div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
         div[data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
             color: #ffffff !important;
-        }
-        /* Solo cambia el fondo de las pestañas de empresa a gris. */
-        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div[data-testid="stExpander"] summary {
-            background: #808080 !important;
         }
         </style>""", unsafe_allow_html=True)
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
