@@ -207,12 +207,12 @@ TEXTOS = {
         "aviso_legal": "Aviso legal",
         "politica_privacidad": "Política de privacidad",
         "politica_cookies": "Política de cookies",
-        "legal_responsable": "Responsable: Joan Carles Ros (autónomo)",
+        "legal_responsable": "Responsable: Joan Carles Ros",
         "legal_nombre_comercial": "Nombre comercial: Mzero",
         "legal_nif": "NIF: 77735854V",
         "legal_domicilio": "Domicilio: Avda. Generalitat, 14, Barcelona",
         "legal_email": "Email: contacto.mzero@gmail.com",
-        "legal_aviso_texto": "Mzero es el nombre comercial bajo el que Joan Carles Ros, como profesional autónomo, presta los servicios ofrecidos mediante esta aplicación. Esta aplicación proporciona funcionalidades de documentación, gestión de cursos, gestión de docentes y alumnos y evaluación formativa o profesional, según el acceso utilizado.",
+        "legal_aviso_texto": "Mzero es el nombre comercial bajo el que Joan Carles Ros, presta los servicios ofrecidos mediante esta aplicación. Esta aplicación proporciona funcionalidades de documentación, gestión de cursos, gestión de docentes y alumnos y evaluación formativa o profesional, según el acceso utilizado.",
         "legal_privacidad_texto": "Los datos personales se tratarán para gestionar las solicitudes de alta, los accesos, la relación con asociados y colaboradores, la gestión de cursos, docentes y alumnos, y la realización y conservación de evaluaciones cuando corresponda. La base jurídica podrá ser la ejecución de una relación contractual o precontractual, el cumplimiento de obligaciones legales y, cuando sea necesario, el consentimiento del interesado. Solo se solicitarán los datos necesarios para cada finalidad. Los datos se conservarán durante el tiempo necesario para cumplir la finalidad y atender las obligaciones legales y posibles responsabilidades. Podrán intervenir proveedores tecnológicos necesarios para prestar el servicio, como alojamiento, base de datos y herramientas de gestión de información, aplicándose las garantías exigibles en materia de protección de datos. No se realizarán cesiones con fines comerciales ajenos a la prestación del servicio salvo obligación legal o consentimiento cuando corresponda.",
         "legal_derechos_texto": "Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y, cuando proceda, portabilidad, escribiendo a contacto.mzero@gmail.com. También puedes presentar una reclamación ante la Agencia Española de Protección de Datos (AEPD) si consideras que el tratamiento no se ajusta a la normativa aplicable.",
         "legal_cookies_texto": "Esta aplicación utiliza únicamente las tecnologías de almacenamiento o cookies necesarias para su funcionamiento, mantenimiento de la sesión y prestación de las funcionalidades solicitadas. No se utilizarán cookies no necesarias para publicidad comportamental o seguimiento comercial sin obtener previamente el consentimiento exigible. Si en el futuro se incorporan cookies o tecnologías de terceros que requieran consentimiento, se informará de forma específica y se ofrecerán opciones equivalentes para aceptar o rechazar dicho uso.",
@@ -395,12 +395,12 @@ TEXTOS = {
         "aviso_legal": "Avís legal",
         "politica_privacidad": "Política de privacitat",
         "politica_cookies": "Política de cookies",
-        "legal_responsable": "Responsable: Joan Carles Ros (autònom)",
+        "legal_responsable": "Responsable: Joan Carles Ros",
         "legal_nombre_comercial": "Nom comercial: Mzero",
         "legal_nif": "NIF: 77735854V",
         "legal_domicilio": "Domicili: Avda. Generalitat, 14, Barcelona",
         "legal_email": "Email: contacto.mzero@gmail.com",
-        "legal_aviso_texto": "Mzero és el nom comercial sota el qual Joan Carles Ros, com a professional autònom, presta els serveis oferts mitjançant aquesta aplicació. Aquesta aplicació proporciona funcionalitats de documentació, gestió de cursos, gestió de docents i alumnes i avaluació formativa o professional, segons l’accés utilitzat.",
+        "legal_aviso_texto": "Mzero és el nom comercial sota el qual Joan Carles Ros, presta els serveis oferts mitjançant aquesta aplicació. Aquesta aplicació proporciona funcionalitats de documentació, gestió de cursos, gestió de docents i alumnes i avaluació formativa o professional, segons l’accés utilitzat.",
         "legal_privacidad_texto": "Les dades personals es tractaran per gestionar les sol·licituds d’alta, els accessos, la relació amb associats i col·laboradors, la gestió de cursos, docents i alumnes, i la realització i conservació d’avaluacions quan correspongui. La base jurídica podrà ser l’execució d’una relació contractual o precontractual, el compliment d’obligacions legals i, quan sigui necessari, el consentiment de la persona interessada. Només se sol·licitaran les dades necessàries per a cada finalitat. Les dades es conservaran durant el temps necessari per complir la finalitat i atendre les obligacions legals i possibles responsabilitats. Poden intervenir proveïdors tecnològics necessaris per prestar el servei, com ara allotjament, base de dades i eines de gestió d’informació, aplicant les garanties exigibles en matèria de protecció de dades. No es faran cessions amb finalitats comercials alienes a la prestació del servei excepte per obligació legal o amb el consentiment quan correspongui.",
         "legal_derechos_texto": "Pots exercir els drets d’accés, rectificació, supressió, oposició, limitació del tractament i, quan correspongui, portabilitat, escrivint a contacto.mzero@gmail.com. També pots presentar una reclamació davant l’Agència Espanyola de Protecció de Dades (AEPD) si consideres que el tractament no s’ajusta a la normativa aplicable.",
         "legal_cookies_texto": "Aquesta aplicació utilitza únicament les tecnologies d’emmagatzematge o cookies necessàries per al seu funcionament, manteniment de la sessió i prestació de les funcionalitats sol·licitades. No s’utilitzaran cookies no necessàries per a publicitat comportamental o seguiment comercial sense obtenir prèviament el consentiment exigible. Si en el futur s’incorporen cookies o tecnologies de tercers que requereixin consentiment, s’informarà de manera específica i s’oferiran opcions equivalents per acceptar o rebutjar aquest ús.",
@@ -445,7 +445,7 @@ TRADUCCION_CATEGORIAS_CA = {
     "Electromecánica": "Electromecànica",
     "Renovables": "Renovables",
     "Hidráulica": "Hidràulica",
-    "Construcción Mecánica": "Construcció Mecànica",
+    "Construcción Metálica": "Construcció Metàlica",
     "Asociaciones y Gremios": "Associacions i Gremis",
     "Centros de formación": "Centres de formació",
     "Gremios": "Gremis",
@@ -2171,26 +2171,44 @@ elif opcion == T["menu_docs"]:
                 st.info("No hay empresas registradas en esta población.")
                 return
 
-            for emp in empresas:
+            for indice_emp, emp in enumerate(empresas):
                 nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
-                with st.expander(nombre):
-                    logo_url = emp.get("logo", "").strip()
-                    if logo_url:
-                        st.image(logo_url, width=150)
+                clave_empresa = f"empresa_nombre_{key_prefix}_{indice_emp}"
+                with st.container(key=clave_empresa):
+                    st.markdown(f"""<style>
+                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary {{
+                        background: #808080 !important;
+                        background-color: #808080 !important;
+                    }}
+                    .st-key-{clave_empresa} div[data-testid="stExpander"] summary:hover {{
+                        background: #808080 !important;
+                        background-color: #808080 !important;
+                    }}
+                    </style>""", unsafe_allow_html=True)
+                    with st.expander(nombre):
+                        logo_url = emp.get("logo", "").strip()
+                        if logo_url:
+                            st.image(logo_url, width=150)
 
-                    empresa_html = emp.get("empresa_html", "").strip()
-                    if empresa_html:
-                        st.markdown(f"#### {empresa_html}", unsafe_allow_html=True)
+                        empresa_html = emp.get("empresa_html", "").strip()
+                        if empresa_html:
+                            st.markdown(
+                                f"<div style='color:#ffffff !important; font-size:1.15rem; font-weight:700; margin:8px 0 18px 0;'>{empresa_html}</div>",
+                                unsafe_allow_html=True
+                            )
 
-                    if lang == "ca":
-                        descripcion = emp.get("descripcion_ca", "").strip() or emp.get("descripcion", "").strip()
-                    else:
-                        descripcion = emp.get("descripcion", "").strip()
-                    if descripcion:
-                        st.markdown(descripcion, unsafe_allow_html=True)
-                    enlace = emp.get("enlace", "").strip()
-                    if enlace:
-                        st.markdown(f"🔗 [Visitar web]({enlace})")
+                        if lang == "ca":
+                            descripcion = emp.get("descripcion_ca", "").strip() or emp.get("descripcion", "").strip()
+                        else:
+                            descripcion = emp.get("descripcion", "").strip()
+                        if descripcion:
+                            st.markdown(descripcion, unsafe_allow_html=True)
+                        enlace = emp.get("enlace", "").strip()
+                        if enlace:
+                            st.markdown(
+                                f"<div style='margin-top:14px;'><a href='{enlace}' target='_blank' style='color:#ffffff !important; text-decoration:underline;'>🔗 Visitar web</a></div>",
+                                unsafe_allow_html=True
+                            )
 
         def mostrar_bloque_categorias(datos, titulos_por_columna, key_prefix):
             """Pinta los títulos de categoría en columnas (como antes) y,
@@ -2220,17 +2238,6 @@ elif opcion == T["menu_docs"]:
                             mostrar_provincia_poblacion_empresa(datos_categoria, f"{key_prefix}_{titulo}")
 
         # --- BLOQUE 1: ASOCIADOS ---
-        # Mantener Asociados y Colaboradores oscuros; solo texto/enlaces en blanco.
-        st.markdown("""<style>
-        div[data-testid="stExpander"] summary p,
-        div[data-testid="stExpander"] summary span,
-        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
-        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
-        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
-        div[data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
-            color: #ffffff !important;
-        }
-        </style>""", unsafe_allow_html=True)
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
 
         titulos_asociados = [
@@ -2254,67 +2261,103 @@ elif opcion == T["menu_docs"]:
 
         mostrar_bloque_categorias(colaboradores_db, titulos_colaboradores, "colab")
 
-    # --- BLOQUE 2: FUNCIONALIDAD ---
-    # Funcionalidad y Contacto: título oscuro; contenido del desplegable blanco.
-    st.markdown("""<style>
-    div[data-testid="stExpander"] {
-        background: #ffffff !important;
-    }
-    div[data-testid="stExpander"] summary {
-        background: #172033 !important;
-        color: #ffffff !important;
-    }
-    div[data-testid="stExpander"] summary p,
-    div[data-testid="stExpander"] summary span {
-        color: #ffffff !important;
-    }
-    div[data-testid="stExpander"] details { background: #ffffff !important; }
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-        background: #ffffff !important;
-        color: #111827 !important;
-    }
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
-    div[data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
-        color: #111827 !important;
-    }
-    </style>""", unsafe_allow_html=True)
-    if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
-        st.session_state.contenido_funcionalidad = cargar_datos_de_google()
+    # --- ESTILO DE FUNCIONALIDAD Y CONTACTO ---
+    # Los títulos "Funcionalidad" y "Contacto" mantienen su color azul.
+    # Los desplegables vuelven al aspecto anterior: fondo blanco.
+    # El texto interior NO se fuerza a ningún color para respetar
+    # los colores que vienen del Excel.
+    st.markdown(
+        """
+        <style>
+        /* Cabecera de las pestañas: se mantiene el aspecto oscuro
+           con texto blanco, como en el resto de la app. */
+        .st-key-funcionalidad-contacto div[data-testid="stExpander"],
+        .st-key-funcionalidad-contacto div[data-testid="stExpander"] details,
+        .st-key-funcionalidad-contacto div[data-testid="stExpander"] summary {
+            background: #172033 !important;
+        }
 
-    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
-    titulos_func = T["titulos_func"]
+        .st-key-funcionalidad-contacto div[data-testid="stExpander"] summary,
+        .st-key-funcionalidad-contacto div[data-testid="stExpander"] summary p,
+        .st-key-funcionalidad-contacto div[data-testid="stExpander"] summary span {
+            color: #ffffff !important;
+        }
 
-    for titulo in titulos_func:
-        with st.expander(titulo):
-            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
-            
-                if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
-                    st.session_state.contenido_funcionalidad[titulo] = temp_text
-                
-                    if guardar_en_sheets(titulo, temp_text):
-                        st.success("Guardado en Google y localmente")
-                    else:
-                        st.warning("Guardado solo localmente (Error en Sheets)")
-                
-                    st.rerun()
+        /* Al abrir: cuerpo blanco.
+           NO se fija color al contenido para respetar los colores
+           que vienen escritos en el Excel. */
+        .st-key-funcionalidad-contacto div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+            background: #ffffff !important;
+            color: inherit !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
+    with st.container(key="funcionalidad_contacto"):
+        # --- BLOQUE 2: FUNCIONALIDAD ---
+        if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
+            st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
-    # --- BLOQUE 3: CONTACTO ---
-    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
-    titulos_cont = ["Móvil / WhatsApp", "Email"]
-    for titulo in titulos_cont:
-        with st.expander(titulo):
-            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"cont_{titulo}")
-                if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
-                    if guardar_en_sheets(titulo, nuevo_cont):
-                        st.session_state.contenido_contacto[titulo] = nuevo_cont
-                        refrescar_app()
-            st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
+        st.markdown(
+            f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>",
+            unsafe_allow_html=True
+        )
+        titulos_func = T["titulos_func"]
+
+        for titulo in titulos_func:
+            with st.expander(titulo):
+                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                    temp_text = st.text_area(
+                        f"Editar {titulo}:",
+                        value=st.session_state.contenido_funcionalidad.get(titulo, ""),
+                        height=150,
+                        key=f"input_{titulo}"
+                    )
+
+                    if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                        st.session_state.contenido_funcionalidad[titulo] = temp_text
+
+                        if guardar_en_sheets(titulo, temp_text):
+                            st.success("Guardado en Google y localmente")
+                        else:
+                            st.warning("Guardado solo localmente (Error en Sheets)")
+
+                        st.rerun()
+
+                # Se mantiene exactamente el contenido/color que llega del Excel.
+                st.markdown(
+                    st.session_state.contenido_funcionalidad.get(titulo, ""),
+                    unsafe_allow_html=True
+                )
+
+        # --- BLOQUE 3: CONTACTO ---
+        st.markdown(
+            f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>",
+            unsafe_allow_html=True
+        )
+        titulos_cont = ["Móvil / WhatsApp", "Email"]
+
+        for titulo in titulos_cont:
+            with st.expander(titulo):
+                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                    nuevo_cont = st.text_area(
+                        f"Editar {titulo}:",
+                        value=st.session_state.contenido_contacto.get(titulo, ""),
+                        height=70,
+                        key=f"cont_{titulo}"
+                    )
+                    if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
+                        if guardar_en_sheets(titulo, nuevo_cont):
+                            st.session_state.contenido_contacto[titulo] = nuevo_cont
+                            refrescar_app()
+
+                # También aquí se respeta el color definido en el Excel.
+                st.markdown(
+                    st.session_state.contenido_contacto.get(titulo, ""),
+                    unsafe_allow_html=True
+                )
 
     # --- BLOQUE: CÓMO PARTICIPAR ---
     st.markdown(f"## {T['como_participar']}")
@@ -2327,94 +2370,52 @@ elif opcion == T["menu_docs"]:
 
     # Los accesos se muestran en pantallas independientes desde el sidebar.
 
-    # --- ESLOGAN ---
-    st.markdown(
-        f"<h3 align='center' style='color: #0066cc; margin-top: 30px; margin-bottom: 24px;'>"
-        f"<b>{T['eslogan']}</b></h3>",
-        unsafe_allow_html=True
-    )
-
     # ============================================================
     # BLOQUE LEGAL INFERIOR
-    # IMPORTANTE: se utilizan los expander NATIVOS de Streamlit.
-    # No se escribe <details>, <summary>, CSS ni HTML dentro del
-    # contenido visible, evitando que el usuario vea "códigos".
     # ============================================================
-
     st.markdown(
         """
         <style>
-        /* Título del bloque legal */
-        .mzero-legal-heading {
+        .st-key-bloque-legal {
             background: #172033;
-            color: white;
-            padding: 16px 24px 8px 24px;
-            margin-top: 10px;
+            padding: 18px 24px 10px 24px;
+            margin-top: 18px;
             margin-bottom: 0;
+        }
+
+        .st-key-bloque-legal div[data-testid="stExpander"],
+        .st-key-bloque-legal div[data-testid="stExpander"] details,
+        .st-key-bloque-legal div[data-testid="stExpander"] summary,
+        .st-key-bloque-legal div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+            background: #172033 !important;
+            border-color: rgba(255,255,255,0.18) !important;
+        }
+
+        .st-key-bloque-legal div[data-testid="stExpander"] summary,
+        .st-key-bloque-legal div[data-testid="stExpander"] summary p,
+        .st-key-bloque-legal div[data-testid="stExpander"] summary span {
+            color: #ffffff !important;
+        }
+
+        .mzero-legal-heading {
+            color: #ffffff;
             text-align: center;
             font-size: 18px;
             font-weight: 700;
-        }
-
-        /* Cada desplegable legal */
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] {
-            background: #172033 !important;
-            border: none !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
-        }
-
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] details {
-            background: #172033 !important;
-            border: none !important;
-            border-top: 1px solid rgba(255,255,255,0.20) !important;
-            border-radius: 0 !important;
-        }
-
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary {
-            background: #172033 !important;
-            color: #ffffff !important;
-            padding: 14px 24px !important;
-            font-size: 15px !important;
-            font-weight: 600 !important;
-        }
-
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary p,
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary span {
-            color: #ffffff !important;
-        }
-
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-            background: #172033 !important;
-            color: #ffffff !important;
-            padding: 0 24px 18px 24px !important;
-        }
-
-        /* Texto que aparece SOLO después de abrir */
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li {
-            color: #f1f3f7 !important;
-        }
-
-        .mzero-legal-bottom {
-            background: #172033;
-            padding-bottom: 8px;
-            margin-bottom: 0;
+            padding-bottom: 10px;
         }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-    with st.container(key="mzero-legal-footer"):
+    with st.container(key="bloque_legal"):
         st.markdown(
             f"<div class='mzero-legal-heading'>{T['legal_titulo']}</div>",
             unsafe_allow_html=True
         )
 
-        # SOLO ESTOS TÍTULOS SE VEN AL CARGAR LA PÁGINA.
-        # El contenido permanece completamente cerrado.
+        # Cerrados al cargar. El usuario solo ve el título hasta que clica.
         with st.expander(T["aviso_legal"], expanded=False):
             st.markdown(f"**{T['legal_nombre_comercial']}**")
             st.markdown(f"**{T['legal_responsable']}**")
@@ -2436,6 +2437,7 @@ elif opcion == T["menu_docs"]:
         with st.expander(T["politica_cookies"], expanded=False):
             st.write(T["legal_cookies_texto"])
             st.write(T["legal_actualizacion"])
+
 elif opcion == T["menu_eval"]:
     if 'envio_resultado' in st.session_state:
         tipo_msg, texto_msg = st.session_state.pop('envio_resultado')
