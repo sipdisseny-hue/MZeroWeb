@@ -2236,7 +2236,7 @@ elif opcion == T["menu_docs"]:
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
             ["Electricidad", "Obra", "Electromecánica", "Renovables"],
-            ["Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]
+            ["Hidráulica", "Construcción Metálica", "Asociaciones y Gremios"]
         ]
 
         mostrar_bloque_categorias(asociados_db, titulos_asociados, "asoc")
