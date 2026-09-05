@@ -2131,84 +2131,67 @@ elif opcion == T["menu_docs"]:
 
     st.markdown(f"## {T['area_docs']}")
     
-with st.container(border=True):
-    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
-    st.image("Asociados y colaboradores.png", width=300)
+    with st.container(border=True):
+        st.markdown(f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
+        st.image("Asociados y colaboradores.png", width=300)
 
-    asociados_db, colaboradores_db = cargar_asociados_colaboradores()
+        asociados_db, colaboradores_db = cargar_asociados_colaboradores()
 
-    def mostrar_provincia_poblacion_empresa(datos_categoria, key_prefix):
-        """Desplegable en cascada Provincia -> Población -> Empresa,
-        ya filtrado de antemano por la categoría que lo llama."""
-        if not datos_categoria:
-            st.info("Todavía no hay datos cargados para esta categoría.")
-            return
+        def mostrar_provincia_poblacion_empresa(datos_categoria, key_prefix):
+            """Desplegable en cascada Provincia -> Población -> Empresa,
+            ya filtrado de antemano por la categoría que lo llama."""
+            if not datos_categoria:
+                st.info("Todavía no hay datos cargados para esta categoría.")
+                return
 
-        provincias = sorted({
-            d.get("provincia", "").strip() for d in datos_categoria if d.get("provincia", "").strip()
-        })
-        if not provincias:
-            st.info("No hay provincias registradas todavía para esta categoría.")
-            return
+            provincias = sorted({
+                d.get("provincia", "").strip() for d in datos_categoria if d.get("provincia", "").strip()
+            })
+            if not provincias:
+                st.info("No hay provincias registradas todavía para esta categoría.")
+                return
 
-        provincia_sel = st.selectbox("Provincia", provincias, key=f"{key_prefix}_prov")
+            provincia_sel = st.selectbox("Provincia", provincias, key=f"{key_prefix}_prov")
 
-        poblaciones = sorted({
-            d.get("poblacion", "").strip() for d in datos_categoria
-            if d.get("provincia", "").strip() == provincia_sel and d.get("poblacion", "").strip()
-        })
-        if not poblaciones:
-            st.info("No hay poblaciones registradas para esta provincia.")
-            return
+            poblaciones = sorted({
+                d.get("poblacion", "").strip() for d in datos_categoria
+                if d.get("provincia", "").strip() == provincia_sel and d.get("poblacion", "").strip()
+            })
+            if not poblaciones:
+                st.info("No hay poblaciones registradas para esta provincia.")
+                return
 
-        poblacion_sel = st.selectbox("Población", poblaciones, key=f"{key_prefix}_pob")
+            poblacion_sel = st.selectbox("Población", poblaciones, key=f"{key_prefix}_pob")
 
-        empresas = [
-            d for d in datos_categoria
-            if d.get("provincia", "").strip() == provincia_sel
-            and d.get("poblacion", "").strip() == poblacion_sel
-        ]
-        if not empresas:
-            st.info("No hay empresas registradas en esta población.")
-            return
+            empresas = [
+                d for d in datos_categoria
+                if d.get("provincia", "").strip() == provincia_sel
+                and d.get("poblacion", "").strip() == poblacion_sel
+            ]
+            if not empresas:
+                st.info("No hay empresas registradas en esta población.")
+                return
 
-        # ==========================================================
-        # COLOR ÚNICAMENTE DE LAS PESTAÑAS DE EMPRESA
-        # ==========================================================
-        st.markdown("""
-        <style>
-        div[data-testid="stExpander"] {
-            background-color: #F2F2F2 !important;
-        }
+            for emp in empresas:
+                nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
+                with st.expander(nombre):
+                    logo_url = emp.get("logo", "").strip()
+                    if logo_url:
+                        st.image(logo_url, width=150)
 
-        div[data-testid="stExpander"] summary {
-            background-color: #F2F2F2 !important;
-            color: #000000 !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+                    empresa_html = emp.get("empresa_html", "").strip()
+                    if empresa_html:
+                        st.markdown(f"#### {empresa_html}", unsafe_allow_html=True)
 
-        for emp in empresas:
-            nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
-            with st.expander(nombre):
-                logo_url = emp.get("logo", "").strip()
-                if logo_url:
-                    st.image(logo_url, width=150)
-
-                empresa_html = emp.get("empresa_html", "").strip()
-                if empresa_html:
-                    st.markdown(f"#### {empresa_html}", unsafe_allow_html=True)
-
-                if lang == "ca":
-                    descripcion = emp.get("descripcion_ca", "").strip() or emp.get("descripcion", "").strip()
-                else:
-                    descripcion = emp.get("descripcion", "").strip()
-                if descripcion:
-                    st.markdown(descripcion, unsafe_allow_html=True)
-
-                enlace = emp.get("enlace", "").strip()
-                if enlace:
-                    st.markdown(f"🔗 [Visitar web]({enlace})")
+                    if lang == "ca":
+                        descripcion = emp.get("descripcion_ca", "").strip() or emp.get("descripcion", "").strip()
+                    else:
+                        descripcion = emp.get("descripcion", "").strip()
+                    if descripcion:
+                        st.markdown(descripcion, unsafe_allow_html=True)
+                    enlace = emp.get("enlace", "").strip()
+                    if enlace:
+                        st.markdown(f"🔗 [Visitar web]({enlace})")
 
         def mostrar_bloque_categorias(datos, titulos_por_columna, key_prefix):
             """Pinta los títulos de categoría en columnas (como antes) y,
