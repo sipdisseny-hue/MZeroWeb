@@ -2172,6 +2172,15 @@ elif opcion == T["menu_docs"]:
                 st.info("No hay empresas registradas en esta población.")
                 return
 
+            st.markdown("""
+            <style>
+            div[data-testid="stExpander"] summary {
+                background-color: #F2F2F2 !important;
+                color: #000000 !important;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
             for emp in empresas:
                 nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
                 with st.expander(nombre):
