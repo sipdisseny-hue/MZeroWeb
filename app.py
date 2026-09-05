@@ -2175,7 +2175,7 @@ elif opcion == T["menu_docs"]:
             st.markdown("""
             <style>
             div[data-testid="stExpander"] summary {
-                background-color: #F2F2F2 !important;
+                background-color: #FFFFFF !important;
                 color: #000000 !important;
             }
             </style>
