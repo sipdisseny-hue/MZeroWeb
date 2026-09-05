@@ -1017,106 +1017,238 @@ with st.sidebar:
                 except Exception as e:
                     st.error(f"Error de acceso: {e}")
 
-    # ============================================================ # AVISO DE PRIVACIDAD Y COOKIES # ============================================================ # Guardamos la decisión del usuario durante la sesión if "privacidad_cookies_decision" not in st.session_state: st.session_state["privacidad_cookies_decision"] = None if "mostrar_configuracion_cookies" not in st.session_state: st.session_state["mostrar_configuracion_cookies"] = False # CSS exclusivo del aviso de privacidad/cookies st.markdown( """ <style> /* Ventana del aviso */ div[data-testid="stDialog"] { color: #000000 !important; } div[data-testid="stDialog"] [data-testid="stMarkdownContainer"] { color: #000000 !important; } /* Botones del aviso */ div[data-testid="stDialog"] button { background-color: #FFFFFF !important; color: #6BB6E6 !important; border: 1px solid #6BB6E6 !important; border-radius: 5px !important; font-weight: 600 !important; } div[data-testid="stDialog"] button:hover { background-color: #FFFFFF !important; color: #4A9FD0 !important; border-color: #4A9FD0 !important; } </style> """, unsafe_allow_html=True, ) @st.dialog("Privacidad y cookies") def mostrar_aviso_privacidad(): # Textos según idioma if lang == "ca": titulo = "Privacitat i cookies" texto = ( "Utilitzem únicament les tecnologies d'emmagatzematge i les " "cookies necessàries per al funcionament de Mzero, el manteniment " "de la sessió i la prestació de les funcionalitats sol·licitades." ) texto2 = ( "Actualment no utilitzem cookies no necessàries amb finalitats " "de publicitat comportamental o seguiment comercial." ) configuracion = "Configuració de cookies" necesarias = "Cookies necessàries" necesarias_texto = ( "Són necessàries per al funcionament de l'aplicació, el manteniment " "de la sessió i les funcionalitats sol·licitades. No es poden desactivar." ) no_necesarias = "Cookies no necessàries" no_necesarias_texto = ( "Actualment Mzero no utilitza cookies no necessàries per a " "publicitat comportamental o seguiment comercial." ) continuar = "CONTINUAR" aceptar = "ACCEPTAR" rechazar = "REBUTJAR" configurar = "CONFIGURAR" else: titulo = "Privacidad y cookies" texto = ( "Utilizamos únicamente las tecnologías de almacenamiento y las " "cookies necesarias para el funcionamiento de Mzero, el mantenimiento " "de la sesión y la prestación de las funcionalidades solicitadas." ) texto2 = ( "Actualmente no utilizamos cookies no necesarias con fines de " "publicidad comportamental o seguimiento comercial." ) configuracion = "Configuración de cookies" necesarias = "Cookies necesarias" necesarias_texto = ( "Son necesarias para el funcionamiento de la aplicación, el mantenimiento " "de la sesión y las funcionalidades solicitadas. No pueden desactivarse." ) no_necesarias = "Cookies no necesarias" no_necesarias_texto = ( "Actualmente Mzero no utiliza cookies no necesarias para " "publicidad comportamental o seguimiento comercial." ) continuar = "CONTINUAR" aceptar = "ACEPTAR" rechazar = "RECHAZAR" configurar = "CONFIGURAR" # -------------------------------------------------------- # AVISO PRINCIPAL # -------------------------------------------------------- st.markdown( f""" <div style=" text-align:center; color:#000000; font-size:15px; line-height:1.5; padding:5px 10px 10px 10px; "> <div style=" font-size:22px; font-weight:700; margin-bottom:15px; "> {titulo} </div> <div style="margin-bottom:12px;"> {texto} </div> <div style="margin-bottom:8px;"> {texto2} </div> </div> """, unsafe_allow_html=True, ) # -------------------------------------------------------- # CONFIGURACIÓN # -------------------------------------------------------- if not st.session_state["mostrar_configuracion_cookies"]: col1, col2, col3 = st.columns(3) with col1: if st.button( aceptar, key="cookies_aceptar", use_container_width=True, ): st.session_state["privacidad_cookies_decision"] = "aceptar" st.rerun() with col2: if st.button( rechazar, key="cookies_rechazar", use_container_width=True, ): st.session_state["privacidad_cookies_decision"] = "rechazar" st.rerun() with col3: if st.button( configurar, key="cookies_configurar", use_container_width=True, ): st.session_state["mostrar_configuracion_cookies"] = True st.rerun() else: st.markdown( f""" <div style=" margin-top:10px; padding:15px; border:1px solid #6BB6E6; background:#FFFFFF; color:#000000; border-radius:6px; line-height:1.5; "> <div style=" font-size:18px; font-weight:700; margin-bottom:12px; "> {configuracion} </div> <div style="margin-bottom:14px;"> <strong>{necesarias}</strong><br> {necesarias_texto} </div> <div> <strong>{no_necesarias}</strong><br> {no_necesarias_texto} </div> </div> """, unsafe_allow_html=True, ) if st.button( continuar, key="cookies_continuar_config", use_container_width=True, ): st.session_state["privacidad_cookies_decision"] = "configurado" st.session_state["mostrar_configuracion_cookies"] = False st.rerun() # Mostrar el aviso únicamente mientras no exista una decisión if st.session_state["privacidad_cookies_decision"] is None: mostrar_aviso_privacidad()
-    
-    # --- NUEVO: PANEL DE APROBACIÓN DE PETICIONES PENDIENTES -------------------
-    if SUPABASE_DISPONIBLE and st.session_state.autenticado:
-        st.divider()
-        try:
-            cliente_pend = obtener_cliente_supabase()
-            pendientes_empresas = cliente_pend.table("empresas").select("*").eq("estado", "pendiente").execute().data
-            pendientes_cursos = cliente_pend.table("cursos").select("*").eq("estado", "pendiente").execute().data
-            pendientes_modulos = cliente_pend.table("modulos").select("*").eq("estado", "pendiente").execute().data
-            pendientes_docentes = cliente_pend.table("docentes").select("*").eq("estado", "pendiente").execute().data
-        except Exception as e:
-            pendientes_empresas, pendientes_cursos, pendientes_modulos, pendientes_docentes = [], [], [], []
-            st.error(f"Error al cargar pendientes: {e}")
+# ============================================================
+# AVISO DE PRIVACIDAD Y COOKIES
+# ============================================================
 
-        total_pendientes = len(pendientes_empresas) + len(pendientes_cursos) + len(pendientes_modulos) + len(pendientes_docentes)
-        etiqueta_panel = f"🔔 Peticiones pendientes ({total_pendientes})" if total_pendientes else "🔔 Peticiones pendientes"
+if "privacidad_cookies_decision" not in st.session_state:
+    st.session_state["privacidad_cookies_decision"] = None
 
-        with st.expander(etiqueta_panel):
-            if total_pendientes == 0:
-                st.caption("No hay peticiones pendientes.")
+if "mostrar_configuracion_cookies" not in st.session_state:
+    st.session_state["mostrar_configuracion_cookies"] = False
 
-            # --- Empresas (Asociados/Colaboradores) ---
-            if pendientes_empresas:
-                st.markdown("**Empresas / Colaboradores**")
-                for emp in pendientes_empresas:
-                    nombre_mostrar = emp.get("nombre_centro") or emp.get("nombre_empresa") or emp.get("usuario", "")
-                    st.write(f"**{nombre_mostrar}** — {emp.get('tipo', '')}")
-                    st.caption(f"Usuario propuesto: {emp.get('usuario', '')} · Email: {emp.get('email', '')}")
-                    if st.button("✅ Activar", key=f"activar_emp_{emp['id']}"):
-                        try:
-                            cliente_pend.table("empresas").update({"estado": "activo"}).eq("id", emp["id"]).execute()
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al activar: {e}")
-                    st.divider()
 
-            # --- Cursos (con sus módulos pendientes asociados, si los tiene) ---
-            if pendientes_cursos:
-                st.markdown("**Cursos nuevos**")
-                for curso in pendientes_cursos:
-                    modulos_de_este_curso = [m for m in pendientes_modulos if m["codigo_curso"] == curso["codigo_curso"]]
-                    st.write(f"**{curso['codigo_curso']} - {curso.get('nombre_es', '')}**")
-                    st.caption(f"Horas: {curso.get('horas_totales', '')} · Competencias: {curso.get('competencias', '')}")
-                    for m in modulos_de_este_curso:
-                        st.caption(f"↳ Módulo: {m['subcodigo']} - {m.get('descripcion_es', '')} (Nivel {m.get('nivel_bloque', '')})")
-                    if st.button("✅ Activar curso" + (" + módulo(s)" if modulos_de_este_curso else ""), key=f"activar_curso_{curso['codigo_curso']}"):
-                        try:
-                            cliente_pend.table("cursos").update({"estado": "activo"}).eq("codigo_curso", curso["codigo_curso"]).execute()
-                            for m in modulos_de_este_curso:
-                                cliente_pend.table("modulos").update({"estado": "activo"}).eq("subcodigo", m["subcodigo"]).execute()
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al activar: {e}")
-                    st.divider()
+# ------------------------------------------------------------
+# AVISO INICIAL
+# ------------------------------------------------------------
 
-            # --- Módulos pendientes de cursos que YA estaban activos ---
-            modulos_sueltos = [m for m in pendientes_modulos if m["codigo_curso"] not in [c["codigo_curso"] for c in pendientes_cursos]]
-            if modulos_sueltos:
-                st.markdown("**Módulos nuevos (de cursos ya activos)**")
-                for m in modulos_sueltos:
-                    st.write(f"**{m['subcodigo']}** - {m.get('descripcion_es', '')} (Curso {m['codigo_curso']}, Nivel {m.get('nivel_bloque', '')})")
-                    if st.button("✅ Activar módulo", key=f"activar_modulo_{m['subcodigo']}"):
-                        try:
-                            cliente_pend.table("modulos").update({"estado": "activo"}).eq("subcodigo", m["subcodigo"]).execute()
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al activar: {e}")
-                    st.divider()
+if st.session_state["privacidad_cookies_decision"] is None:
 
-            # --- Docentes: aquí se les asigna la contraseña y se les avisa por email ---
-            if pendientes_docentes:
-                st.markdown("**Docentes nuevos**")
-                for doc in pendientes_docentes:
-                    cursos_del_docente = cliente_pend.table("curso_docente").select("codigo_curso").eq("id_docente", doc["id_docente"]).execute().data
-                    codigos_cursos_doc = ", ".join(c["codigo_curso"] for c in cursos_del_docente) or "—"
-                    st.write(f"**{doc.get('nombre', '')}** (usuario: {doc.get('usuario', '')})")
-                    st.caption(f"Email: {doc.get('email', '')} · Cursos: {codigos_cursos_doc}")
-                    contrasena_nueva = st.text_input("Contraseña a asignar", key=f"pass_doc_{doc['id_docente']}", type="password")
-                    if st.button("✅ Activar y enviar email", key=f"activar_doc_{doc['id_docente']}"):
-                        if not contrasena_nueva.strip():
-                            st.warning("Escribe una contraseña antes de activar.")
-                        else:
-                            try:
-                                cliente_pend.table("docentes").update({
-                                    "contrasena": contrasena_nueva.strip(), "estado": "activo"
-                                }).eq("id_docente", doc["id_docente"]).execute()
+    if lang == "ca":
+        titulo_cookies = "Privacitat i cookies"
+        texto_cookies = (
+            "Utilitzem únicament les tecnologies d'emmagatzematge i les "
+            "cookies necessàries per al funcionament de Mzero, el manteniment "
+            "de la sessió i la prestació de les funcionalitats sol·licitades."
+        )
+        texto_cookies_2 = (
+            "Actualment no utilitzem cookies no necessàries amb finalitats "
+            "de publicitat comportamental o seguiment comercial."
+        )
+        aceptar_cookies = "ACCEPTAR"
+        rechazar_cookies = "REBUTJAR"
+        configurar_cookies = "CONFIGURAR"
+        titulo_config = "Configuració de cookies"
+        necesarias = "Cookies necessàries"
+        necesarias_texto = (
+            "Són necessàries per al funcionament de l'aplicació, "
+            "el manteniment de la sessió i les funcionalitats sol·licitades."
+        )
+        no_necesarias = "Cookies no necessàries"
+        no_necesarias_texto = (
+            "Actualment Mzero no utilitza cookies no necessàries "
+            "per a publicitat comportamental o seguiment comercial."
+        )
+        volver = "TORNAR"
+        
+    else:
+        titulo_cookies = "Privacidad y cookies"
+        texto_cookies = (
+            "Utilizamos únicamente las tecnologías de almacenamiento y las "
+            "cookies necesarias para el funcionamiento de Mzero, el mantenimiento "
+            "de la sesión y la prestación de las funcionalidades solicitadas."
+        )
+        texto_cookies_2 = (
+            "Actualmente no utilizamos cookies no necesarias con fines de "
+            "publicidad comportamental o seguimiento comercial."
+        )
+        aceptar_cookies = "ACEPTAR"
+        rechazar_cookies = "RECHAZAR"
+        configurar_cookies = "CONFIGURAR"
+        titulo_config = "Configuración de cookies"
+        necesarias = "Cookies necesarias"
+        necesarias_texto = (
+            "Son necesarias para el funcionamiento de la aplicación, "
+            "el mantenimiento de la sesión y las funcionalidades solicitadas."
+        )
+        no_necesarias = "Cookies no necesarias"
+        no_necesarias_texto = (
+            "Actualmente Mzero no utiliza cookies no necesarias "
+            "para publicidad comportamental o seguimiento comercial."
+        )
+        volver = "VOLVER"
 
-                                if doc.get("email"):
-                                    enviado = enviar_email(
-                                        doc["email"],
-                                        "M-Zero: acceso a Evaluaciones",
-                                        f"Hola {doc.get('nombre', '')},\n\nYa tienes acceso al sistema de evaluación de M-Zero.\n\nUsuario: {doc.get('usuario', '')}\nContraseña: {contrasena_nueva.strip()}\n\nAccede desde la pestaña Evaluaciones de la app."
-                                    )
-                                    if not enviado:
-                                        st.warning("Docente activado, pero no se pudo enviar el email (revisa la configuración de EMAIL_USER/EMAIL_PASSWORD en Secrets).")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Error al activar: {e}")
-                    st.divider()
+
+    # --------------------------------------------------------
+    # FONDO OSCURO + VENTANA CENTRADA
+    # --------------------------------------------------------
+
+    st.markdown(
+        """
+        <style>
+
+        /* Fondo que cubre toda la pantalla */
+        .mzero-cookies-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.45);
+            z-index: 999998;
+        }
+
+        /* Caja blanca centrada */
+        .mzero-cookies-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(700px, 90%);
+            background: #ffffff;
+            color: #000000;
+            padding: 30px 35px;
+            border-radius: 8px;
+            box-shadow: 0 8px 35px rgba(0,0,0,0.30);
+            z-index: 999999;
+            text-align: center;
+        }
+
+        .mzero-cookies-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #000000;
+        }
+
+        .mzero-cookies-text {
+            font-size: 15px;
+            line-height: 1.55;
+            margin-bottom: 12px;
+            color: #000000;
+        }
+
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+    # --------------------------------------------------------
+    # MOSTRAR CONFIGURACIÓN
+    # --------------------------------------------------------
+
+    if st.session_state["mostrar_configuracion_cookies"]:
+
+        st.markdown(
+            f"""
+            <div class="mzero-cookies-overlay"></div>
+
+            <div class="mzero-cookies-box">
+
+                <div class="mzero-cookies-title">
+                    {titulo_config}
+                </div>
+
+                <div class="mzero-cookies-text" style="text-align:left;">
+                    <strong>{necesarias}</strong><br>
+                    {necesarias_texto}
+                </div>
+
+                <div class="mzero-cookies-text" style="text-align:left;">
+                    <strong>{no_necesarias}</strong><br>
+                    {no_necesarias_texto}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # Botón volver
+        col1, col2, col3 = st.columns([1, 2, 1])
+
+        with col2:
+            if st.button(
+                volver,
+                key="cookies_volver",
+                use_container_width=True
+            ):
+                st.session_state["mostrar_configuracion_cookies"] = False
+                st.rerun()
+
+
+    # --------------------------------------------------------
+    # AVISO PRINCIPAL
+    # --------------------------------------------------------
+
+    else:
+
+        st.markdown(
+            f"""
+            <div class="mzero-cookies-overlay"></div>
+
+            <div class="mzero-cookies-box">
+
+                <div class="mzero-cookies-title">
+                    {titulo_cookies}
+                </div>
+
+                <div class="mzero-cookies-text">
+                    {texto_cookies}
+                </div>
+
+                <div class="mzero-cookies-text">
+                    {texto_cookies_2}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        # Los botones quedan inmediatamente debajo
+        # de la ventana visual mediante columnas.
+
+        col1, col2, col3 = st.columns([1, 1, 1])
+
+        with col1:
+            if st.button(
+                aceptar_cookies,
+                key="cookies_aceptar",
+                use_container_width=True
+            ):
+                st.session_state["privacidad_cookies_decision"] = "aceptar"
+                st.rerun()
+
+        with col2:
+            if st.button(
+                rechazar_cookies,
+                key="cookies_rechazar",
+                use_container_width=True
+            ):
+                st.session_state["privacidad_cookies_decision"] = "rechazar"
+                st.rerun()
+
+        with col3:
+            if st.button(
+                configurar_cookies,
+                key="cookies_configurar",
+                use_container_width=True
+            ):
+                st.session_state["mostrar_configuracion_cookies"] = True
+                st.rerun()
+
 
 # --- LÓGICA DE PANTALLAS ---
 def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False, mostrar_en_expander=True):
