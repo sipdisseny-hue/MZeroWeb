@@ -81,7 +81,7 @@ TEXTOS = {
         "error_acceso_participar": "Usuario o contraseña incorrectos, o no estás inscrito.",
         "solicitar_alta": "¿Todavía no estás dado de alta? Solicita el registro",
         "enviar_solicitud": "Enviar solicitud",
-        "solicitud_enviada": "Solicitud enviada correctamente.",
+        "solicitud_enviada": "Su solicitud ha sido recibida. Después de la revisión, le enviaremos por email su acceso en unas horas.",
         "error_solicitud": "No se pudo enviar la solicitud. Inténtalo de nuevo.",
         "campo_vacio_empresa": "Escribe al menos el nombre de la empresa.",
         "campo_nombre_empresa": "Nombre Empresa",
@@ -99,7 +99,7 @@ TEXTOS = {
         "campo_usuario_deseado": "Usuario que quiero usar",
         "campo_contrasena_deseada": "Contraseña que quiero usar",
         "campo_vacio_usuario_contrasena": "Indica el usuario y la contraseña que quieres usar.",
-        "solicitud_pendiente_aviso": "Solicitud enviada. En cuanto sea aprobada podrás acceder con tu usuario y contraseña.",
+        "solicitud_pendiente_aviso": "Su solicitud ha sido recibida. Después de la revisión, le enviaremos por email su acceso en unas horas.",
         "anadir_curso": "Añadir curso",
         "campo_referencia_curso": "Referencia del curso",
         "campo_nombre_curso": "Nombre del curso",
@@ -272,7 +272,7 @@ TEXTOS = {
         "error_acceso_participar": "Usuari o contrasenya incorrectes, o no estàs inscrit.",
         "solicitar_alta": "Encara no estàs donat d'alta? Sol·licita el registre",
         "enviar_solicitud": "Enviar sol·licitud",
-        "solicitud_enviada": "Sol·licitud enviada correctament.",
+        "solicitud_enviada": "La seva sol·licitud ha estat rebuda. Després de la revisió, li enviarem per email el seu accés en unes hores.",
         "error_solicitud": "No s'ha pogut enviar la sol·licitud. Torna-ho a provar.",
         "campo_vacio_empresa": "Escriu com a mínim el nom de l'empresa.",
         "campo_nombre_empresa": "Nom Empresa",
@@ -290,7 +290,7 @@ TEXTOS = {
         "campo_usuario_deseado": "Usuari que vull utilitzar",
         "campo_contrasena_deseada": "Contrasenya que vull utilitzar",
         "campo_vacio_usuario_contrasena": "Indica l'usuari i la contrasenya que vols utilitzar.",
-        "solicitud_pendiente_aviso": "Sol·licitud enviada. Quan sigui aprovada podràs accedir amb el teu usuari i contrasenya.",
+        "solicitud_pendiente_aviso": "La seva sol·licitud ha estat rebuda. Després de la revisió, li enviarem per email el seu accés en unes hores.",
         "anadir_curso": "Afegir curs",
         "campo_referencia_curso": "Referència del curs",
         "campo_nombre_curso": "Nom del curs",
@@ -1086,7 +1086,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
                     campos["nombre_centro"] = nombre_centro.strip()
 
                 if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
-                    st.success(T["solicitud_pendiente_aviso"])
+                    st.markdown(f"## ✅ {T['solicitud_pendiente_aviso']}")
                     st.session_state[f"{key_prefix}_reg_version"] = version + 1
                     st.rerun()
                 else:
@@ -1109,7 +1109,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
                     campos["Nombre del Centro"] = nombre_centro.strip()
 
                 if enviar_peticion_registro(tipo, campos):
-                    st.success(T["solicitud_enviada"])
+                    st.markdown(f"## ✅ {T['solicitud_enviada']}")
                     st.session_state[f"{key_prefix}_reg_version"] = version + 1
                     st.rerun()
                 else:
