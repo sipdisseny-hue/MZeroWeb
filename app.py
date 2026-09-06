@@ -80,6 +80,7 @@ TEXTOS = {
         "acceso_concedido": "Acceso concedido:",
         "error_acceso_participar": "Usuario o contraseña incorrectos, o no estás inscrito.",
         "solicitar_alta": "¿Todavía no estás dado de alta? Solicita el registro",
+        "aviso_fijo_registro": "⚠️ Tras enviar la solicitud, revisaremos los datos y le enviaremos por email su acceso en unas horas.",
         "enviar_solicitud": "Enviar solicitud",
         "solicitud_enviada": "Su solicitud ha sido recibida. Después de la revisión, le enviaremos por email su acceso en unas horas.",
         "error_solicitud": "No se pudo enviar la solicitud. Inténtalo de nuevo.",
@@ -271,6 +272,7 @@ TEXTOS = {
         "acceso_concedido": "Accés concedit:",
         "error_acceso_participar": "Usuari o contrasenya incorrectes, o no estàs inscrit.",
         "solicitar_alta": "Encara no estàs donat d'alta? Sol·licita el registre",
+        "aviso_fijo_registro": "⚠️ Un cop enviada la sol·licitud, revisarem les dades i li enviarem per email el seu accés en unes hores.",
         "enviar_solicitud": "Enviar sol·licitud",
         "solicitud_enviada": "La seva sol·licitud ha estat rebuda. Després de la revisió, li enviarem per email el seu accés en unes hores.",
         "error_solicitud": "No s'ha pogut enviar la sol·licitud. Torna-ho a provar.",
@@ -1026,8 +1028,14 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
     """
     version = st.session_state.get(f"{key_prefix}_reg_version", 0)
 
+    mensaje_ok = st.session_state.pop(f"{key_prefix}_reg_ok", None)
+    if mensaje_ok:
+        st.markdown(f"## ✅ {mensaje_ok}")
+
     contenedor = st.expander(T["solicitar_alta"]) if mostrar_en_expander else st.container()
     with contenedor:
+        st.warning(T["aviso_fijo_registro"])
+
         nombre_empresa = st.text_input(T["campo_nombre_empresa"], key=f"{key_prefix}_reg_empresa_{version}")
 
         nombre_centro = ""
@@ -1086,7 +1094,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
                     campos["nombre_centro"] = nombre_centro.strip()
 
                 if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
-                    st.markdown(f"## ✅ {T['solicitud_pendiente_aviso']}")
+                    st.session_state[f"{key_prefix}_reg_ok"] = T["solicitud_pendiente_aviso"]
                     st.session_state[f"{key_prefix}_reg_version"] = version + 1
                     st.rerun()
                 else:
@@ -1109,7 +1117,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
                     campos["Nombre del Centro"] = nombre_centro.strip()
 
                 if enviar_peticion_registro(tipo, campos):
-                    st.markdown(f"## ✅ {T['solicitud_enviada']}")
+                    st.session_state[f"{key_prefix}_reg_ok"] = T["solicitud_enviada"]
                     st.session_state[f"{key_prefix}_reg_version"] = version + 1
                     st.rerun()
                 else:
@@ -1420,7 +1428,6 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         return
 
     tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])
-
     # ---------------------------------------------------------------
     # CREAR NUEVA EDICIÓN
     # ---------------------------------------------------------------
