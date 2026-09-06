@@ -1982,7 +1982,7 @@ if st.session_state.get("acceso_panel"):
     if acceso_panel == "asociado":
         st.markdown(f'<div class="access-title">👥 {T["acceso_asociados"]}</div>', unsafe_allow_html=True)
         st.markdown('<div class="access-subtitle">Acceso y gestión para Asociados</div>', unsafe_allow_html=True)
-        bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part")
+        bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part", usar_supabase=True)
         if st.button("← Volver a Documentación", key="volver_desde_asociados", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
