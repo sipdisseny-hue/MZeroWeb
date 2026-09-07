@@ -1054,6 +1054,12 @@ if not st.session_state["legal_modal_mostrado"]:
     st.session_state["legal_modal_mostrado"] = True
     _mostrar_aviso_legal()
 
+# Botón fijo y siempre visible para volver a consultar el aviso legal
+with st.sidebar:
+    st.divider()
+    if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
+        _mostrar_aviso_legal()
+
 
 # --- LÓGICA DE PANTALLAS ---
 def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False, mostrar_en_expander=True):
