@@ -1020,6 +1020,41 @@ with st.sidebar:
                     st.error(f"Error de acceso: {e}")
 
 
+# --- AVISO LEGAL: CUADRO FLOTANTE AL INICIO (una vez por sesión de navegador) ---
+if "legal_modal_mostrado" not in st.session_state:
+    st.session_state["legal_modal_mostrado"] = False
+
+
+@st.dialog(T["legal_titulo"])
+def _mostrar_aviso_legal():
+    with st.expander(T["aviso_legal"], expanded=False):
+        st.markdown(f"**{T['legal_nombre_comercial']}**")
+        st.markdown(f"**{T['legal_responsable']}**")
+        st.markdown(f"**{T['legal_nif']}**")
+        st.markdown(f"**{T['legal_domicilio']}**")
+        st.markdown(f"**{T['legal_email']}**")
+        st.write(T["legal_aviso_texto"])
+
+    with st.expander(T["politica_privacidad"], expanded=False):
+        st.markdown("### Responsable del tratamiento")
+        st.write(f"{T['legal_responsable']}. {T['legal_email']}")
+        st.markdown("### Finalidades")
+        st.write(T["legal_privacidad_texto"])
+        st.markdown("### Derechos")
+        st.write(T["legal_derechos_texto"])
+        st.markdown("### Actualización")
+        st.write(T["legal_actualizacion"])
+
+    with st.expander(T["politica_cookies"], expanded=False):
+        st.write(T["legal_cookies_texto"])
+        st.write(T["legal_actualizacion"])
+
+
+if not st.session_state["legal_modal_mostrado"]:
+    st.session_state["legal_modal_mostrado"] = True
+    _mostrar_aviso_legal()
+
+
 # --- LÓGICA DE PANTALLAS ---
 def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False, mostrar_en_expander=True):
     """Formulario para pedir el alta como Asociado o Colaborador nuevo.
@@ -1428,7 +1463,8 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         return
 
     tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])
-    # ---------------------------------------------------------------
+
+# ---------------------------------------------------------------
     # CREAR NUEVA EDICIÓN
     # ---------------------------------------------------------------
     with tab_crear:
@@ -2151,7 +2187,7 @@ elif opcion == T["menu_docs"]:
         }
         /* Solo cambia el fondo de las pestañas de empresa a gris. */
         div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div[data-testid="stExpander"] summary {
-            background: #f5f5f5 !important;
+            background: #808080 !important;
         }
         </style>""", unsafe_allow_html=True)
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
@@ -2257,108 +2293,7 @@ elif opcion == T["menu_docs"]:
         unsafe_allow_html=True
     )
 
-    # ============================================================
-    # BLOQUE LEGAL INFERIOR
-    # IMPORTANTE: se utilizan los expander NATIVOS de Streamlit.
-    # No se escribe <details>, <summary>, CSS ni HTML dentro del
-    # contenido visible, evitando que el usuario vea "códigos".
-    # ============================================================
 
-    st.markdown(
-        """
-        <style>
-        /* Título del bloque legal */
-        .mzero-legal-heading {
-            background: #172033;
-            color: white;
-            padding: 16px 24px 8px 24px;
-            margin-top: 10px;
-            margin-bottom: 0;
-            text-align: center;
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        /* Cada desplegable legal */
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] {
-            background: #172033 !important;
-            border: none !important;
-            border-radius: 0 !important;
-            margin: 0 !important;
-        }
-
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] details {
-            background: #172033 !important;
-            border: none !important;
-            border-top: 1px solid rgba(255,255,255,0.20) !important;
-            border-radius: 0 !important;
-        }
-
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary {
-            background: #172033 !important;
-            color: #ffffff !important;
-            padding: 14px 24px !important;
-            font-size: 15px !important;
-            font-weight: 600 !important;
-        }
-
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary p,
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] summary span {
-            color: #ffffff !important;
-        }
-
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-            background: #172033 !important;
-            color: #ffffff !important;
-            padding: 0 24px 18px 24px !important;
-        }
-
-        /* Texto que aparece SOLO después de abrir */
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
-        .st-key-mzero-legal-footer div[data-testid="stExpander"] [data-testid="stExpanderDetails"] li {
-            color: #f1f3f7 !important;
-        }
-
-        .mzero-legal-bottom {
-            background: #172033;
-            padding-bottom: 8px;
-            margin-bottom: 0;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    with st.container(key="mzero-legal-footer"):
-        st.markdown(
-            f"<div class='mzero-legal-heading'>{T['legal_titulo']}</div>",
-            unsafe_allow_html=True
-        )
-
-        # SOLO ESTOS TÍTULOS SE VEN AL CARGAR LA PÁGINA.
-        # El contenido permanece completamente cerrado.
-        with st.expander(T["aviso_legal"], expanded=False):
-            st.markdown(f"**{T['legal_nombre_comercial']}**")
-            st.markdown(f"**{T['legal_responsable']}**")
-            st.markdown(f"**{T['legal_nif']}**")
-            st.markdown(f"**{T['legal_domicilio']}**")
-            st.markdown(f"**{T['legal_email']}**")
-            st.write(T["legal_aviso_texto"])
-
-        with st.expander(T["politica_privacidad"], expanded=False):
-            st.markdown("### Responsable del tratamiento")
-            st.write(f"{T['legal_responsable']}. {T['legal_email']}")
-            st.markdown("### Finalidades")
-            st.write(T["legal_privacidad_texto"])
-            st.markdown("### Derechos")
-            st.write(T["legal_derechos_texto"])
-            st.markdown("### Actualización")
-            st.write(T["legal_actualizacion"])
-
-        with st.expander(T["politica_cookies"], expanded=False):
-            st.write(T["legal_cookies_texto"])
-            st.write(T["legal_actualizacion"])
 elif opcion == T["menu_eval"]:
     if 'envio_resultado' in st.session_state:
         tipo_msg, texto_msg = st.session_state.pop('envio_resultado')
