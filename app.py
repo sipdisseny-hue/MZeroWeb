@@ -218,7 +218,7 @@ TEXTOS = {
         "legal_derechos_texto": "Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y, cuando proceda, portabilidad, escribiendo al gmail contacto.mzero. También puedes presentar una reclamación ante la Agencia Española de Protección de Datos (AEPD) si consideras que el tratamiento no se ajusta a la normativa aplicable.",
         "legal_cookies_texto": "Esta aplicación utiliza únicamente las tecnologías de almacenamiento o cookies necesarias para su funcionamiento, mantenimiento de la sesión y prestación de las funcionalidades solicitadas. No se utilizarán cookies no necesarias para publicidad comportamental o seguimiento comercial sin obtener previamente el consentimiento exigible. Si en el futuro se incorporan cookies o tecnologías de terceros que requieran consentimiento, se informará de forma específica y se ofrecerán opciones equivalentes para aceptar o rechazar dicho uso.",
         "legal_actualizacion": "Esta información podrá actualizarse cuando cambien la aplicación, los tratamientos de datos o la normativa aplicable.",
-        "instagram_texto": "📷 Síguenos en Instagram",
+        "instagram_texto": "Síguenos en Instagram",
 
     },
     "ca": {
@@ -408,7 +408,7 @@ TEXTOS = {
         "legal_derechos_texto": "Pots exercir els drets d’accés, rectificació, supressió, oposició, limitació del tractament i, quan correspongui, portabilitat, escrivint al gmail contacto.mzero. També pots presentar una reclamació davant l’Agència Espanyola de Protecció de Dades (AEPD) si consideres que el tractament no s’ajusta a la normativa aplicable.",
         "legal_cookies_texto": "Aquesta aplicació utilitza únicament les tecnologies d’emmagatzematge o cookies necessàries per al seu funcionament, manteniment de la sessió i prestació de les funcionalitats sol·licitades. No s’utilitzaran cookies no necessàries per a publicitat comportamental o seguiment comercial sense obtenir prèviament el consentiment exigible. Si en el futur s’incorporen cookies o tecnologies de tercers que requereixin consentiment, s’informarà de manera específica i s’oferiran opcions equivalents per acceptar o rebutjar aquest ús.",
         "legal_actualizacion": "Aquesta informació podrà actualitzar-se quan canviïn l’aplicació, els tractaments de dades o la normativa aplicable.",
-        "instagram_texto": "📷 Segueix-nos a Instagram",
+        "instagram_texto": "Segueix-nos a Instagram",
 
     }
 }
@@ -1061,7 +1061,40 @@ with st.sidebar:
     st.divider()
     if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
         _mostrar_aviso_legal()
-    st.link_button(T["instagram_texto"], "https://www.instagram.com/mzero.pro/", use_container_width=True)
+    st.markdown(
+        """<style>
+        .mzero-instagram-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 46px;
+            border-radius: 10px;
+            border: 1px solid rgba(49, 51, 63, 0.2);
+            font-weight: 600;
+            padding: 0 16px;
+            margin-bottom: 8px;
+            text-decoration: none !important;
+            color: inherit !important;
+        }
+        .mzero-instagram-btn:hover {
+            border-color: #E1306C;
+            color: #E1306C !important;
+        }
+        .mzero-instagram-btn svg { flex-shrink: 0; }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f'<a class="mzero-instagram-btn" href="https://www.instagram.com/mzero.pro/" '
+        f'target="_blank" rel="noopener noreferrer">'
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">'
+        f'<rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/>'
+        f'<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>'
+        f'<circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/>'
+        f'</svg>'
+        f'{T["instagram_texto"]}</a>',
+        unsafe_allow_html=True,
+    )
 
 
 # --- LÓGICA DE PANTALLAS ---
