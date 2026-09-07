@@ -218,6 +218,7 @@ TEXTOS = {
         "legal_derechos_texto": "Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y, cuando proceda, portabilidad, escribiendo al gmail contacto.mzero. También puedes presentar una reclamación ante la Agencia Española de Protección de Datos (AEPD) si consideras que el tratamiento no se ajusta a la normativa aplicable.",
         "legal_cookies_texto": "Esta aplicación utiliza únicamente las tecnologías de almacenamiento o cookies necesarias para su funcionamiento, mantenimiento de la sesión y prestación de las funcionalidades solicitadas. No se utilizarán cookies no necesarias para publicidad comportamental o seguimiento comercial sin obtener previamente el consentimiento exigible. Si en el futuro se incorporan cookies o tecnologías de terceros que requieran consentimiento, se informará de forma específica y se ofrecerán opciones equivalentes para aceptar o rechazar dicho uso.",
         "legal_actualizacion": "Esta información podrá actualizarse cuando cambien la aplicación, los tratamientos de datos o la normativa aplicable.",
+        "instagram_texto": "📷 Síguenos en Instagram",
 
     },
     "ca": {
@@ -407,6 +408,7 @@ TEXTOS = {
         "legal_derechos_texto": "Pots exercir els drets d’accés, rectificació, supressió, oposició, limitació del tractament i, quan correspongui, portabilitat, escrivint al gmail contacto.mzero. També pots presentar una reclamació davant l’Agència Espanyola de Protecció de Dades (AEPD) si consideres que el tractament no s’ajusta a la normativa aplicable.",
         "legal_cookies_texto": "Aquesta aplicació utilitza únicament les tecnologies d’emmagatzematge o cookies necessàries per al seu funcionament, manteniment de la sessió i prestació de les funcionalitats sol·licitades. No s’utilitzaran cookies no necessàries per a publicitat comportamental o seguiment comercial sense obtenir prèviament el consentiment exigible. Si en el futur s’incorporen cookies o tecnologies de tercers que requereixin consentiment, s’informarà de manera específica i s’oferiran opcions equivalents per acceptar o rebutjar aquest ús.",
         "legal_actualizacion": "Aquesta informació podrà actualitzar-se quan canviïn l’aplicació, els tractaments de dades o la normativa aplicable.",
+        "instagram_texto": "📷 Segueix-nos a Instagram",
 
     }
 }
@@ -1059,6 +1061,7 @@ with st.sidebar:
     st.divider()
     if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
         _mostrar_aviso_legal()
+    st.link_button(T["instagram_texto"], "https://www.instagram.com/mzero.pro/", use_container_width=True)
 
 
 # --- LÓGICA DE PANTALLAS ---
