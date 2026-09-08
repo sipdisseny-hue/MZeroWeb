@@ -77,6 +77,16 @@ TEXTOS = {
         "peticion_enviada": "Petición enviada correctamente.",
         "error_peticion": "No se pudo enviar la petición. Inténtalo de nuevo.",
         "campo_vacio_peticion": "Escribe algo antes de enviar.",
+        "buscar_perfil_titulo": "Buscar un perfil por sector",
+        "buscar_perfil_intro": "Selecciona el sector y el subsector del perfil que necesitas.",
+        "campo_nivel_candidato": "Nivel del candidato",
+        "campo_trabajos_candidato": "Trabajos / tareas a realizar",
+        "btn_enviar_busqueda_perfil": "Enviar petición de perfil",
+        "busqueda_perfil_enviada": "Petición de perfil enviada correctamente.",
+        "error_busqueda_perfil": "No se pudo enviar la petición. Inténtalo de nuevo.",
+        "campo_vacio_busqueda_perfil": "Rellena el nivel y los trabajos a realizar antes de enviar.",
+        "subsector_seleccionado": "Subsector seleccionado:",
+        "cambiar_sector": "⬅ Cambiar de sector",
         "acceso_concedido": "Acceso concedido:",
         "error_acceso_participar": "Usuario o contraseña incorrectos, o no estás inscrito.",
         "solicitar_alta": "¿Todavía no estás dado de alta? Solicita el registro",
@@ -270,6 +280,16 @@ TEXTOS = {
         "peticion_enviada": "Petició enviada correctament.",
         "error_peticion": "No s'ha pogut enviar la petició. Torna-ho a provar.",
         "campo_vacio_peticion": "Escriu alguna cosa abans d'enviar.",
+        "buscar_perfil_titulo": "Cercar un perfil per sector",
+        "buscar_perfil_intro": "Selecciona el sector i el subsector del perfil que necessites.",
+        "campo_nivel_candidato": "Nivell del candidat",
+        "campo_trabajos_candidato": "Treballs / tasques a realitzar",
+        "btn_enviar_busqueda_perfil": "Enviar petició de perfil",
+        "busqueda_perfil_enviada": "Petició de perfil enviada correctament.",
+        "error_busqueda_perfil": "No s'ha pogut enviar la petició. Torna-ho a provar.",
+        "campo_vacio_busqueda_perfil": "Omple el nivell i els treballs a realitzar abans d'enviar.",
+        "subsector_seleccionado": "Subsector seleccionat:",
+        "cambiar_sector": "⬅ Canviar de sector",
         "acceso_concedido": "Accés concedit:",
         "error_acceso_participar": "Usuari o contrasenya incorrectes, o no estàs inscrit.",
         "solicitar_alta": "Encara no estàs donat d'alta? Sol·licita el registre",
@@ -413,7 +433,51 @@ TEXTOS = {
     }
 }
 
-# --- TRADUCCIÓN SOLO VISUAL (Català) de campos y criterios de Evaluaciones ---
+# --- SECTORES Y SUBSECTORES (búsqueda de perfil para asociados) ---
+SECTORES_INDUSTRIALES = [
+    {
+        "sector": "1. Metalurgia y fabricación mecánica",
+        "subsectores": ["Siderurgia", "Fundición", "Forja", "Mecanizado", "Soldadura", "Estructuras metálicas", "Fabricación de maquinaria"],
+    },
+    {
+        "sector": "2. Electricidad y electrónica",
+        "subsectores": ["Instalaciones eléctricas", "Electrónica", "Cuadros eléctricos", "Equipos eléctricos", "Telecomunicaciones"],
+    },
+    {
+        "sector": "3. Automatización y robótica",
+        "subsectores": ["Automatización industrial", "PLC", "Robótica", "Control industrial", "Industria 4.0"],
+    },
+    {
+        "sector": "4. Energía",
+        "subsectores": ["Generación eléctrica", "Distribución eléctrica", "Energías renovables", "Solar", "Eólica", "Biomasa", "Petróleo y gas"],
+    },
+    {
+        "sector": "5. Climatización e instalaciones",
+        "subsectores": ["Fontanería", "Calefacción", "Climatización", "Refrigeración", "Instalaciones térmicas", "Eficiencia energética"],
+    },
+    {
+        "sector": "6. Plásticos y caucho",
+        "subsectores": ["Transformación de plásticos", "Inyección", "Extrusión", "Caucho", "Composites"],
+    },
+    {
+        "sector": "7. Madera y mobiliario",
+        "subsectores": ["Madera", "Carpintería industrial", "Muebles", "Tablero", "Corcho"],
+    },
+    {
+        "sector": "8. Construcción y materiales",
+        "subsectores": ["Construcción", "Cemento", "Hormigón", "Cerámica", "Vidrio", "Piedra", "Materiales de construcción"],
+    },
+    {
+        "sector": "9. Agua, residuos y medio ambiente",
+        "subsectores": ["Tratamiento de aguas", "Depuración", "Gestión de residuos", "Reciclaje", "Recuperación de materiales"],
+    },
+    {
+        "sector": "10. Mantenimiento industrial",
+        "subsectores": ["Mantenimiento mecánico", "Mantenimiento eléctrico", "Mantenimiento electromecánico", "Mantenimiento preventivo", "Mantenimiento predictivo"],
+    },
+]
+
+
 # No afecta a los datos que se envían al Excel ni a las claves internas
 # (Alumno, Curso, "1. Tasa de eficiencia"...); solo se usa para mostrar en
 # pantalla (tabla resumen) y en el PDF descargable.
@@ -2030,6 +2094,82 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
                 else:
                     st.warning(T["campo_vacio_peticion"])
 
+            # --- BÚSQUEDA DE PERFIL POR SECTOR (además del cuadro de texto libre) ---
+            st.markdown("---")
+            st.markdown(f"#### {T['buscar_perfil_titulo']}")
+            st.caption(T["buscar_perfil_intro"])
+
+            sector_key = f"{key_prefix}_sector_sel"
+            subsector_key = f"{key_prefix}_subsector_sel"
+            perfil_version_key = f"{key_prefix}_perfil_version"
+            perfil_version = st.session_state.get(perfil_version_key, 0)
+
+            sector_actual = st.session_state.get(sector_key)
+            subsector_actual = st.session_state.get(subsector_key)
+
+            if not sector_actual:
+                for datos_sector in SECTORES_INDUSTRIALES:
+                    if st.button(datos_sector["sector"], key=f"{key_prefix}_sector_btn_{datos_sector['sector']}", use_container_width=True):
+                        st.session_state[sector_key] = datos_sector["sector"]
+                        st.rerun()
+
+            elif not subsector_actual:
+                st.markdown(f"**{sector_actual}**")
+                subsectores_sector = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_actual)
+                for sub in subsectores_sector:
+                    if st.button(sub, key=f"{key_prefix}_subsector_btn_{sub}", use_container_width=True):
+                        st.session_state[subsector_key] = sub
+                        st.rerun()
+                if st.button(T["cambiar_sector"], key=f"{key_prefix}_cambiar_sector_btn"):
+                    st.session_state[sector_key] = None
+                    st.rerun()
+
+            else:
+                with st.container(border=True):
+                    st.markdown(f"**{sector_actual}** — {T['subsector_seleccionado']} {subsector_actual}")
+                    nivel_candidato = st.text_input(T["campo_nivel_candidato"], key=f"{key_prefix}_nivel_{perfil_version}")
+                    trabajos_candidato = st.text_area(T["campo_trabajos_candidato"], key=f"{key_prefix}_trabajos_{perfil_version}")
+
+                    col_enviar, col_cambiar = st.columns(2)
+                    with col_enviar:
+                        enviar_perfil = st.button(T["btn_enviar_busqueda_perfil"], key=f"{key_prefix}_btn_enviar_perfil", use_container_width=True)
+                    with col_cambiar:
+                        if st.button(T["cambiar_sector"], key=f"{key_prefix}_cambiar_subsector_btn", use_container_width=True):
+                            st.session_state[sector_key] = None
+                            st.session_state[subsector_key] = None
+                            st.rerun()
+
+                    if enviar_perfil:
+                        if nivel_candidato.strip() and trabajos_candidato.strip():
+                            texto_perfil = (
+                                f"[Búsqueda de perfil]\n"
+                                f"Sector: {sector_actual}\n"
+                                f"Subsector: {subsector_actual}\n"
+                                f"Nivel del candidato: {nivel_candidato.strip()}\n"
+                                f"Trabajos a realizar: {trabajos_candidato.strip()}"
+                            )
+                            enviado_perfil = False
+                            if usar_supabase and SUPABASE_DISPONIBLE:
+                                try:
+                                    obtener_cliente_supabase().table("peticiones_participar").insert({"id_empresa": id_empresa, "texto": texto_perfil}).execute()
+                                    crear_notificacion("peticion", f"Nueva búsqueda de perfil de {nombre_empresa} ({tipo}): {sector_actual} / {subsector_actual}")
+                                    enviado_perfil = True
+                                except Exception as e:
+                                    st.error(f"Error al enviar: {e}")
+                            else:
+                                enviado_perfil = enviar_peticion_participar(tipo, id_empresa, texto_perfil)
+
+                            if enviado_perfil:
+                                st.success(T["busqueda_perfil_enviada"])
+                                st.session_state[sector_key] = None
+                                st.session_state[subsector_key] = None
+                                st.session_state[perfil_version_key] = perfil_version + 1
+                                st.rerun()
+                            else:
+                                st.error(T["error_busqueda_perfil"])
+                        else:
+                            st.warning(T["campo_vacio_busqueda_perfil"])
+
         if st.button(T["cerrar_sesion"], key=f"{key_prefix}_btn_cerrar_sesion"):
             st.session_state[login_key] = False
             st.session_state[id_key] = ""
@@ -2229,7 +2369,7 @@ elif opcion == T["menu_docs"]:
         }
         /* Solo cambia el fondo de las pestañas de empresa a gris. */
         div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div[data-testid="stExpander"] summary {
-            background: #f5f5f5 !important;
+            background: #808080 !important;
         }
         </style>""", unsafe_allow_html=True)
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
