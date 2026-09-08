@@ -2108,18 +2108,26 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
             subsector_actual = st.session_state.get(subsector_key)
 
             if not sector_actual:
-                for datos_sector in SECTORES_INDUSTRIALES:
-                    if st.button(datos_sector["sector"], key=f"{key_prefix}_sector_btn_{datos_sector['sector']}", use_container_width=True):
-                        st.session_state[sector_key] = datos_sector["sector"]
-                        st.rerun()
+                for i in range(0, len(SECTORES_INDUSTRIALES), 3):
+                    fila_sectores = SECTORES_INDUSTRIALES[i:i + 3]
+                    cols_sectores = st.columns(3)
+                    for col, datos_sector in zip(cols_sectores, fila_sectores):
+                        with col:
+                            if st.button(datos_sector["sector"], key=f"{key_prefix}_sector_btn_{datos_sector['sector']}", use_container_width=True):
+                                st.session_state[sector_key] = datos_sector["sector"]
+                                st.rerun()
 
             elif not subsector_actual:
                 st.markdown(f"**{sector_actual}**")
                 subsectores_sector = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_actual)
-                for sub in subsectores_sector:
-                    if st.button(sub, key=f"{key_prefix}_subsector_btn_{sub}", use_container_width=True):
-                        st.session_state[subsector_key] = sub
-                        st.rerun()
+                for i in range(0, len(subsectores_sector), 3):
+                    fila_subsectores = subsectores_sector[i:i + 3]
+                    cols_subsectores = st.columns(3)
+                    for col, sub in zip(cols_subsectores, fila_subsectores):
+                        with col:
+                            if st.button(sub, key=f"{key_prefix}_subsector_btn_{sub}", use_container_width=True):
+                                st.session_state[subsector_key] = sub
+                                st.rerun()
                 if st.button(T["cambiar_sector"], key=f"{key_prefix}_cambiar_sector_btn"):
                     st.session_state[sector_key] = None
                     st.rerun()
@@ -2369,7 +2377,7 @@ elif opcion == T["menu_docs"]:
         }
         /* Solo cambia el fondo de las pestañas de empresa a gris. */
         div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div[data-testid="stExpander"] summary {
-            background: #f5f5f5 !important;
+            background: #808080 !important;
         }
         </style>""", unsafe_allow_html=True)
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
