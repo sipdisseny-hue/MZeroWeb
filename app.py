@@ -2377,7 +2377,7 @@ elif opcion == T["menu_docs"]:
         }
         /* Solo cambia el fondo de las pestañas de empresa a gris. */
         div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div[data-testid="stExpander"] summary {
-            background: #808080 !important;
+            background: #f5f5f5 !important;
         }
         </style>""", unsafe_allow_html=True)
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
