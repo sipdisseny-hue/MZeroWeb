@@ -117,6 +117,20 @@ TEXTOS = {
         "campo_nombre_modulo": "Nombre del módulo",
         "campo_horas_totales": "Horas totales del curso",
         "campo_competencias": "Competencias adquiridas",
+        "campo_sector_curso": "Sector del curso",
+        "campo_subsector_curso": "Subsector del curso",
+        "campo_nombre_candidato": "Nombre",
+        "campo_apellido_candidato": "Apellido",
+        "campo_dni_candidato": "DNI / NIF / NIE",
+        "campo_edad_candidato": "Edad",
+        "campo_direccion_candidato": "Dirección",
+        "campo_vacio_candidato": "Rellena todos los campos: nombre, apellido, DNI/NIF/NIE, edad, teléfono, dirección, población, provincia y email.",
+        "sin_cursos_ubicacion": "No hay cursos disponibles con estos criterios por ahora.",
+        "seleccionar_ubicacion_curso": "Selecciona la localidad donde se imparte el curso",
+        "ver_cursos_ubicacion": "Ver cursos",
+        "curso_estado_cursado": "Cursado",
+        "curso_estado_en_curso": "En curso",
+        "modulos_curso": "Módulos",
         "enviar_curso": "Enviar curso",
         "curso_enviado": "Curso enviado. Quedará visible en cuanto lo aprobemos.",
         "campo_vacio_curso": "Rellena al menos la referencia y el nombre del curso.",
@@ -320,6 +334,20 @@ TEXTOS = {
         "campo_nombre_modulo": "Nom del mòdul",
         "campo_horas_totales": "Hores totals del curs",
         "campo_competencias": "Competències adquirides",
+        "campo_sector_curso": "Sector del curs",
+        "campo_subsector_curso": "Subsector del curs",
+        "campo_nombre_candidato": "Nom",
+        "campo_apellido_candidato": "Cognom",
+        "campo_dni_candidato": "DNI / NIF / NIE",
+        "campo_edad_candidato": "Edat",
+        "campo_direccion_candidato": "Adreça",
+        "campo_vacio_candidato": "Omple tots els camps: nom, cognom, DNI/NIF/NIE, edat, telèfon, adreça, població, província i email.",
+        "sin_cursos_ubicacion": "No hi ha cursos disponibles amb aquests criteris per ara.",
+        "seleccionar_ubicacion_curso": "Selecciona la localitat on s'imparteix el curs",
+        "ver_cursos_ubicacion": "Veure cursos",
+        "curso_estado_cursado": "Cursat",
+        "curso_estado_en_curso": "En curs",
+        "modulos_curso": "Mòduls",
         "enviar_curso": "Enviar curs",
         "curso_enviado": "Curs enviat. Quedarà visible quan l'aprovem.",
         "campo_vacio_curso": "Omple almenys la referència i el nom del curs.",
@@ -762,8 +790,142 @@ def verificar_credencial_supabase(usuario, contrasena, tipo):
     return None
 
 
+# --- NUEVO: REGISTRO, LOGIN Y CONSULTA DE CURSOS PARA CANDIDATOS ---
+def enviar_peticion_registro_candidato_supabase(campos, usuario, contrasena):
+    if not SUPABASE_DISPONIBLE:
+        return False
+    try:
+        cliente = obtener_cliente_supabase()
+        fila = dict(campos)
+        fila["estado"] = "pendiente"
+        fila["usuario"] = usuario
+        fila["contrasena"] = contrasena
+        cliente.table("candidatos").insert(fila).execute()
+        nombre_mostrar = f"{campos.get('nombre', '')} {campos.get('apellido', '')}".strip() or usuario
+        crear_notificacion("registro", f"Nueva solicitud de registro (candidato): {nombre_mostrar}")
+        return True
+    except Exception as e:
+        st.error(f"Error al enviar la solicitud: {e}")
+        return False
+
+
+def verificar_credencial_candidato_supabase(usuario, contrasena):
+    if not SUPABASE_DISPONIBLE:
+        return None
+    try:
+        cliente = obtener_cliente_supabase()
+        resultado = (
+            cliente.table("candidatos").select("*")
+            .eq("usuario", usuario.strip())
+            .eq("contrasena", contrasena.strip())
+            .eq("estado", "activo")
+            .execute()
+        )
+        if resultado.data:
+            return resultado.data[0]
+    except Exception:
+        pass
+    return None
+
+
+def obtener_ubicaciones_cursos_sector(sector, subsector):
+    """Provincia/población de los centros (colaboradores activos) que
+    imparten cursos de ese sector/subsector, sin duplicados."""
+    if not SUPABASE_DISPONIBLE:
+        return []
+    try:
+        cliente = obtener_cliente_supabase()
+        cursos = (
+            cliente.table("cursos").select("empresa_id")
+            .eq("sector", sector).eq("subsector", subsector)
+            .execute().data
+        )
+        ids_empresa = list({c.get("empresa_id") for c in cursos if c.get("empresa_id")})
+        if not ids_empresa:
+            return []
+        empresas = (
+            cliente.table("empresas").select("provincia, poblacion")
+            .in_("id", ids_empresa)
+            .eq("tipo", "colaborador")
+            .eq("estado", "activo")
+            .execute().data
+        )
+        vistos = set()
+        ubicaciones = []
+        for e in empresas:
+            prov = (e.get("provincia") or "").strip()
+            pob = (e.get("poblacion") or "").strip()
+            if not prov and not pob:
+                continue
+            clave = (prov, pob)
+            if clave not in vistos:
+                vistos.add(clave)
+                ubicaciones.append(clave)
+        return sorted(ubicaciones)
+    except Exception:
+        return []
+
+
+def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
+    """Cursos del sector/subsector impartidos por centros de esa
+    provincia/población. No incluye docentes ni alumnos: solo el nombre
+    del centro y los datos del curso disponibles en el sistema."""
+    if not SUPABASE_DISPONIBLE:
+        return []
+    try:
+        cliente = obtener_cliente_supabase()
+        empresas = (
+            cliente.table("empresas").select("id, nombre_centro, nombre_empresa")
+            .eq("provincia", provincia)
+            .eq("poblacion", poblacion)
+            .eq("tipo", "colaborador")
+            .eq("estado", "activo")
+            .execute().data
+        )
+        mapa_empresas = {e["id"]: (e.get("nombre_centro") or e.get("nombre_empresa") or "") for e in empresas}
+        if not mapa_empresas:
+            return []
+
+        cursos = (
+            cliente.table("cursos").select("*")
+            .eq("sector", sector).eq("subsector", subsector)
+            .in_("empresa_id", list(mapa_empresas.keys()))
+            .execute().data
+        )
+
+        resultado = []
+        for curso in cursos:
+            codigo = curso.get("codigo_curso")
+            ediciones = (
+                cliente.table("curso_ediciones").select("estado")
+                .eq("codigo_curso", codigo)
+                .execute().data
+            )
+            estados = [str(e.get("estado", "")).strip().lower() for e in ediciones]
+            estado_visible = "cursado" if estados and all(e == "cerrado" for e in estados) else "en_curso"
+
+            modulos = (
+                cliente.table("modulos").select("descripcion_es, nivel_bloque")
+                .eq("codigo_curso", codigo)
+                .execute().data
+            )
+
+            resultado.append({
+                "nombre_centro": mapa_empresas.get(curso.get("empresa_id"), ""),
+                "nombre_curso": curso.get("nombre_es") or codigo,
+                "codigo_curso": codigo,
+                "horas_totales": curso.get("horas_totales"),
+                "competencias": curso.get("competencias"),
+                "estado": estado_visible,
+                "modulos": modulos,
+            })
+        return resultado
+    except Exception:
+        return []
+
+
 # --- NUEVO: EL COLABORADOR PROPONE CURSO+MÓDULO Y DOCENTE ---
-def enviar_curso_modulo_supabase(empresa_id, nombre_empresa, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias):
+def enviar_curso_modulo_supabase(empresa_id, nombre_empresa, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias, sector=None, subsector=None):
     if not SUPABASE_DISPONIBLE:
         return False
     try:
@@ -777,7 +939,9 @@ def enviar_curso_modulo_supabase(empresa_id, nombre_empresa, referencia, nombre_
                 "empresa_id": empresa_id,
                 "estado": "pendiente",
                 "horas_totales": horas or None,
-                "competencias": competencias
+                "competencias": competencias,
+                "sector": sector or None,
+                "subsector": subsector or None
             }).execute()
 
         modulos_existentes = cliente.table("modulos").select("subcodigo").eq("codigo_curso", referencia).execute().data
@@ -1325,7 +1489,7 @@ def _cargar_docentes_curso(codigo):
         return []
 
 
-def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias, nombre_empresa):
+def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias, nombre_empresa, sector=None, subsector=None):
     """
     Relación de catálogo por código de curso.
 
@@ -1343,7 +1507,7 @@ def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modul
 
     ok = enviar_curso_modulo_supabase(
         empresa_id, nombre_empresa, referencia, nombre_curso, nombre_modulo,
-        nivel, horas, competencias
+        nivel, horas, competencias, sector, subsector
     )
     if not ok:
         return None
@@ -1584,6 +1748,8 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         )
 
         curso_existente = _cargar_curso_por_codigo(referencia.strip()) if referencia.strip() else None
+        sector_curso = None
+        subsector_curso = None
 
         if curso_existente:
             nombre_catalogo = curso_existente.get("nombre_es") or curso_existente.get("nombre_ca") or referencia.strip()
@@ -1601,6 +1767,12 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
             c3, c4 = st.columns(2)
             horas = c3.text_input(T["campo_horas_totales"], key=f"{key_prefix}_nuevo_horas_{cv}")
             competencias = c4.text_area(T["campo_competencias"], key=f"{key_prefix}_nuevo_comp_{cv}")
+
+            c5, c6 = st.columns(2)
+            nombres_sectores_curso = [d["sector"] for d in SECTORES_INDUSTRIALES]
+            sector_curso = c5.selectbox(T["campo_sector_curso"], nombres_sectores_curso, key=f"{key_prefix}_nuevo_sector_{cv}")
+            subsectores_curso_opts = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_curso)
+            subsector_curso = c6.selectbox(T["campo_subsector_curso"], subsectores_curso_opts, key=f"{key_prefix}_nuevo_subsector_{cv}")
 
         # -----------------------------------------------------------
         # DOCENTES
@@ -1730,6 +1902,8 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                             horas.strip(),
                             competencias.strip(),
                             nombre_empresa,
+                            sector_curso,
+                            subsector_curso,
                         )
                         if not curso:
                             raise RuntimeError("No se pudo crear el curso." if lang == "es" else "No s’ha pogut crear el curs.")
@@ -2237,12 +2411,178 @@ if st.session_state.get("acceso_panel"):
     elif acceso_panel == "candidato":
         st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
         st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
-        st.info("Este acceso estará disponible próximamente.")
+
+        cand_login_key = "cand_login_ok"
+        cand_id_key = "cand_id"
+        cand_nombre_key = "cand_nombre"
+        cand_sector_key = "cand_sector_sel"
+        cand_subsector_key = "cand_subsector_sel"
+        cand_ubic_key = "cand_ubic_sel"
+
+        if not st.session_state.get(cand_login_key):
+            st.markdown("---")
+            cand_usuario_in = st.text_input(T["usuario"], key="cand_user_in")
+            cand_pass_in = st.text_input(T["password"], type="password", key="cand_pass_in")
+            if st.button(T["btn_acceder"], key="cand_btn_acceder"):
+                fila_cand = verificar_credencial_candidato_supabase(cand_usuario_in, cand_pass_in)
+                if fila_cand:
+                    st.session_state[cand_login_key] = True
+                    st.session_state[cand_id_key] = fila_cand.get("id")
+                    st.session_state[cand_nombre_key] = f"{fila_cand.get('nombre', '')} {fila_cand.get('apellido', '')}".strip()
+                    st.rerun()
+                else:
+                    st.error(T["error_acceso_participar"])
+
+            # --- FORMULARIO DE REGISTRO DE CANDIDATO ---
+            cand_reg_version = st.session_state.get("cand_reg_version", 0)
+            cand_mensaje_ok = st.session_state.pop("cand_reg_ok", None)
+            if cand_mensaje_ok:
+                st.markdown(f"## ✅ {cand_mensaje_ok}")
+
+            with st.expander(T["solicitar_alta"]):
+                st.warning(T["aviso_fijo_registro"])
+
+                cand_nombre = st.text_input(T["campo_nombre_candidato"], key=f"cand_reg_nombre_{cand_reg_version}")
+                cand_apellido = st.text_input(T["campo_apellido_candidato"], key=f"cand_reg_apellido_{cand_reg_version}")
+
+                cc1, cc2 = st.columns(2)
+                cand_dni = cc1.text_input(T["campo_dni_candidato"], key=f"cand_reg_dni_{cand_reg_version}")
+                cand_edad = cc2.text_input(T["campo_edad_candidato"], key=f"cand_reg_edad_{cand_reg_version}")
+
+                cc3, cc4 = st.columns(2)
+                cand_telefono = cc3.text_input(T["campo_telefono"], key=f"cand_reg_tel_{cand_reg_version}")
+                cand_email = cc4.text_input(T["campo_email"], key=f"cand_reg_email_{cand_reg_version}")
+
+                cand_direccion = st.text_input(T["campo_direccion_candidato"], key=f"cand_reg_dir_{cand_reg_version}")
+
+                cc5, cc6 = st.columns(2)
+                cand_provincia = cc5.text_input(T["campo_provincia"], key=f"cand_reg_prov_{cand_reg_version}")
+                cand_poblacion = cc6.text_input(T["campo_poblacion"], key=f"cand_reg_pob_{cand_reg_version}")
+
+                cc7, cc8 = st.columns(2)
+                cand_usuario_deseado = cc7.text_input(T["campo_usuario_deseado"], key=f"cand_reg_usuario_{cand_reg_version}")
+                cand_contrasena_deseada = cc8.text_input(T["campo_contrasena_deseada"], type="password", key=f"cand_reg_contrasena_{cand_reg_version}")
+
+                if st.button(T["enviar_solicitud"], key="cand_reg_btn_enviar"):
+                    campos_obligatorios_cand = [
+                        cand_nombre, cand_apellido, cand_dni, cand_edad,
+                        cand_telefono, cand_direccion, cand_poblacion, cand_provincia, cand_email
+                    ]
+                    if not all(c.strip() for c in campos_obligatorios_cand):
+                        st.warning(T["campo_vacio_candidato"])
+                    elif not cand_usuario_deseado.strip() or not cand_contrasena_deseada.strip():
+                        st.warning(T["campo_vacio_usuario_contrasena"])
+                    else:
+                        campos_cand = {
+                            "nombre": cand_nombre.strip(),
+                            "apellido": cand_apellido.strip(),
+                            "dni_nif_nie": cand_dni.strip(),
+                            "edad": cand_edad.strip(),
+                            "telefono": cand_telefono.strip(),
+                            "direccion": cand_direccion.strip(),
+                            "poblacion": cand_poblacion.strip(),
+                            "provincia": cand_provincia.strip(),
+                            "email": cand_email.strip(),
+                        }
+                        if enviar_peticion_registro_candidato_supabase(campos_cand, cand_usuario_deseado.strip(), cand_contrasena_deseada.strip()):
+                            st.session_state["cand_reg_ok"] = T["solicitud_pendiente_aviso"]
+                            st.session_state["cand_reg_version"] = cand_reg_version + 1
+                            st.rerun()
+                        else:
+                            st.error(T["error_busqueda_perfil"])
+
+        else:
+            cand_nombre_mostrar = st.session_state.get(cand_nombre_key, "")
+            st.success(f"{T['acceso_concedido']} {cand_nombre_mostrar}")
+
+            cand_sector_actual = st.session_state.get(cand_sector_key)
+            cand_subsector_actual = st.session_state.get(cand_subsector_key)
+            cand_ubicacion_actual = st.session_state.get(cand_ubic_key)
+
+            if not cand_sector_actual:
+                for i in range(0, len(SECTORES_INDUSTRIALES), 3):
+                    fila_sectores_cand = SECTORES_INDUSTRIALES[i:i + 3]
+                    cols_sectores_cand = st.columns(3)
+                    for col, datos_sector in zip(cols_sectores_cand, fila_sectores_cand):
+                        with col:
+                            if st.button(datos_sector["sector"], key=f"cand_sector_btn_{datos_sector['sector']}", use_container_width=True):
+                                st.session_state[cand_sector_key] = datos_sector["sector"]
+                                st.rerun()
+
+            elif not cand_subsector_actual:
+                st.markdown(f"**{cand_sector_actual}**")
+                subsectores_cand = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == cand_sector_actual)
+                for i in range(0, len(subsectores_cand), 3):
+                    fila_subsectores_cand = subsectores_cand[i:i + 3]
+                    cols_subsectores_cand = st.columns(3)
+                    for col, sub in zip(cols_subsectores_cand, fila_subsectores_cand):
+                        with col:
+                            if st.button(sub, key=f"cand_subsector_btn_{sub}", use_container_width=True):
+                                st.session_state[cand_subsector_key] = sub
+                                st.rerun()
+                if st.button(T["cambiar_sector"], key="cand_cambiar_sector_btn"):
+                    st.session_state[cand_sector_key] = None
+                    st.rerun()
+
+            elif not cand_ubicacion_actual:
+                st.markdown(f"**{cand_sector_actual}** — {cand_subsector_actual}")
+                ubicaciones_cand = obtener_ubicaciones_cursos_sector(cand_sector_actual, cand_subsector_actual)
+                if not ubicaciones_cand:
+                    st.info(T["sin_cursos_ubicacion"])
+                else:
+                    etiquetas_cand = [f"{pob} ({prov})" for prov, pob in ubicaciones_cand]
+                    seleccion_cand = st.selectbox(T["seleccionar_ubicacion_curso"], etiquetas_cand, key="cand_ubic_select")
+                    if st.button(T["ver_cursos_ubicacion"], key="cand_ver_cursos_btn"):
+                        idx_cand = etiquetas_cand.index(seleccion_cand)
+                        st.session_state[cand_ubic_key] = ubicaciones_cand[idx_cand]
+                        st.rerun()
+                if st.button(T["cambiar_sector"], key="cand_cambiar_subsector_btn"):
+                    st.session_state[cand_subsector_key] = None
+                    st.rerun()
+
+            else:
+                provincia_sel_cand, poblacion_sel_cand = cand_ubicacion_actual
+                st.markdown(f"**{cand_sector_actual}** — {cand_subsector_actual} — {poblacion_sel_cand} ({provincia_sel_cand})")
+                cursos_encontrados_cand = obtener_cursos_candidato(cand_sector_actual, cand_subsector_actual, provincia_sel_cand, poblacion_sel_cand)
+                if not cursos_encontrados_cand:
+                    st.info(T["sin_cursos_ubicacion"])
+                else:
+                    for curso_cand in cursos_encontrados_cand:
+                        with st.container(border=True):
+                            st.markdown(f"**{curso_cand['nombre_curso']}**")
+                            st.caption(f"{T['campo_nombre_centro']}: {curso_cand['nombre_centro']}")
+                            estado_txt_cand = T["curso_estado_cursado"] if curso_cand["estado"] == "cursado" else T["curso_estado_en_curso"]
+                            st.write(f"**{T['estado']}** {estado_txt_cand}")
+                            if curso_cand.get("horas_totales"):
+                                st.write(f"**{T['campo_horas_totales']}:** {curso_cand['horas_totales']}")
+                            if curso_cand.get("competencias"):
+                                st.write(f"**{T['campo_competencias']}:** {curso_cand['competencias']}")
+                            if curso_cand.get("modulos"):
+                                st.write(f"**{T['modulos_curso']}:**")
+                                for m in curso_cand["modulos"]:
+                                    desc_m = m.get("descripcion_es") or ""
+                                    niv_m = m.get("nivel_bloque") or ""
+                                    st.write(f"- {desc_m}" + (f" ({niv_m})" if niv_m else ""))
+                if st.button(T["cambiar_sector"], key="cand_cambiar_ubic_btn"):
+                    st.session_state[cand_ubic_key] = None
+                    st.rerun()
+
+            st.markdown("---")
+            if st.button(T["cerrar_sesion"], key="cand_btn_cerrar_sesion"):
+                st.session_state[cand_login_key] = False
+                st.session_state[cand_id_key] = ""
+                st.session_state[cand_nombre_key] = ""
+                st.session_state[cand_sector_key] = None
+                st.session_state[cand_subsector_key] = None
+                st.session_state[cand_ubic_key] = None
+                st.rerun()
+
         if st.button("← Volver a Documentación", key="volver_desde_candidatos", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     st.markdown('</div>', unsafe_allow_html=True)
+
 
 elif opcion == T["menu_docs"]:
 
@@ -2377,7 +2717,7 @@ elif opcion == T["menu_docs"]:
         }
         /* Solo cambia el fondo de las pestañas de empresa a gris. */
         div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div[data-testid="stExpander"] summary {
-            background: #f5f5f5 !important;
+            background: #808080 !important;
         }
         </style>""", unsafe_allow_html=True)
         st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
