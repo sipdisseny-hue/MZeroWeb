@@ -55,21 +55,40 @@ st.markdown(
         height: 26px !important;
     }
 
-    /* Botón para CERRAR el menú lateral cuando está abierto */
-    section[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
-    section[data-testid="stSidebar"] button[kind="header"] {
+    /* Botón para CERRAR el menú lateral cuando está abierto (varios nombres
+       posibles según la versión de Streamlit instalada) */
+    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"],
+    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] button,
+    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"],
+    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"] button,
+    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"],
+    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button,
+    section[data-testid="stSidebar"] button[kind="header"],
+    section[data-testid="stSidebar"] button[kind="headerNoPadding"],
+    section[data-testid="stSidebar"] > div:first-child button:first-of-type {
         background-color: #0066cc !important;
         border-radius: 8px !important;
         width: 40px !important;
         height: 40px !important;
         box-shadow: 0 2px 6px rgba(0,0,0,0.25) !important;
+        opacity: 1 !important;
     }
-    section[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"]:hover,
-    section[data-testid="stSidebar"] button[kind="header"]:hover {
+    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"]:hover,
+    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"]:hover,
+    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"]:hover,
+    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button:hover,
+    section[data-testid="stSidebar"] button[kind="header"]:hover,
+    section[data-testid="stSidebar"] button[kind="headerNoPadding"]:hover,
+    section[data-testid="stSidebar"] > div:first-child button:first-of-type:hover {
         background-color: #0052a3 !important;
     }
-    section[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"] svg,
-    section[data-testid="stSidebar"] button[kind="header"] svg {
+    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] svg,
+    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"] svg,
+    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"] svg,
+    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button svg,
+    section[data-testid="stSidebar"] button[kind="header"] svg,
+    section[data-testid="stSidebar"] button[kind="headerNoPadding"] svg,
+    section[data-testid="stSidebar"] > div:first-child button:first-of-type svg {
         color: #ffffff !important;
         fill: #ffffff !important;
         width: 22px !important;
