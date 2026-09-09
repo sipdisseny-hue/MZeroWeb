@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import requests
 import re
@@ -27,73 +28,70 @@ if SUPABASE_DISPONIBLE:
 st.set_page_config(page_title="MZero Web", layout="wide")
 
 # --- BOTÓN DE COLAPSAR/EXPANDIR EL MENÚ LATERAL: MÁS GRANDE Y VISIBLE ---
-st.markdown(
+# No dependemos del nombre interno del botón (cambia según la versión de
+# Streamlit): lo localizamos por su tamaño y posición en pantalla, así
+# funciona sin importar la versión instalada. No se fuerza ancho/alto para
+# no romper el diseño del resto de la barra lateral: solo color, sombra y
+# algo de relleno (padding).
+components.html(
     """
-    <style>
-    /* Botón para VOLVER A ABRIR el menú lateral cuando está oculto */
-    [data-testid="collapsedControl"] {
-        background-color: #0066cc !important;
-        border-radius: 0 10px 10px 0 !important;
-        width: 46px !important;
-        height: 64px !important;
-        top: 12px !important;
-        left: 0 !important;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.30) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        transition: width 0.15s ease-in-out;
-    }
-    [data-testid="collapsedControl"]:hover {
-        width: 56px !important;
-        background-color: #0052a3 !important;
-    }
-    [data-testid="collapsedControl"] svg {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-        width: 26px !important;
-        height: 26px !important;
-    }
+    <script>
+    (function () {
+        function estilizarBotonMenu() {
+            var doc = window.parent.document;
 
-    /* Botón para CERRAR el menú lateral cuando está abierto (varios nombres
-       posibles según la versión de Streamlit instalada) */
-    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"],
-    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] button,
-    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"],
-    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"] button,
-    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"],
-    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button,
-    section[data-testid="stSidebar"] button[kind="header"],
-    section[data-testid="stSidebar"] button[kind="headerNoPadding"] {
-        background-color: #0066cc !important;
-        border-radius: 8px !important;
-        width: 40px !important;
-        height: 40px !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.25) !important;
-        opacity: 1 !important;
-    }
-    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"]:hover,
-    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"]:hover,
-    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"]:hover,
-    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button:hover,
-    section[data-testid="stSidebar"] button[kind="header"]:hover,
-    section[data-testid="stSidebar"] button[kind="headerNoPadding"]:hover {
-        background-color: #0052a3 !important;
-    }
-    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] *,
-    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"] *,
-    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"] *,
-    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button *,
-    section[data-testid="stSidebar"] button[kind="header"] *,
-    section[data-testid="stSidebar"] button[kind="headerNoPadding"] * {
-        color: #ffffff !important;
-        fill: #ffffff !important;
-        width: 22px !important;
-        height: 22px !important;
-    }
-    </style>
+            // Botón para REABRIR el menú cuando está oculto (aparece flotando
+            // arriba a la izquierda, encima del contenido principal).
+            var candidatosAbrir = doc.querySelectorAll('button, [role="button"]');
+            candidatosAbrir.forEach(function (el) {
+                var r = el.getBoundingClientRect();
+                var esPequeno = r.width > 0 && r.width < 55 && r.height > 0 && r.height < 55;
+                var arribaIzquierda = r.top < 70 && r.left < 70;
+                if (esPequeno && arribaIzquierda && !el.dataset.mzeroEstilado) {
+                    el.dataset.mzeroEstilado = "1";
+                    el.style.setProperty('background-color', '#0066cc', 'important');
+                    el.style.setProperty('border-radius', '0 10px 10px 0', 'important');
+                    el.style.setProperty('box-shadow', '0 3px 10px rgba(0,0,0,0.30)', 'important');
+                    el.style.setProperty('padding', '10px 12px', 'important');
+                    el.style.setProperty('opacity', '1', 'important');
+                    el.querySelectorAll('*').forEach(function (hijo) {
+                        hijo.style.setProperty('color', '#ffffff', 'important');
+                        hijo.style.setProperty('fill', '#ffffff', 'important');
+                    });
+                }
+            });
+
+            // Botón para CERRAR el menú cuando está abierto (arriba del todo,
+            // dentro de la propia barra lateral).
+            var sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+            if (sidebar) {
+                var candidatosCerrar = sidebar.querySelectorAll('button');
+                for (var i = 0; i < candidatosCerrar.length; i++) {
+                    var btn = candidatosCerrar[i];
+                    var rb = btn.getBoundingClientRect();
+                    var esPequenoB = rb.width > 0 && rb.width < 55 && rb.height > 0 && rb.height < 55;
+                    if (esPequenoB && rb.top < 130 && !btn.dataset.mzeroEstilado) {
+                        btn.dataset.mzeroEstilado = "1";
+                        btn.style.setProperty('background-color', '#0066cc', 'important');
+                        btn.style.setProperty('border-radius', '8px', 'important');
+                        btn.style.setProperty('box-shadow', '0 2px 6px rgba(0,0,0,0.25)', 'important');
+                        btn.style.setProperty('padding', '8px', 'important');
+                        btn.querySelectorAll('*').forEach(function (hijo) {
+                            hijo.style.setProperty('color', '#ffffff', 'important');
+                            hijo.style.setProperty('fill', '#ffffff', 'important');
+                        });
+                        break;
+                    }
+                }
+            }
+        }
+
+        estilizarBotonMenu();
+        setInterval(estilizarBotonMenu, 800);
+    })();
+    </script>
     """,
-    unsafe_allow_html=True,
+    height=0,
 )
 
 # --- DICCIONARIO DE TRADUCCIONES (IDIOMAS) ---
@@ -118,7 +116,8 @@ TEXTOS = {
         "colaboradores": "Colaboradores",
         "funcionalidad": "Funcionalidad",
         "contacto": "Contacto",
-        "como_participar": "Cómo participar",
+        "como_participar": "Manual de uso",
+        "manual_uso_ayuda_video": "Para insertar un vídeo (YouTube, Vimeo...), pega aquí el código de inserción del vídeo (en YouTube: Compartir → Insertar → copiar código).",
         "eslogan": "Conectando talento, transformando la industria",
         "aviso_login_eval": "Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.",
         "profesor": "Profesor",
@@ -345,7 +344,8 @@ TEXTOS = {
         "colaboradores": "Col·laboradors",
         "funcionalidad": "Funcionalitat",
         "contacto": "Contacte",
-        "como_participar": "Com participar",
+        "como_participar": "Manual d'ús",
+        "manual_uso_ayuda_video": "Per inserir un vídeo (YouTube, Vimeo...), enganxa aquí el codi d'inserció del vídeo (a YouTube: Compartir → Insertar → copiar codi).",
         "eslogan": "Connectant talent, transformant la indústria",
         "aviso_login_eval": "Has d'iniciar sessió al sidebar per accedir al mòdul d'avaluacions.",
         "profesor": "Professor",
@@ -1234,6 +1234,7 @@ def refrescar_app():
     st.session_state.contenido_funcionalidad = {key: nuevos_datos.get(key, "") for key in claves_funcionalidad}
     st.session_state.contenido_exp = {key: nuevos_datos.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
     st.session_state.contenido_contacto = {key: nuevos_datos.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
+    st.session_state.contenido_manual_uso = nuevos_datos.get("Manual de uso", "")
     st.rerun()
 
 # --- INICIALIZACIÓN DE ESTADOS ---
@@ -2762,6 +2763,9 @@ elif opcion == T["menu_docs"]:
         if 'contenido_contacto' not in st.session_state:
             st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
 
+        if 'contenido_manual_uso' not in st.session_state:
+            st.session_state.contenido_manual_uso = datos_iniciales.get("Manual de uso", "")
+
     st.markdown(f"## {T['area_docs']}")
     
     with st.container(border=True):
@@ -2963,8 +2967,31 @@ elif opcion == T["menu_docs"]:
                         refrescar_app()
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
 
-    # --- BLOQUE: CÓMO PARTICIPAR ---
+    # --- BLOQUE: MANUAL DE USO (antes "Cómo participar") ---
     st.markdown(f"## {T['como_participar']}")
+
+    if 'contenido_manual_uso' not in st.session_state:
+        st.session_state.contenido_manual_uso = ""
+
+    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+        with st.expander(f"✏️ Editar {T['como_participar']}"):
+            st.caption(T["manual_uso_ayuda_video"])
+            nuevo_manual = st.text_area(
+                f"Editar {T['como_participar']}:",
+                value=st.session_state.contenido_manual_uso,
+                height=180,
+                key="input_manual_uso",
+            )
+            if st.button(f"Guardar {T['como_participar']}", key="btn_save_manual_uso"):
+                st.session_state.contenido_manual_uso = nuevo_manual
+                if guardar_en_sheets("Manual de uso", nuevo_manual):
+                    st.success("Guardado en Google y localmente")
+                else:
+                    st.warning("Guardado solo localmente (Error en Sheets)")
+                st.rerun()
+
+    if st.session_state.contenido_manual_uso:
+        st.markdown(st.session_state.contenido_manual_uso, unsafe_allow_html=True)
 
     instrucciones_participar = cargar_instrucciones_participar()
 
