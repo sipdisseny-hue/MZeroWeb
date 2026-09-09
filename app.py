@@ -26,6 +26,60 @@ if SUPABASE_DISPONIBLE:
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
 
+# --- BOTÓN DE COLAPSAR/EXPANDIR EL MENÚ LATERAL: MÁS GRANDE Y VISIBLE ---
+st.markdown(
+    """
+    <style>
+    /* Botón para VOLVER A ABRIR el menú lateral cuando está oculto */
+    [data-testid="collapsedControl"] {
+        background-color: #0066cc !important;
+        border-radius: 0 10px 10px 0 !important;
+        width: 46px !important;
+        height: 64px !important;
+        top: 12px !important;
+        left: 0 !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.30) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: width 0.15s ease-in-out;
+    }
+    [data-testid="collapsedControl"]:hover {
+        width: 56px !important;
+        background-color: #0052a3 !important;
+    }
+    [data-testid="collapsedControl"] svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        width: 26px !important;
+        height: 26px !important;
+    }
+
+    /* Botón para CERRAR el menú lateral cuando está abierto */
+    section[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"],
+    section[data-testid="stSidebar"] button[kind="header"] {
+        background-color: #0066cc !important;
+        border-radius: 8px !important;
+        width: 40px !important;
+        height: 40px !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25) !important;
+    }
+    section[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"]:hover,
+    section[data-testid="stSidebar"] button[kind="header"]:hover {
+        background-color: #0052a3 !important;
+    }
+    section[data-testid="stSidebar"] button[data-testid="stSidebarCollapseButton"] svg,
+    section[data-testid="stSidebar"] button[kind="header"] svg {
+        color: #ffffff !important;
+        fill: #ffffff !important;
+        width: 22px !important;
+        height: 22px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # --- DICCIONARIO DE TRADUCCIONES (IDIOMAS) ---
 TEXTOS = {
     "es": {
@@ -119,6 +173,10 @@ TEXTOS = {
         "campo_competencias": "Competencias adquiridas",
         "campo_sector_curso": "Sector del curso",
         "campo_subsector_curso": "Subsector del curso",
+        "editar_sector_cursos": "Sector / subsector de mis cursos",
+        "sin_cursos_para_editar": "Todavía no tienes cursos en el catálogo.",
+        "guardar_sector_curso": "Guardar sector/subsector",
+        "sector_curso_actualizado": "Sector y subsector actualizados correctamente.",
         "campo_nombre_candidato": "Nombre",
         "campo_apellido_candidato": "Apellido",
         "campo_dni_candidato": "DNI / NIF / NIE",
@@ -336,6 +394,10 @@ TEXTOS = {
         "campo_competencias": "Competències adquirides",
         "campo_sector_curso": "Sector del curs",
         "campo_subsector_curso": "Subsector del curs",
+        "editar_sector_cursos": "Sector / subsector dels meus cursos",
+        "sin_cursos_para_editar": "Encara no tens cursos al catàleg.",
+        "guardar_sector_curso": "Desar sector/subsector",
+        "sector_curso_actualizado": "Sector i subsector actualitzats correctament.",
         "campo_nombre_candidato": "Nom",
         "campo_apellido_candidato": "Cognom",
         "campo_dni_candidato": "DNI / NIF / NIE",
