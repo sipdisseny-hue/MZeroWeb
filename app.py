@@ -64,8 +64,7 @@ st.markdown(
     section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"],
     section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button,
     section[data-testid="stSidebar"] button[kind="header"],
-    section[data-testid="stSidebar"] button[kind="headerNoPadding"],
-    section[data-testid="stSidebar"] > div:first-child button:first-of-type {
+    section[data-testid="stSidebar"] button[kind="headerNoPadding"] {
         background-color: #0066cc !important;
         border-radius: 8px !important;
         width: 40px !important;
@@ -78,17 +77,15 @@ st.markdown(
     section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"]:hover,
     section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button:hover,
     section[data-testid="stSidebar"] button[kind="header"]:hover,
-    section[data-testid="stSidebar"] button[kind="headerNoPadding"]:hover,
-    section[data-testid="stSidebar"] > div:first-child button:first-of-type:hover {
+    section[data-testid="stSidebar"] button[kind="headerNoPadding"]:hover {
         background-color: #0052a3 !important;
     }
-    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] svg,
-    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"] svg,
-    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"] svg,
-    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button svg,
-    section[data-testid="stSidebar"] button[kind="header"] svg,
-    section[data-testid="stSidebar"] button[kind="headerNoPadding"] svg,
-    section[data-testid="stSidebar"] > div:first-child button:first-of-type svg {
+    section[data-testid="stSidebar"] [data-testid="stSidebarCollapseButton"] *,
+    section[data-testid="stSidebar"] [data-testid="stSidebarNavCollapseButton"] *,
+    section[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"] *,
+    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"] button *,
+    section[data-testid="stSidebar"] button[kind="header"] *,
+    section[data-testid="stSidebar"] button[kind="headerNoPadding"] * {
         color: #ffffff !important;
         fill: #ffffff !important;
         width: 22px !important;
