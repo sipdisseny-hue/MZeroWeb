@@ -159,6 +159,12 @@ TEXTOS = {
         "cambiar_sector": "⬅ Cambiar de sector",
         "acceso_concedido": "Acceso concedido:",
         "error_acceso_participar": "Usuario o contraseña incorrectos, o no estás inscrito.",
+        "olvide_contrasena": "¿Has olvidado la contraseña?",
+        "olvide_contrasena_intro": "Indica tu usuario o email y avisaremos al administrador para que te la reenvíe.",
+        "olvide_contrasena_campo": "Usuario o email",
+        "olvide_contrasena_btn": "Avisar al administrador",
+        "olvide_contrasena_enviado": "Aviso enviado. Te reenviaremos el acceso por email en breve.",
+        "olvide_contrasena_vacio": "Indica tu usuario o email antes de avisar.",
         "solicitar_alta": "¿Todavía no estás dado de alta? Solicita el registro",
         "aviso_fijo_registro": "⚠️ Tras enviar la solicitud, revisaremos los datos y le enviaremos por email su acceso en unas horas.",
         "enviar_solicitud": "Enviar solicitud",
@@ -380,6 +386,12 @@ TEXTOS = {
         "cambiar_sector": "⬅ Canviar de sector",
         "acceso_concedido": "Accés concedit:",
         "error_acceso_participar": "Usuari o contrasenya incorrectes, o no estàs inscrit.",
+        "olvide_contrasena": "Has oblidat la contrasenya?",
+        "olvide_contrasena_intro": "Indica el teu usuari o email i avisarem l'administrador perquè te'l torni a enviar.",
+        "olvide_contrasena_campo": "Usuari o email",
+        "olvide_contrasena_btn": "Avisar l'administrador",
+        "olvide_contrasena_enviado": "Avís enviat. Et reenviarem l'accés per email en breu.",
+        "olvide_contrasena_vacio": "Indica el teu usuari o email abans d'avisar.",
         "solicitar_alta": "Encara no estàs donat d'alta? Sol·licita el registre",
         "aviso_fijo_registro": "⚠️ Un cop enviada la sol·licitud, revisarem les dades i li enviarem per email el seu accés en unes hores.",
         "enviar_solicitud": "Enviar sol·licitud",
@@ -826,6 +838,24 @@ def crear_notificacion(tipo, mensaje):
     destinatario_admin = st.secrets.get("EMAIL_NOTIFY_TO", st.secrets.get("EMAIL_USER", ""))
     if destinatario_admin:
         enviar_email(destinatario_admin, "M-Zero: nueva petición", mensaje)
+
+
+def mostrar_olvide_contrasena(tipo_texto, key_prefix):
+    """Enlace '¿Has olvidado la contraseña?' reutilizable en cualquier
+    pantalla de acceso. No recupera nada automáticamente: solo notifica
+    al administrador (por email) para que reenvíe el acceso manualmente."""
+    with st.expander(T["olvide_contrasena"]):
+        st.caption(T["olvide_contrasena_intro"])
+        dato_olvide = st.text_input(T["olvide_contrasena_campo"], key=f"{key_prefix}_olvide_dato")
+        if st.button(T["olvide_contrasena_btn"], key=f"{key_prefix}_olvide_btn"):
+            if dato_olvide.strip():
+                crear_notificacion(
+                    "contrasena",
+                    f"Solicitud de recuperación de contraseña ({tipo_texto}): {dato_olvide.strip()}"
+                )
+                st.success(T["olvide_contrasena_enviado"])
+            else:
+                st.warning(T["olvide_contrasena_vacio"])
 
 
 # --- NUEVO: REGISTRO Y LOGIN DE EMPRESAS (Colaboradores) CONTRA SUPABASE ---
@@ -2037,6 +2067,52 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
     # MIS CURSOS
     # ---------------------------------------------------------------
     with tab_mis:
+        with st.expander(f"🏷️ {T['editar_sector_cursos']}"):
+            try:
+                cursos_propios = (
+                    obtener_cliente_supabase()
+                    .table("cursos")
+                    .select("*")
+                    .eq("empresa_id", empresa_id)
+                    .execute().data
+                )
+            except Exception:
+                cursos_propios = []
+
+            if not cursos_propios:
+                st.caption(T["sin_cursos_para_editar"])
+            else:
+                nombres_sectores_edit = [d["sector"] for d in SECTORES_INDUSTRIALES]
+                for curso_e in cursos_propios:
+                    codigo_e = curso_e.get("codigo_curso")
+                    st.markdown(f"**{codigo_e} · {curso_e.get('nombre_es', '')}**")
+
+                    sector_actual_e = curso_e.get("sector")
+                    idx_sector = nombres_sectores_edit.index(sector_actual_e) if sector_actual_e in nombres_sectores_edit else 0
+                    ce1, ce2 = st.columns(2)
+                    sector_edit = ce1.selectbox(
+                        T["campo_sector_curso"], nombres_sectores_edit, index=idx_sector,
+                        key=f"{key_prefix}_edit_sector_{codigo_e}"
+                    )
+                    subsectores_edit_opts = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_edit)
+                    subsector_actual_e = curso_e.get("subsector")
+                    idx_subsector = subsectores_edit_opts.index(subsector_actual_e) if subsector_actual_e in subsectores_edit_opts else 0
+                    subsector_edit = ce2.selectbox(
+                        T["campo_subsector_curso"], subsectores_edit_opts, index=idx_subsector,
+                        key=f"{key_prefix}_edit_subsector_{codigo_e}"
+                    )
+                    if st.button(T["guardar_sector_curso"], key=f"{key_prefix}_edit_sector_btn_{codigo_e}"):
+                        try:
+                            obtener_cliente_supabase().table("cursos").update({
+                                "sector": sector_edit,
+                                "subsector": subsector_edit
+                            }).eq("codigo_curso", codigo_e).execute()
+                            st.success(T["sector_curso_actualizado"])
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error al guardar: {e}")
+                    st.divider()
+
         ediciones = _cargar_ediciones_colaborador(empresa_id)
         if not ediciones:
             st.info(T["mis_cursos_info"])
@@ -2305,6 +2381,8 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
                 else:
                     st.error(T["error_acceso_participar"])
 
+        mostrar_olvide_contrasena(tipo, key_prefix)
+
         if tipo == "colaborador" and usar_supabase:
             mostrar_formulario_registro = bloque_seleccion_plan_colaborador(key_prefix)
             if mostrar_formulario_registro:
@@ -2510,6 +2588,8 @@ if st.session_state.get("acceso_panel"):
                     st.rerun()
                 else:
                     st.error(T["error_acceso_participar"])
+
+            mostrar_olvide_contrasena("candidato", "cand")
 
             # --- FORMULARIO DE REGISTRO DE CANDIDATO ---
             cand_reg_version = st.session_state.get("cand_reg_version", 0)
@@ -2793,7 +2873,7 @@ elif opcion == T["menu_docs"]:
         div[data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
             color: #ffffff !important;
         }
-        /* Solo cambia el fondo de las pestañas de empresa a gris. */
+        /* Solo cambia el fondo de las pestañas de empresa. */
         div[data-testid="stExpander"] [data-testid="stExpanderDetails"] div[data-testid="stExpander"] summary {
             background: #f5f5f5 !important;
         }
@@ -2940,6 +3020,8 @@ elif opcion == T["menu_eval"]:
                         st.error(T["error_acceso_participar"])
                 except Exception as e:
                     st.error(f"Error de conexión: {e}")
+
+            mostrar_olvide_contrasena("docente", "docente")
         else:
             docente_info = st.session_state.docente_info
             nombre_docente = docente_info.get("nombre") or docente_info.get("usuario")
