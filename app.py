@@ -1234,7 +1234,6 @@ def refrescar_app():
     st.session_state.contenido_funcionalidad = {key: nuevos_datos.get(key, "") for key in claves_funcionalidad}
     st.session_state.contenido_exp = {key: nuevos_datos.get(key, "") for key in ["Mecanizado", "Climatización", "Fontanería", "Electricidad", "Obra", "Electromecánica", "Hidráulica", "Construcción Mecánica", "Asociaciones y Gremios"]}
     st.session_state.contenido_contacto = {key: nuevos_datos.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
-    st.session_state.contenido_manual_uso = nuevos_datos.get("Manual de uso", "")
     st.rerun()
 
 # --- INICIALIZACIÓN DE ESTADOS ---
@@ -2763,9 +2762,6 @@ elif opcion == T["menu_docs"]:
         if 'contenido_contacto' not in st.session_state:
             st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
 
-        if 'contenido_manual_uso' not in st.session_state:
-            st.session_state.contenido_manual_uso = datos_iniciales.get("Manual de uso", "")
-
     st.markdown(f"## {T['area_docs']}")
     
     with st.container(border=True):
@@ -2966,32 +2962,6 @@ elif opcion == T["menu_docs"]:
                         st.session_state.contenido_contacto[titulo] = nuevo_cont
                         refrescar_app()
             st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
-
-    # --- BLOQUE: MANUAL DE USO (antes "Cómo participar") ---
-    st.markdown(f"## {T['como_participar']}")
-
-    if 'contenido_manual_uso' not in st.session_state:
-        st.session_state.contenido_manual_uso = ""
-
-    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-        with st.expander(f"✏️ Editar {T['como_participar']}"):
-            st.caption(T["manual_uso_ayuda_video"])
-            nuevo_manual = st.text_area(
-                f"Editar {T['como_participar']}:",
-                value=st.session_state.contenido_manual_uso,
-                height=180,
-                key="input_manual_uso",
-            )
-            if st.button(f"Guardar {T['como_participar']}", key="btn_save_manual_uso"):
-                st.session_state.contenido_manual_uso = nuevo_manual
-                if guardar_en_sheets("Manual de uso", nuevo_manual):
-                    st.success("Guardado en Google y localmente")
-                else:
-                    st.warning("Guardado solo localmente (Error en Sheets)")
-                st.rerun()
-
-    if st.session_state.contenido_manual_uso:
-        st.markdown(st.session_state.contenido_manual_uso, unsafe_allow_html=True)
 
     instrucciones_participar = cargar_instrucciones_participar()
 
