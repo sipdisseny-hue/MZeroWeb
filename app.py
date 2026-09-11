@@ -48,22 +48,31 @@ def _escapar_html(texto):
 
 def convertir_odt_a_html(archivo_subido):
     """Lee un .odt subido por el usuario y devuelve su contenido en HTML,
-    conservando negrita, cursiva, subrayado, títulos y listas."""
+    conservando negrita, cursiva, subrayado, alineación, títulos y listas."""
     with zipfile.ZipFile(archivo_subido) as z:
         contenido_xml = z.read('content.xml')
     root = ET.fromstring(contenido_xml)
 
-    # Reunimos qué estilos (por nombre) llevan negrita/cursiva/subrayado
+    _MAPA_ALINEACION = {"start": "left", "end": "right", "center": "center", "justify": "justify", "left": "left", "right": "right"}
+
+    # Reunimos qué estilos (por nombre) llevan negrita/cursiva/subrayado/alineación
     estilos_formato = {}
     for style in root.findall('.//style:style', _NS_ODT):
         nombre = style.get(f'{{{_ST_URI}}}name')
-        props = style.find('style:text-properties', _NS_ODT)
-        if nombre and props is not None:
-            estilos_formato[nombre] = {
-                "b": props.get(f'{{{_FO_URI}}}font-weight') == 'bold',
-                "i": props.get(f'{{{_FO_URI}}}font-style') == 'italic',
-                "u": props.get(f'{{{_ST_URI}}}text-underline-style') not in (None, 'none'),
-            }
+        if not nombre:
+            continue
+        entrada = {"b": False, "i": False, "u": False, "align": None}
+        props_texto = style.find('style:text-properties', _NS_ODT)
+        if props_texto is not None:
+            entrada["b"] = props_texto.get(f'{{{_FO_URI}}}font-weight') == 'bold'
+            entrada["i"] = props_texto.get(f'{{{_FO_URI}}}font-style') == 'italic'
+            entrada["u"] = props_texto.get(f'{{{_ST_URI}}}text-underline-style') not in (None, 'none')
+        props_parrafo = style.find('style:paragraph-properties', _NS_ODT)
+        if props_parrafo is not None:
+            alineacion_odt = props_parrafo.get(f'{{{_FO_URI}}}text-align')
+            if alineacion_odt:
+                entrada["align"] = _MAPA_ALINEACION.get(alineacion_odt)
+        estilos_formato[nombre] = entrada
 
     def render_contenido(elemento, estilo_heredado):
         nombre_estilo = elemento.get(f'{{{_TX_URI}}}style-name')
@@ -90,6 +99,11 @@ def convertir_odt_a_html(archivo_subido):
             contenido = f"<u>{contenido}</u>"
         return contenido
 
+    def atributo_alineacion(elemento):
+        nombre_estilo = elemento.get(f'{{{_TX_URI}}}style-name')
+        align = estilos_formato.get(nombre_estilo, {}).get("align")
+        return f' style="text-align:{align}"' if align else ""
+
     html_partes = []
     cuerpo = root.find('.//office:body/office:text', _NS_ODT)
     if cuerpo is None:
@@ -101,16 +115,16 @@ def convertir_odt_a_html(archivo_subido):
             html_partes.append("<ul>")
             for item in elemento.findall('text:list-item', _NS_ODT):
                 for p in item.findall('text:p', _NS_ODT):
-                    html_partes.append(f"<li>{render_contenido(p, {})}</li>")
+                    html_partes.append(f"<li{atributo_alineacion(p)}>{render_contenido(p, {})}</li>")
             html_partes.append("</ul>")
         elif etiqueta == 'h':
             nivel = elemento.get(f'{{{_TX_URI}}}outline-level') or "2"
             nivel = min(max(int(nivel), 1), 6)
-            html_partes.append(f"<h{nivel}>{render_contenido(elemento, {})}</h{nivel}>")
+            html_partes.append(f"<h{nivel}{atributo_alineacion(elemento)}>{render_contenido(elemento, {})}</h{nivel}>")
         elif etiqueta == 'p':
             contenido = render_contenido(elemento, {})
             if contenido.strip():
-                html_partes.append(f"<p>{contenido}</p>")
+                html_partes.append(f"<p{atributo_alineacion(elemento)}>{contenido}</p>")
 
     return "".join(html_partes)
 
