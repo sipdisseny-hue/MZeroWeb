@@ -4,6 +4,8 @@ import pandas as pd
 import requests
 import re
 import hashlib
+import zipfile
+import xml.etree.ElementTree as ET
 from datetime import date
 from io import StringIO
 
@@ -24,6 +26,94 @@ try:
     MAMMOTH_DISPONIBLE = True
 except ImportError:
     MAMMOTH_DISPONIBLE = False
+
+
+# --- CONVERSIÓN DE ARCHIVOS .ODT (OpenOffice / LibreOffice) A HTML ---
+# No necesita ninguna librería externa: los .odt son en realidad un ZIP con
+# XML dentro, y zipfile/xml.etree ya vienen incluidos con Python.
+_NS_ODT = {
+    'office': 'urn:oasis:names:tc:opendocument:xmlns:office:1.0',
+    'text': 'urn:oasis:names:tc:opendocument:xmlns:text:1.0',
+    'style': 'urn:oasis:names:tc:opendocument:xmlns:style:1.0',
+    'fo': 'urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0',
+}
+_ST_URI = _NS_ODT['style']
+_FO_URI = _NS_ODT['fo']
+_TX_URI = _NS_ODT['text']
+
+
+def _escapar_html(texto):
+    return (texto or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def convertir_odt_a_html(archivo_subido):
+    """Lee un .odt subido por el usuario y devuelve su contenido en HTML,
+    conservando negrita, cursiva, subrayado, títulos y listas."""
+    with zipfile.ZipFile(archivo_subido) as z:
+        contenido_xml = z.read('content.xml')
+    root = ET.fromstring(contenido_xml)
+
+    # Reunimos qué estilos (por nombre) llevan negrita/cursiva/subrayado
+    estilos_formato = {}
+    for style in root.findall('.//style:style', _NS_ODT):
+        nombre = style.get(f'{{{_ST_URI}}}name')
+        props = style.find('style:text-properties', _NS_ODT)
+        if nombre and props is not None:
+            estilos_formato[nombre] = {
+                "b": props.get(f'{{{_FO_URI}}}font-weight') == 'bold',
+                "i": props.get(f'{{{_FO_URI}}}font-style') == 'italic',
+                "u": props.get(f'{{{_ST_URI}}}text-underline-style') not in (None, 'none'),
+            }
+
+    def render_contenido(elemento, estilo_heredado):
+        nombre_estilo = elemento.get(f'{{{_TX_URI}}}style-name')
+        estilo = estilos_formato.get(nombre_estilo, estilo_heredado)
+        partes = []
+        if elemento.text:
+            partes.append(_escapar_html(elemento.text))
+        for hijo in elemento:
+            etiqueta = hijo.tag.split('}')[-1]
+            if etiqueta == 'span':
+                partes.append(render_contenido(hijo, estilo))
+            elif etiqueta == 'line-break':
+                partes.append("<br>")
+            elif etiqueta == 's':
+                partes.append(" ")
+            if hijo.tail:
+                partes.append(_escapar_html(hijo.tail))
+        contenido = "".join(partes)
+        if estilo.get("b"):
+            contenido = f"<b>{contenido}</b>"
+        if estilo.get("i"):
+            contenido = f"<i>{contenido}</i>"
+        if estilo.get("u"):
+            contenido = f"<u>{contenido}</u>"
+        return contenido
+
+    html_partes = []
+    cuerpo = root.find('.//office:body/office:text', _NS_ODT)
+    if cuerpo is None:
+        return ""
+
+    for elemento in cuerpo:
+        etiqueta = elemento.tag.split('}')[-1]
+        if etiqueta == 'list':
+            html_partes.append("<ul>")
+            for item in elemento.findall('text:list-item', _NS_ODT):
+                for p in item.findall('text:p', _NS_ODT):
+                    html_partes.append(f"<li>{render_contenido(p, {})}</li>")
+            html_partes.append("</ul>")
+        elif etiqueta == 'h':
+            nivel = elemento.get(f'{{{_TX_URI}}}outline-level') or "2"
+            nivel = min(max(int(nivel), 1), 6)
+            html_partes.append(f"<h{nivel}>{render_contenido(elemento, {})}</h{nivel}>")
+        elif etiqueta == 'p':
+            contenido = render_contenido(elemento, {})
+            if contenido.strip():
+                html_partes.append(f"<p>{contenido}</p>")
+
+    return "".join(html_partes)
+
 
 if SUPABASE_DISPONIBLE:
     @st.cache_resource
@@ -2947,23 +3037,26 @@ elif opcion == T["menu_docs"]:
     for titulo in titulos_func:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                if MAMMOTH_DISPONIBLE:
-                    docx_version_key = f"docx_version_{titulo}"
-                    version_docx = st.session_state.get(docx_version_key, 0)
-                    docx_subido = st.file_uploader(
-                        "📄 O sube un Word (.docx) con el texto ya formateado",
-                        type=["docx"],
-                        key=f"docx_{titulo}_{version_docx}",
-                    )
-                    if docx_subido is not None:
-                        try:
-                            resultado_mammoth = mammoth.convert_to_html(docx_subido)
-                            st.session_state[f"input_{titulo}"] = resultado_mammoth.value
-                            st.session_state[docx_version_key] = version_docx + 1
-                            st.success("Word convertido. Revisa el texto de abajo y pulsa Guardar.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"No se pudo leer el Word: {e}")
+                tipos_admitidos = (["docx"] if MAMMOTH_DISPONIBLE else []) + ["odt"]
+                docx_version_key = f"docx_version_{titulo}"
+                version_docx = st.session_state.get(docx_version_key, 0)
+                docx_subido = st.file_uploader(
+                    "📄 O sube un Word (.docx) o un documento de OpenOffice/LibreOffice (.odt) con el texto ya formateado",
+                    type=tipos_admitidos,
+                    key=f"docx_{titulo}_{version_docx}",
+                )
+                if docx_subido is not None:
+                    try:
+                        if docx_subido.name.lower().endswith(".odt"):
+                            html_convertido = convertir_odt_a_html(docx_subido)
+                        else:
+                            html_convertido = mammoth.convert_to_html(docx_subido).value
+                        st.session_state[f"input_{titulo}"] = html_convertido
+                        st.session_state[docx_version_key] = version_docx + 1
+                        st.success("Documento convertido. Revisa el texto de abajo y pulsa Guardar.")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"No se pudo leer el documento: {e}")
 
                 temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
             
