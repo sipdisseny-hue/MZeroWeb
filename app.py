@@ -19,6 +19,12 @@ try:
 except ImportError:
     SUPABASE_DISPONIBLE = False
 
+try:
+    import mammoth
+    MAMMOTH_DISPONIBLE = True
+except ImportError:
+    MAMMOTH_DISPONIBLE = False
+
 if SUPABASE_DISPONIBLE:
     @st.cache_resource
     def obtener_cliente_supabase():
@@ -657,25 +663,17 @@ def cargar_catalogo_cursos_y_modulos():
 
 @st.cache_data(ttl=600)
 def cargar_datos_de_google():
-    url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
-    resultado = {}
-    # Pedimos las dos pestañas (Textos=es, Text=ca) y las fusionamos en un
-    # único diccionario. Antes solo se pedía la de castellano (por defecto),
-    # así que los títulos en catalán ("Arguments M-Zero", etc.) nunca llegaban.
-    for idioma_param in ["es", "ca"]:
-        try:
-            response = requests.get(url_script, params={"lang": idioma_param}, timeout=30)
-            if response.status_code == 200:
-                data = response.json()
-                if isinstance(data, list):
-                    for item in data:
-                        t = item.get("Títul") if item.get("Títul") is not None else item.get("Titulo")
-                        c = item.get("Contingut") if item.get("Contingut") is not None else item.get("Contenido")
-                        if t is not None:
-                            resultado[str(t).strip()] = str(c) if c is not None else ""
-        except Exception as e:
-            st.error(f"Error de lectura ({idioma_param}): {e}")
-    return resultado
+    """Carga los textos editables (Funcionalidad / Contacto) desde Supabase
+    (tabla 'textos'). Se mantiene el mismo nombre de función para no tener
+    que tocar el resto de llamadas ya existentes."""
+    if not SUPABASE_DISPONIBLE:
+        return {}
+    try:
+        filas = obtener_cliente_supabase().table("textos").select("*").execute().data
+        return {str(f.get("titulo", "")).strip(): f.get("contenido", "") or "" for f in filas if f.get("titulo")}
+    except Exception as e:
+        st.error(f"Error de lectura: {e}")
+        return {}
 
 # --- NUEVO: ASOCIADOS Y COLABORADORES (Provincia -> Población -> Empresa) ---
 # Lee las pestañas "Asociados" y "Colaboradores" del Excel a través del Apps
@@ -1245,13 +1243,29 @@ if 'usuario_actual' not in st.session_state: st.session_state.usuario_actual = "
 if 'acceso_panel' not in st.session_state: st.session_state.acceso_panel = None
 
 # --- FUNCIÓN GUARDAR ---
-def guardar_en_sheets(titulo, nuevo_contenido):
-    url_script = "https://script.google.com/macros/s/AKfycbzZDkU6ZfAK1tdy502iEVlQ3j42GWlVBh5DW1_XCD1BxpEI0NZ7Pss3MV0BMGYDikwR/exec"
-    payload = {"titulo": titulo, "contenido": nuevo_contenido}
+def guardar_en_sheets(titulo, nuevo_contenido, idioma=None):
+    """Guarda un texto editable (Funcionalidad / Contacto) en Supabase
+    (tabla 'textos'). Se mantiene el mismo nombre de función para no tener
+    que tocar el resto de llamadas ya existentes."""
+    if not SUPABASE_DISPONIBLE:
+        return False
     try:
-        response = requests.post(url_script, json=payload, timeout=20)
-        return response.status_code == 200
-    except:
+        idioma_final = idioma or globals().get("lang", "es")
+        cliente = obtener_cliente_supabase()
+        existente = (
+            cliente.table("textos").select("id")
+            .eq("titulo", titulo)
+            .eq("idioma", idioma_final)
+            .execute().data
+        )
+        if existente:
+            cliente.table("textos").update({"contenido": nuevo_contenido}).eq("id", existente[0]["id"]).execute()
+        else:
+            cliente.table("textos").insert(
+                {"titulo": titulo, "contenido": nuevo_contenido, "idioma": idioma_final}
+            ).execute()
+        return True
+    except Exception:
         return False
 
 # --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
@@ -1322,8 +1336,8 @@ with st.sidebar:
         args=("candidato",),
     )
 
-    # El antiguo acceso administrativo no se elimina: se conserva aquí para no
-    # romper la edición de contenidos ni el panel de administración.
+    # Acceso de administración: ahora valida contra la tabla "administradores"
+    # de Supabase, en vez de una hoja de Google Sheets pública.
     with st.expander("⚙️ Administración", expanded=False):
         if st.session_state.autenticado:
             st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
@@ -1335,27 +1349,24 @@ with st.sidebar:
             usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
             pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
             if st.button(T["btn_acceder"], key="admin_login_sidebar"):
-                url = "https://docs.google.com/spreadsheets/d/1kowfDSzZw_fpIO8tbrKGWxREONDIv2EFFhOtfgn-cKs/gviz/tq?tqx=out:csv&sheet=Credenciales"
-                try:
-                    headers = {'User-Agent': 'Mozilla/5.0'}
-                    response = requests.get(url, headers=headers, timeout=10)
-                    if response.status_code == 200:
-                        df = pd.read_csv(StringIO(response.text), header=None)
-                        login_ok = any(
-                            str(df.iloc[i, 0]).strip() == usuario_admin.strip()
-                            and str(df.iloc[i, 1]).strip() == pass_admin.strip()
-                            for i in range(1, len(df))
+                if not SUPABASE_DISPONIBLE:
+                    st.error(T["error_cred"])
+                else:
+                    try:
+                        resultado_admin = (
+                            obtener_cliente_supabase().table("admin_credenciales").select("*")
+                            .eq("usuario", usuario_admin.strip())
+                            .eq("contrasena", pass_admin.strip())
+                            .execute()
                         )
-                        if login_ok:
+                        if resultado_admin.data:
                             st.session_state.autenticado = True
                             st.session_state.usuario_actual = usuario_admin.strip()
                             st.rerun()
                         else:
                             st.error(T["error_login"])
-                    else:
-                        st.error(T["error_cred"])
-                except Exception as e:
-                    st.error(f"Error de acceso: {e}")
+                    except Exception as e:
+                        st.error(f"Error de acceso: {e}")
 
 
 # --- AVISO LEGAL: CUADRO FLOTANTE AL INICIO (una vez por sesión de navegador) ---
@@ -2936,6 +2947,24 @@ elif opcion == T["menu_docs"]:
     for titulo in titulos_func:
         with st.expander(titulo):
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                if MAMMOTH_DISPONIBLE:
+                    docx_version_key = f"docx_version_{titulo}"
+                    version_docx = st.session_state.get(docx_version_key, 0)
+                    docx_subido = st.file_uploader(
+                        "📄 O sube un Word (.docx) con el texto ya formateado",
+                        type=["docx"],
+                        key=f"docx_{titulo}_{version_docx}",
+                    )
+                    if docx_subido is not None:
+                        try:
+                            resultado_mammoth = mammoth.convert_to_html(docx_subido)
+                            st.session_state[f"input_{titulo}"] = resultado_mammoth.value
+                            st.session_state[docx_version_key] = version_docx + 1
+                            st.success("Word convertido. Revisa el texto de abajo y pulsa Guardar.")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"No se pudo leer el Word: {e}")
+
                 temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
             
                 if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
