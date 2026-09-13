@@ -1224,11 +1224,11 @@ def _edition_ref_corta(valor):
     return f"{int(digest[:12], 16) % 100000:05d}"
 
 def _alumno_ref_corta(valor):
-    """Referencia visual estable de 5 dígitos para el alumno; no modifica su ID real."""
+    """Referencia visual estable de 6 dígitos para el alumno; no modifica su ID real."""
     if valor is None or str(valor).strip() == "":
         return ""
     digest = hashlib.sha256(str(valor).encode("utf-8")).hexdigest()
-    return f"{int(digest[:12], 16) % 100000:05d}"
+    return f"{int(digest[:12], 16) % 1000000:06d}"
 
 def generar_pdf_resumen(lista_alumnos, lang="es"):
     criterios = [
