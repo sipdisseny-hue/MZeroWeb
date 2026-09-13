@@ -320,6 +320,8 @@ TEXTOS = {
         "curso_estado_cursado": "Cursado",
         "curso_estado_en_curso": "En curso",
         "modulos_curso": "Módulos",
+        "btn_solicitar_curso": "📩 Solicitar participar en este curso",
+        "solicitud_curso_enviada": "Solicitud enviada. Te avisaremos por email si hay plaza disponible.",
         "enviar_curso": "Enviar curso",
         "curso_enviado": "Curso enviado. Quedará visible en cuanto lo aprobemos.",
         "campo_vacio_curso": "Rellena al menos la referencia y el nombre del curso.",
@@ -548,6 +550,8 @@ TEXTOS = {
         "curso_estado_cursado": "Cursat",
         "curso_estado_en_curso": "En curs",
         "modulos_curso": "Mòduls",
+        "btn_solicitar_curso": "📩 Sol·licitar participar en aquest curs",
+        "solicitud_curso_enviada": "Sol·licitud enviada. T'avisarem per email si hi ha plaça disponible.",
         "enviar_curso": "Enviar curs",
         "curso_enviado": "Curs enviat. Quedarà visible quan l'aprovem.",
         "campo_vacio_curso": "Omple almenys la referència i el nom del curs.",
@@ -2700,6 +2704,8 @@ if st.session_state.get("acceso_panel"):
                     st.session_state[cand_login_key] = True
                     st.session_state[cand_id_key] = fila_cand.get("id")
                     st.session_state[cand_nombre_key] = f"{fila_cand.get('nombre', '')} {fila_cand.get('apellido', '')}".strip()
+                    st.session_state["cand_email"] = fila_cand.get("email", "")
+                    st.session_state["cand_telefono"] = fila_cand.get("telefono", "")
                     st.rerun()
                 else:
                     st.error(T["error_acceso_participar"])
@@ -2836,6 +2842,18 @@ if st.session_state.get("acceso_panel"):
                                     desc_m = m.get("descripcion_es") or ""
                                     niv_m = m.get("nivel_bloque") or ""
                                     st.write(f"- {desc_m}" + (f" ({niv_m})" if niv_m else ""))
+
+                            if st.button(T["btn_solicitar_curso"], key=f"cand_solicitar_{curso_cand['codigo_curso']}"):
+                                crear_notificacion(
+                                    "curso",
+                                    "Solicitud de participación en curso — "
+                                    f"Candidato: {cand_nombre_mostrar} | "
+                                    f"Tel: {st.session_state.get('cand_telefono', '')} | "
+                                    f"Email: {st.session_state.get('cand_email', '')} | "
+                                    f"Curso: {curso_cand['nombre_curso']} ({curso_cand['codigo_curso']}) | "
+                                    f"Centro: {curso_cand['nombre_centro']}"
+                                )
+                                st.success(T["solicitud_curso_enviada"])
                 if st.button(T["cambiar_sector"], key="cand_cambiar_ubic_btn"):
                     st.session_state[cand_ubic_key] = None
                     st.rerun()
