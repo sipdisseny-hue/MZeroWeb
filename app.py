@@ -258,6 +258,7 @@ TEXTOS = {
         "campo_vacio_peticion": "Escribe algo antes de enviar.",
         "buscar_perfil_titulo": "Buscar un perfil por sector",
         "buscar_perfil_intro": "Selecciona el sector y el subsector del perfil que necesitas.",
+        "aviso_candidato_cursos": "ℹ️ Una vez dentro, podrás explorar los cursos disponibles por sector y localidad, y enviar tu solicitud para participar en el que te interese.",
         "campo_nivel_candidato": "Nivel del candidato",
         "campo_trabajos_candidato": "Trabajos / tareas a realizar",
         "btn_enviar_busqueda_perfil": "Enviar petición de perfil",
@@ -488,6 +489,7 @@ TEXTOS = {
         "campo_vacio_peticion": "Escriu alguna cosa abans d'enviar.",
         "buscar_perfil_titulo": "Cercar un perfil per sector",
         "buscar_perfil_intro": "Selecciona el sector i el subsector del perfil que necessites.",
+        "aviso_candidato_cursos": "ℹ️ Un cop dins, podràs explorar els cursos disponibles per sector i localitat, i enviar la teva sol·licitud per participar en el que t'interessi.",
         "campo_nivel_candidato": "Nivell del candidat",
         "campo_trabajos_candidato": "Treballs / tasques a realitzar",
         "btn_enviar_busqueda_perfil": "Enviar petició de perfil",
@@ -2700,6 +2702,7 @@ if st.session_state.get("acceso_panel"):
     elif acceso_panel == "candidato":
         st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
         st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
+        st.info(T["aviso_candidato_cursos"])
 
         cand_login_key = "cand_login_ok"
         cand_id_key = "cand_id"
