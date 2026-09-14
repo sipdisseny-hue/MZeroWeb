@@ -383,6 +383,7 @@ TEXTOS = {
         "nav_titulo": "Navegación",
         "menu_docs": "Documentos",
         "menu_eval": "Evaluaciones",
+        "menu_eval_docente": "acceso docente",
         "sesion_iniciada": "Sesión iniciada:",
         "cerrar_sesion": "CERRAR SESIÓN",
         "usuario": "Usuario:",
@@ -403,6 +404,18 @@ TEXTOS = {
         "nav_accesos": "ACCESOS",
         "nav_como_funciona": "CÓMO FUNCIONA",
         "nav_administracion": "Administración",
+        "accesos_titulo": "Tres formas de entrar, un mismo estándar",
+        "accesos_intro": "Cada acceso está pensado para lo que esa persona necesita resolver — no es el mismo formulario disfrazado tres veces.",
+        "accesos_asociados_desc": "Buscan perfiles ya validados, filtrando por sector y subsector, sin procesos de selección a ciegas.",
+        "accesos_colaboradores_desc": "Dan de alta sus cursos y pasan a formar parte de la red que otorga el sello M0.",
+        "accesos_candidatos_desc": "Se forman, consiguen el sello M0 y solicitan participar directamente en los cursos que buscan.",
+        "ref_acceso_asociado": "ACCESO · ASOCIADO",
+        "ref_acceso_colaborador": "ACCESO · COLABORADOR",
+        "ref_acceso_candidato": "ACCESO · CANDIDATO",
+        "acceso_sub_asociados": "Acceso y gestión para Asociados",
+        "acceso_sub_colaboradores": "Acceso y gestión para Colaboradores",
+        "acceso_sub_candidatos": "Área de acceso para Candidatos",
+        "volver": "← Volver",
         "manual_uso_ayuda_video": "Para insertar un vídeo (YouTube, Vimeo...), pega aquí el código de inserción del vídeo (en YouTube: Compartir → Insertar → copiar código).",
         "eslogan": "Conectando talento, transformando la industria",
         "aviso_login_eval": "Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.",
@@ -617,6 +630,7 @@ TEXTOS = {
         "nav_titulo": "Navegació",
         "menu_docs": "Documents",
         "menu_eval": "Avaluacions",
+        "menu_eval_docente": "accés docent",
         "sesion_iniciada": "Sessió iniciada:",
         "cerrar_sesion": "TANCAR SESSIÓ",
         "usuario": "Usuari:",
@@ -637,6 +651,18 @@ TEXTOS = {
         "nav_accesos": "ACCESSOS",
         "nav_como_funciona": "COM FUNCIONA",
         "nav_administracion": "Administració",
+        "accesos_titulo": "Tres formes d'entrar, un mateix estàndard",
+        "accesos_intro": "Cada accés està pensat per al que aquesta persona necessita resoldre — no és el mateix formulari disfressat tres vegades.",
+        "accesos_asociados_desc": "Busquen perfils ja validats, filtrant per sector i subsector, sense processos de selecció a cegues.",
+        "accesos_colaboradores_desc": "Donen d'alta els seus cursos i passen a formar part de la xarxa que atorga el segell M0.",
+        "accesos_candidatos_desc": "Es formen, aconsegueixen el segell M0 i sol·liciten participar directament en els cursos que busquen.",
+        "ref_acceso_asociado": "ACCÉS · ASSOCIAT",
+        "ref_acceso_colaborador": "ACCÉS · COL·LABORADOR",
+        "ref_acceso_candidato": "ACCÉS · CANDIDAT",
+        "acceso_sub_asociados": "Accés i gestió per a Associats",
+        "acceso_sub_colaboradores": "Accés i gestió per a Col·laboradors",
+        "acceso_sub_candidatos": "Àrea d'accés per a Candidats",
+        "volver": "← Tornar",
         "manual_uso_ayuda_video": "Per inserir un vídeo (YouTube, Vimeo...), enganxa aquí el codi d'inserció del vídeo (a YouTube: Compartir → Insertar → copiar codi).",
         "eslogan": "Connectant talent, transformant la indústria",
         "aviso_login_eval": "Has d'iniciar sessió al sidebar per accedir al mòdul d'avaluacions.",
@@ -1618,6 +1644,10 @@ def _abrir_admin():
 def _cambiar_idioma():
     nuevo = st.session_state.get("idioma_selector_top", "ES")
     st.session_state["idioma_app"] = "ca" if nuevo == "CA" else "es"
+    # La navegación visible ya no incluye Documentos; mantenemos la pantalla
+    # actual y solo traducimos sus textos.
+    if st.session_state.get("pagina_publica") or st.session_state.get("acceso_panel") or st.session_state.get("admin_panel"):
+        return
     st.session_state["navegacion"] = TEXTOS[st.session_state["idioma_app"]]["menu_docs"]
 
 # Cabecera visual. Los botones Streamlit están colocados encima/entre los
@@ -1650,16 +1680,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="mz-nav-actions">', unsafe_allow_html=True)
-nav1, nav2, nav3, nav4, nav5 = st.columns([1.05,1.35,0.9,1.05,0.7], gap="small")
+nav1, nav2, nav3, nav4 = st.columns([1.45,0.95,1.10,0.72], gap="small")
 with nav1:
-    st.button(T["menu_docs"], key="nav_docs", use_container_width=True, on_click=_ir_documentacion)
+    st.button(f"●  {T['menu_eval']} · {T['menu_eval_docente']}", key="nav_eval", use_container_width=True, on_click=_ir_evaluaciones)
 with nav2:
-    st.button(f"●  {T['menu_eval']} · acceso docente", key="nav_eval", use_container_width=True, on_click=_ir_evaluaciones)
-with nav3:
     st.button(T["nav_accesos"], key="nav_accesos", use_container_width=True, on_click=_abrir_accesos_menu)
-with nav4:
+with nav3:
     st.button(T["nav_como_funciona"], key="nav_como", use_container_width=True, on_click=_abrir_como_funciona)
-with nav5:
+with nav4:
     st.radio("Idioma", ["ES","CA"], index=0 if lang=="es" else 1, horizontal=True, key="idioma_selector_top", label_visibility="collapsed", on_change=_cambiar_idioma)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -2816,7 +2844,7 @@ elif st.session_state.get("pagina_publica") == "como_funciona":
             if texto:
                 with st.expander(str(clave), expanded=False):
                     st.markdown(texto, unsafe_allow_html=True)
-    if st.button("← Volver a Documentación", key="volver_como_funciona"):
+    if st.button(T["volver"], key="volver_como_funciona"):
         st.session_state["pagina_publica"] = None
         st.rerun()
 
@@ -2847,33 +2875,33 @@ elif st.session_state.get("acceso_panel"):
     st.markdown('<div class="access-page">', unsafe_allow_html=True)
 
     if acceso_panel == "menu":
-        st.markdown("<div class='mz-public-page'><div class='mz-page-kicker'>M-ZERO · ACCESOS</div><h1 class='mz-page-title'>Tres formas de entrar, un mismo estándar</h1><p class='mz-page-intro'>Cada acceso está pensado para una necesidad diferente. Pulsa en el que corresponda para entrar en su área.</p></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='mz-public-page'><div class='mz-page-kicker'>M-ZERO · ACCESOS</div><h1 class='mz-page-title'>{T['accesos_titulo']}</h1><p class='mz-page-intro'>{T['accesos_intro']}</p></div>", unsafe_allow_html=True)
         ac1, ac2, ac3 = st.columns(3, gap="small")
         with ac1:
-            st.markdown("<div class='mz-access-card'><div class='mz-access-icon'>🏭</div><h3>Asociados</h3><p>Buscan perfiles ya validados y pueden realizar peticiones de candidatos o formación.</p><div class='mz-ref'>ACCESO · ASOCIADO</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='mz-access-card'><div class='mz-access-icon'>🏭</div><h3>{T['asociados']}</h3><p>{T['accesos_asociados_desc']}</p><div class='mz-ref'>{T['ref_acceso_asociado']}</div></div>", unsafe_allow_html=True)
             st.button(f"👥  {T['acceso_asociados']}", key="menu_acceso_asociado", use_container_width=True, on_click=_abrir_acceso, args=("asociado",))
         with ac2:
-            st.markdown("<div class='mz-access-card accent'><div class='mz-access-icon'>🎓</div><h3>Colaboradores</h3><p>Gestionan cursos, docentes y alumnos y forman parte de la red M-Zero.</p><div class='mz-ref'>ACCESO · COLABORADOR</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='mz-access-card accent'><div class='mz-access-icon'>🎓</div><h3>{T['colaboradores']}</h3><p>{T['accesos_colaboradores_desc']}</p><div class='mz-ref'>{T['ref_acceso_colaborador']}</div></div>", unsafe_allow_html=True)
             st.button(f"🏢  {T['acceso_colaboradores']}", key="menu_acceso_colaborador", use_container_width=True, on_click=_abrir_acceso, args=("colaborador",))
         with ac3:
-            st.markdown("<div class='mz-access-card'><div class='mz-access-icon'>👷</div><h3>Candidatos</h3><p>Acceden a cursos disponibles y pueden solicitar participar en una formación.</p><div class='mz-ref'>ACCESO · CANDIDATO</div></div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='mz-access-card'><div class='mz-access-icon'>👷</div><h3>{T['acceso_candidatos'].replace('Acceso ','').replace('Accés ','')}</h3><p>{T['accesos_candidatos_desc']}</p><div class='mz-ref'>{T['ref_acceso_candidato']}</div></div>", unsafe_allow_html=True)
             st.button(f"🎓  {T['acceso_candidatos']}", key="menu_acceso_candidato", use_container_width=True, on_click=_abrir_acceso, args=("candidato",))
-        st.markdown("<div class='mz-note'>El acceso de <strong>Evaluaciones · acceso docente</strong> permanece en el menú superior y conserva su funcionamiento actual.</div>", unsafe_allow_html=True)
-        if st.button("← Volver a Documentación", key="volver_menu_accesos"):
+        st.markdown(f"<div class='mz-note'>{T['menu_eval']} · {T['menu_eval_docente']} permanece en el menú superior y conserva su funcionamiento actual.</div>", unsafe_allow_html=True)
+        if st.button(T['volver'], key="volver_menu_accesos"):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     elif acceso_panel == "asociado":
         st.markdown(f'<div class="access-title">👥 {T["acceso_asociados"]}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="access-subtitle">Acceso y gestión para Asociados</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="access-subtitle">{T["acceso_sub_asociados"]}</div>', unsafe_allow_html=True)
         bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part", usar_supabase=True)
-        if st.button("← Volver a Documentación", key="volver_desde_asociados", use_container_width=False):
+        if st.button(T["volver"], key="volver_desde_asociados", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     elif acceso_panel == "colaborador":
         st.markdown(f'<div class="access-title">🏢 {T["acceso_colaboradores"]}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="access-subtitle">Acceso y gestión para Colaboradores</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="access-subtitle">{T["acceso_sub_colaboradores"]}</div>', unsafe_allow_html=True)
         bloque_acceso_y_peticion(
             "colaborador",
             "Credenciales Colaboradores",
@@ -2881,13 +2909,13 @@ elif st.session_state.get("acceso_panel"):
             incluir_centro_registro=True,
             usar_supabase=True
         )
-        if st.button("← Volver a Documentación", key="volver_desde_colaboradores", use_container_width=False):
+        if st.button(T["volver"], key="volver_desde_colaboradores", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     elif acceso_panel == "candidato":
         st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="access-subtitle">{T["acceso_sub_candidatos"]}</div>', unsafe_allow_html=True)
         st.info(T["aviso_candidato_cursos"])
 
         cand_login_key = "cand_login_ok"
@@ -3071,7 +3099,7 @@ elif st.session_state.get("acceso_panel"):
                 st.session_state[cand_ubic_key] = None
                 st.rerun()
 
-        if st.button("← Volver a Documentación", key="volver_desde_candidatos", use_container_width=False):
+        if st.button(T["volver"], key="volver_desde_candidatos", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
