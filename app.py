@@ -155,8 +155,11 @@ st.markdown(
         --mz-ink: #151B23;
         --mz-ink-soft: #5B6472;
     }
-    html, body, [class*="css"], [data-testid="stAppViewContainer"] * {
+    html, body, [class*="css"], [data-testid="stAppViewContainer"] *:not([data-testid="stIconMaterial"]):not([data-testid="stIconMaterial"] *) {
         font-family: 'IBM Plex Sans', sans-serif !important;
+    }
+    [data-testid="stIconMaterial"] {
+        font-family: 'Material Symbols Outlined', 'Material Symbols Rounded', 'Material Icons' !important;
     }
     .stApp,
     [data-testid="stAppViewContainer"],
