@@ -2992,32 +2992,76 @@ elif opcion == T["menu_docs"]:
 
     st.markdown(
         f"""
-        <div style="font-size:13px; letter-spacing:0.5px; color:var(--mz-ink-soft); margin-bottom:10px;">
+        <div style="font-size:13px; letter-spacing:1.5px; color:var(--mz-ink-soft); margin-bottom:10px; text-transform:uppercase;">
             {T['area_docs']}
         </div>
-        <div style="background:var(--mz-graphite); border-radius:8px; padding:44px 40px;
-                    margin:0 0 32px; display:flex; align-items:center; gap:44px; flex-wrap:wrap;">
-            <div style="flex:2; min-width:260px;">
-                <h1 style="color:var(--mz-offwhite); font-size:30px; font-weight:600; line-height:1.28; margin:0;">
+        <div style="background:var(--mz-graphite);
+                    background-image:linear-gradient(#1D2530 1px, transparent 1px),
+                                      linear-gradient(90deg, #1D2530 1px, transparent 1px);
+                    background-size:42px 42px; background-position:center;
+                    border-radius:8px; padding:56px 48px 40px;
+                    margin:0 0 4px; display:flex; align-items:center; gap:48px; flex-wrap:wrap;">
+            <div style="flex:2; min-width:280px;">
+                <h1 style="color:var(--mz-offwhite); font-size:38px; font-weight:600; line-height:1.22; margin:0 0 16px; letter-spacing:-0.3px;">
                     {T['eslogan']}
                 </h1>
+                <p style="color:#B6BEC9; font-size:15px; line-height:1.65; max-width:52ch; margin:0;">
+                    {T['asoc_colab']}
+                </p>
             </div>
             <div style="flex-shrink:0; margin:0 auto;">
-                <div style="width:140px; height:140px; border-radius:50%; border:2px solid var(--mz-brass);
+                <div style="width:170px; height:170px; border-radius:50%; border:2px solid var(--mz-brass);
                             display:flex; align-items:center; justify-content:center; position:relative;">
-                    <div style="position:absolute; inset:10px; border-radius:50%;
+                    <div style="position:absolute; inset:12px; border-radius:50%;
                                 border:1px dashed rgba(214,181,99,0.45);"></div>
                     <div style="text-align:center;">
-                        <div style="font-size:28px; font-weight:700; color:var(--mz-brass-light);">M0</div>
-                        <div style="font-size:9px; color:#8B93A0; letter-spacing:1.2px; margin-top:4px;">SELLO&nbsp;DE&nbsp;NIVEL</div>
+                        <div style="font-size:34px; font-weight:700; color:var(--mz-brass-light);">M0</div>
+                        <div style="font-size:10px; color:#8B93A0; letter-spacing:1.4px; margin-top:5px;">SELLO&nbsp;DE&nbsp;NIVEL</div>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div style="background:var(--mz-graphite); border-radius:0 0 8px 8px; margin:0 0 40px;
+                    display:flex; border-top:1px solid #2A3340; padding:22px 48px;">
+            <div style="flex:1; border-right:1px solid #2A3340;">
+                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">10</div>
+                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Sectores industriales cubiertos</div>
+            </div>
+            <div style="flex:1; border-right:1px solid #2A3340; padding-left:28px;">
+                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">3</div>
+                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Formas de acceso: asociados, colaboradores, candidatos</div>
+            </div>
+            <div style="flex:1; padding-left:28px;">
+                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">M0</div>
+                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Un sello, un nivel mínimo exigido</div>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1px; background:#D9DAD6; margin-bottom:40px;">
+            <div style="background:var(--mz-paper); padding:26px 22px; border-left:3px solid var(--mz-steel);">
+                <div style="width:34px; height:34px; border-radius:50%; background:var(--mz-offwhite);
+                            display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px;">🏭</div>
+                <div style="font-size:16px; font-weight:600; margin-bottom:8px; color:var(--mz-ink);">{T['acceso_asociados']}</div>
+                <div style="font-size:13.5px; color:var(--mz-ink-soft); line-height:1.55;">Perfiles ya validados, filtrando por sector y subsector.</div>
+            </div>
+            <div style="background:var(--mz-paper); padding:26px 22px; border-left:3px solid var(--mz-brass);">
+                <div style="width:34px; height:34px; border-radius:50%; background:var(--mz-offwhite);
+                            display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px;">🎓</div>
+                <div style="font-size:16px; font-weight:600; margin-bottom:8px; color:var(--mz-ink);">{T['acceso_colaboradores']}</div>
+                <div style="font-size:13.5px; color:var(--mz-ink-soft); line-height:1.55;">Dan de alta sus cursos y forman parte de la red del sello M0.</div>
+            </div>
+            <div style="background:var(--mz-paper); padding:26px 22px; border-left:3px solid var(--mz-steel);">
+                <div style="width:34px; height:34px; border-radius:50%; background:var(--mz-offwhite);
+                            display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px;">👷</div>
+                <div style="font-size:16px; font-weight:600; margin-bottom:8px; color:var(--mz-ink);">{T['acceso_candidatos']}</div>
+                <div style="font-size:13.5px; color:var(--mz-ink-soft); line-height:1.55;">Se forman, consiguen el sello M0 y solicitan participar en cursos.</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    
+    st.caption("👈 Usa el menú lateral para entrar en cada acceso.")
+
     with st.container(border=True):
         st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
@@ -3162,7 +3206,7 @@ elif opcion == T["menu_docs"]:
         background: #ffffff !important;
     }
     div[data-testid="stExpander"] summary {
-        background: #172033 !important;
+        background: var(--mz-graphite) !important;
         color: #ffffff !important;
     }
     div[data-testid="stExpander"] summary p,
