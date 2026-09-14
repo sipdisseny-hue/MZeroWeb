@@ -2990,7 +2990,33 @@ elif opcion == T["menu_docs"]:
         if 'contenido_contacto' not in st.session_state:
             st.session_state.contenido_contacto = {key: datos_iniciales.get(key, "") for key in ["Móvil / WhatsApp", "Email"]}
 
-    st.markdown(f"## {T['area_docs']}")
+    st.markdown(
+        f"""
+        <div style="font-size:13px; letter-spacing:0.5px; color:var(--mz-ink-soft); margin-bottom:10px;">
+            {T['area_docs']}
+        </div>
+        <div style="background:var(--mz-graphite); border-radius:8px; padding:44px 40px;
+                    margin:0 0 32px; display:flex; align-items:center; gap:44px; flex-wrap:wrap;">
+            <div style="flex:2; min-width:260px;">
+                <h1 style="color:var(--mz-offwhite); font-size:30px; font-weight:600; line-height:1.28; margin:0;">
+                    {T['eslogan']}
+                </h1>
+            </div>
+            <div style="flex-shrink:0; margin:0 auto;">
+                <div style="width:140px; height:140px; border-radius:50%; border:2px solid var(--mz-brass);
+                            display:flex; align-items:center; justify-content:center; position:relative;">
+                    <div style="position:absolute; inset:10px; border-radius:50%;
+                                border:1px dashed rgba(214,181,99,0.45);"></div>
+                    <div style="text-align:center;">
+                        <div style="font-size:28px; font-weight:700; color:var(--mz-brass-light);">M0</div>
+                        <div style="font-size:9px; color:#8B93A0; letter-spacing:1.2px; margin-top:4px;">SELLO&nbsp;DE&nbsp;NIVEL</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     
     with st.container(border=True):
         st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
@@ -3219,13 +3245,6 @@ elif opcion == T["menu_docs"]:
         return bloque.get(lang, "")
 
     # Los accesos se muestran en pantallas independientes desde el sidebar.
-
-    # --- ESLOGAN ---
-    st.markdown(
-        f"<h3 align='center' style='color: var(--mz-ink); margin-top: 30px; margin-bottom: 24px;'>"
-        f"<b>{T['eslogan']}</b></h3>",
-        unsafe_allow_html=True
-    )
 
 
 elif opcion == T["menu_eval"]:
@@ -3604,4 +3623,4 @@ elif opcion == T["menu_eval"]:
                             st.rerun()
                         except Exception as e:
                             st.session_state.envio_resultado = ("error", f"Error al guardar en la base de datos: {e}")
-                            st.rerun()  
+                            st.rerun()
