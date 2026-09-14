@@ -137,6 +137,38 @@ if SUPABASE_DISPONIBLE:
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
 
+# --- IDENTIDAD VISUAL M-ZERO: tipografía, paleta de colores, fondo ---
+st.markdown(
+    """
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --mz-graphite: #151B23;
+        --mz-graphite-2: #1D2530;
+        --mz-steel: #3E6B92;
+        --mz-offwhite: #EDEEF0;
+        --mz-paper: #F7F7F5;
+        --mz-brass: #B8923A;
+        --mz-brass-light: #D6B563;
+        --mz-ink: #151B23;
+        --mz-ink-soft: #5B6472;
+    }
+    html, body, [class*="css"] {
+        font-family: 'IBM Plex Sans', sans-serif !important;
+    }
+    .stApp {
+        background-color: var(--mz-paper) !important;
+    }
+    code, .mz-mono {
+        font-family: 'IBM Plex Mono', monospace !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # --- BOTÓN DE COLAPSAR/EXPANDIR EL MENÚ LATERAL: MÁS GRANDE Y VISIBLE ---
 # No dependemos del nombre interno del botón (cambia según la versión de
 # Streamlit): lo localizamos por su tamaño y posición en pantalla, así
@@ -159,7 +191,7 @@ components.html(
                 var arribaIzquierda = r.top < 70 && r.left < 70;
                 if (esPequeno && arribaIzquierda && !el.dataset.mzeroEstilado) {
                     el.dataset.mzeroEstilado = "1";
-                    el.style.setProperty('background-color', '#0066cc', 'important');
+                    el.style.setProperty('background-color', '#B8923A', 'important');
                     el.style.setProperty('border-radius', '0 10px 10px 0', 'important');
                     el.style.setProperty('box-shadow', '0 3px 10px rgba(0,0,0,0.30)', 'important');
                     el.style.setProperty('padding', '10px 12px', 'important');
@@ -182,7 +214,7 @@ components.html(
                     var esPequenoB = rb.width > 0 && rb.width < 55 && rb.height > 0 && rb.height < 55;
                     if (esPequenoB && rb.top < 130 && !btn.dataset.mzeroEstilado) {
                         btn.dataset.mzeroEstilado = "1";
-                        btn.style.setProperty('background-color', '#0066cc', 'important');
+                        btn.style.setProperty('background-color', '#B8923A', 'important');
                         btn.style.setProperty('border-radius', '8px', 'important');
                         btn.style.setProperty('box-shadow', '0 2px 6px rgba(0,0,0,0.25)', 'important');
                         btn.style.setProperty('padding', '8px', 'important');
@@ -2915,7 +2947,7 @@ elif opcion == T["menu_docs"]:
     st.markdown(f"## {T['area_docs']}")
     
     with st.container(border=True):
-        st.markdown(f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
 
         asociados_db, colaboradores_db = cargar_asociados_colaboradores()
@@ -3028,7 +3060,7 @@ elif opcion == T["menu_docs"]:
             background: #f5f5f5 !important;
         }
         </style>""", unsafe_allow_html=True)
-        st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: var(--mz-ink); margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
 
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
@@ -3041,7 +3073,7 @@ elif opcion == T["menu_docs"]:
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
-        st.markdown(f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: var(--mz-ink);'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
 
         titulos_colaboradores = [
             ["Centros de formación"],
@@ -3080,7 +3112,7 @@ elif opcion == T["menu_docs"]:
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
-    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
     titulos_func = T["titulos_func"]
 
     for titulo in titulos_func:
@@ -3122,7 +3154,7 @@ elif opcion == T["menu_docs"]:
             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 3: CONTACTO ---
-    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
     titulos_cont = ["Móvil / WhatsApp", "Email"]
     for titulo in titulos_cont:
         with st.expander(titulo):
@@ -3144,7 +3176,7 @@ elif opcion == T["menu_docs"]:
 
     # --- ESLOGAN ---
     st.markdown(
-        f"<h3 align='center' style='color: #0066cc; margin-top: 30px; margin-bottom: 24px;'>"
+        f"<h3 align='center' style='color: var(--mz-ink); margin-top: 30px; margin-bottom: 24px;'>"
         f"<b>{T['eslogan']}</b></h3>",
         unsafe_allow_html=True
     )
