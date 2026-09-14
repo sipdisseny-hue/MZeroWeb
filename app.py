@@ -137,38 +137,6 @@ if SUPABASE_DISPONIBLE:
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
 
-# --- IDENTIDAD VISUAL M-ZERO: tipografía, paleta de colores, fondo ---
-st.markdown(
-    """
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
-    <style>
-    :root {
-        --mz-graphite: #151B23;
-        --mz-graphite-2: #1D2530;
-        --mz-steel: #3E6B92;
-        --mz-offwhite: #EDEEF0;
-        --mz-paper: #F7F7F5;
-        --mz-brass: #B8923A;
-        --mz-brass-light: #D6B563;
-        --mz-ink: #151B23;
-        --mz-ink-soft: #5B6472;
-    }
-    html, body, [class*="css"] {
-        font-family: 'IBM Plex Sans', sans-serif !important;
-    }
-    .stApp {
-        background-color: var(--mz-paper) !important;
-    }
-    code, .mz-mono {
-        font-family: 'IBM Plex Mono', monospace !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 # --- BOTÓN DE COLAPSAR/EXPANDIR EL MENÚ LATERAL: MÁS GRANDE Y VISIBLE ---
 # No dependemos del nombre interno del botón (cambia según la versión de
 # Streamlit): lo localizamos por su tamaño y posición en pantalla, así
@@ -191,7 +159,7 @@ components.html(
                 var arribaIzquierda = r.top < 70 && r.left < 70;
                 if (esPequeno && arribaIzquierda && !el.dataset.mzeroEstilado) {
                     el.dataset.mzeroEstilado = "1";
-                    el.style.setProperty('background-color', '#B8923A', 'important');
+                    el.style.setProperty('background-color', '#0066cc', 'important');
                     el.style.setProperty('border-radius', '0 10px 10px 0', 'important');
                     el.style.setProperty('box-shadow', '0 3px 10px rgba(0,0,0,0.30)', 'important');
                     el.style.setProperty('padding', '10px 12px', 'important');
@@ -214,7 +182,7 @@ components.html(
                     var esPequenoB = rb.width > 0 && rb.width < 55 && rb.height > 0 && rb.height < 55;
                     if (esPequenoB && rb.top < 130 && !btn.dataset.mzeroEstilado) {
                         btn.dataset.mzeroEstilado = "1";
-                        btn.style.setProperty('background-color', '#B8923A', 'important');
+                        btn.style.setProperty('background-color', '#0066cc', 'important');
                         btn.style.setProperty('border-radius', '8px', 'important');
                         btn.style.setProperty('box-shadow', '0 2px 6px rgba(0,0,0,0.25)', 'important');
                         btn.style.setProperty('padding', '8px', 'important');
@@ -290,7 +258,6 @@ TEXTOS = {
         "campo_vacio_peticion": "Escribe algo antes de enviar.",
         "buscar_perfil_titulo": "Buscar un perfil por sector",
         "buscar_perfil_intro": "Selecciona el sector y el subsector del perfil que necesitas.",
-        "aviso_candidato_cursos": "ℹ️ Una vez dentro, podrás explorar los cursos disponibles por sector y localidad, y enviar tu solicitud para participar en el que te interese.",
         "campo_nivel_candidato": "Nivel del candidato",
         "campo_trabajos_candidato": "Trabajos / tareas a realizar",
         "btn_enviar_busqueda_perfil": "Enviar petición de perfil",
@@ -521,7 +488,6 @@ TEXTOS = {
         "campo_vacio_peticion": "Escriu alguna cosa abans d'enviar.",
         "buscar_perfil_titulo": "Cercar un perfil per sector",
         "buscar_perfil_intro": "Selecciona el sector i el subsector del perfil que necessites.",
-        "aviso_candidato_cursos": "ℹ️ Un cop dins, podràs explorar els cursos disponibles per sector i localitat, i enviar la teva sol·licitud per participar en el que t'interessi.",
         "campo_nivel_candidato": "Nivell del candidat",
         "campo_trabajos_candidato": "Treballs / tasques a realitzar",
         "btn_enviar_busqueda_perfil": "Enviar petició de perfil",
@@ -1478,6 +1444,37 @@ with st.sidebar:
         args=("candidato",),
     )
 
+    # Acceso de administración: ahora valida contra la tabla "administradores"
+    # de Supabase, en vez de una hoja de Google Sheets pública.
+    with st.expander("⚙️ Administración", expanded=False):
+        if st.session_state.autenticado:
+            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
+            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
+                st.session_state.autenticado = False
+                st.session_state.usuario_actual = ""
+                st.rerun()
+        else:
+            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
+            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
+            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
+                if not SUPABASE_DISPONIBLE:
+                    st.error(T["error_cred"])
+                else:
+                    try:
+                        resultado_admin = (
+                            obtener_cliente_supabase().table("admin_credenciales").select("*")
+                            .eq("usuario", usuario_admin.strip())
+                            .eq("contrasena", pass_admin.strip())
+                            .execute()
+                        )
+                        if resultado_admin.data:
+                            st.session_state.autenticado = True
+                            st.session_state.usuario_actual = usuario_admin.strip()
+                            st.rerun()
+                        else:
+                            st.error(T["error_login"])
+                    except Exception as e:
+                        st.error(f"Error de acceso: {e}")
 
 
 # --- AVISO LEGAL: CUADRO FLOTANTE AL INICIO (una vez por sesión de navegador) ---
@@ -1517,42 +1514,31 @@ if not st.session_state["legal_modal_mostrado"]:
 # Botón fijo y siempre visible para volver a consultar el aviso legal
 with st.sidebar:
     st.divider()
+    if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
+        _mostrar_aviso_legal()
     st.markdown(
         """<style>
-        .st-key-legal_btn_wrapper button {
-            background-color: #172033 !important;
-            color: #ffffff !important;
-            border: none !important;
-        }
-        .st-key-legal_btn_wrapper button:hover {
-            background-color: #0d1420 !important;
-            color: #ffffff !important;
-        }
         .mzero-instagram-btn {
             display: flex;
             align-items: center;
             gap: 10px;
             min-height: 46px;
             border-radius: 10px;
-            border: none;
-            background-color: #8a1c42;
+            border: 1px solid rgba(49, 51, 63, 0.2);
             font-weight: 600;
             padding: 0 16px;
             margin-bottom: 8px;
             text-decoration: none !important;
-            color: #ffffff !important;
+            color: inherit !important;
         }
         .mzero-instagram-btn:hover {
-            background-color: #6f1635;
-            color: #ffffff !important;
+            border-color: #E1306C;
+            color: #E1306C !important;
         }
         .mzero-instagram-btn svg { flex-shrink: 0; }
         </style>""",
         unsafe_allow_html=True,
     )
-    with st.container(key="legal_btn_wrapper"):
-        if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
-            _mostrar_aviso_legal()
     st.markdown(
         f'<a class="mzero-instagram-btn" href="https://www.instagram.com/mzero.pro/" '
         f'target="_blank" rel="noopener noreferrer">'
@@ -1564,40 +1550,6 @@ with st.sidebar:
         f'{T["instagram_texto"]}</a>',
         unsafe_allow_html=True,
     )
-
-    st.divider()
-    # Acceso de administración: al final del todo, para que sea menos
-    # visible para el resto de usuarios. Valida contra la tabla
-    # "administradores" de Supabase, en vez de una hoja de Google Sheets pública.
-    with st.expander("⚙️ Administración", expanded=False):
-        if st.session_state.autenticado:
-            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
-            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
-                st.session_state.autenticado = False
-                st.session_state.usuario_actual = ""
-                st.rerun()
-        else:
-            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
-            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
-            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
-                if not SUPABASE_DISPONIBLE:
-                    st.error(T["error_cred"])
-                else:
-                    try:
-                        resultado_admin = (
-                            obtener_cliente_supabase().table("admin_credenciales").select("*")
-                            .eq("usuario", usuario_admin.strip())
-                            .eq("contrasena", pass_admin.strip())
-                            .execute()
-                        )
-                        if resultado_admin.data:
-                            st.session_state.autenticado = True
-                            st.session_state.usuario_actual = usuario_admin.strip()
-                            st.rerun()
-                        else:
-                            st.error(T["error_login"])
-                    except Exception as e:
-                        st.error(f"Error de acceso: {e}")
 
 
 # --- LÓGICA DE PANTALLAS ---
@@ -2734,7 +2686,6 @@ if st.session_state.get("acceso_panel"):
     elif acceso_panel == "candidato":
         st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
         st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
-        st.info(T["aviso_candidato_cursos"])
 
         cand_login_key = "cand_login_ok"
         cand_id_key = "cand_id"
@@ -2947,7 +2898,7 @@ elif opcion == T["menu_docs"]:
     st.markdown(f"## {T['area_docs']}")
     
     with st.container(border=True):
-        st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
 
         asociados_db, colaboradores_db = cargar_asociados_colaboradores()
@@ -3060,7 +3011,7 @@ elif opcion == T["menu_docs"]:
             background: #f5f5f5 !important;
         }
         </style>""", unsafe_allow_html=True)
-        st.markdown(f"<h4 style='color: var(--mz-ink); margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
 
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
@@ -3073,7 +3024,7 @@ elif opcion == T["menu_docs"]:
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
-        st.markdown(f"<h4 style='color: var(--mz-ink);'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
 
         titulos_colaboradores = [
             ["Centros de formación"],
@@ -3112,7 +3063,7 @@ elif opcion == T["menu_docs"]:
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
-    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
     titulos_func = T["titulos_func"]
 
     for titulo in titulos_func:
@@ -3154,7 +3105,7 @@ elif opcion == T["menu_docs"]:
             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 3: CONTACTO ---
-    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
     titulos_cont = ["Móvil / WhatsApp", "Email"]
     for titulo in titulos_cont:
         with st.expander(titulo):
@@ -3176,7 +3127,7 @@ elif opcion == T["menu_docs"]:
 
     # --- ESLOGAN ---
     st.markdown(
-        f"<h3 align='center' style='color: var(--mz-ink); margin-top: 30px; margin-bottom: 24px;'>"
+        f"<h3 align='center' style='color: #0066cc; margin-top: 30px; margin-bottom: 24px;'>"
         f"<b>{T['eslogan']}</b></h3>",
         unsafe_allow_html=True
     )
