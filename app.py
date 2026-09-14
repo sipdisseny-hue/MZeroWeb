@@ -155,155 +155,17 @@ st.markdown(
         --mz-ink: #151B23;
         --mz-ink-soft: #5B6472;
     }
-    html, body, [class*="css"] {
+    html, body, [class*="css"], [data-testid="stAppViewContainer"] * {
         font-family: 'IBM Plex Sans', sans-serif !important;
     }
-    .stApp {
+    .stApp,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stMain"],
+    section.main {
         background-color: var(--mz-paper) !important;
     }
     code, .mz-mono {
         font-family: 'IBM Plex Mono', monospace !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# --- CAPA VISUAL M-ZERO: DISEÑO BASADO EN LA PROPUESTA DE LANDING ---
-st.markdown(
-    """
-    <style>
-    :root {
-        --mz-graphite: #151B23;
-        --mz-graphite-2: #1D2530;
-        --mz-steel: #3E6B92;
-        --mz-offwhite: #EDEEF0;
-        --mz-paper: #F7F7F5;
-        --mz-brass: #B8923A;
-        --mz-brass-light: #D6B563;
-        --mz-ink: #151B23;
-        --mz-ink-soft: #5B6472;
-    }
-
-    /* Fondo general */
-    .stApp { background: var(--mz-paper) !important; }
-    .main .block-container {
-        max-width: 1280px !important;
-        padding-top: 1.2rem !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
-        padding-bottom: 3rem !important;
-    }
-
-    /* Sidebar: conserva toda la funcionalidad, cambia solo su aspecto */
-    section[data-testid="stSidebar"] {
-        background: var(--mz-graphite) !important;
-        border-right: 1px solid #2A3340 !important;
-    }
-    section[data-testid="stSidebar"] * {
-        color: var(--mz-offwhite);
-    }
-    section[data-testid="stSidebar"] [data-testid="stImage"] {
-        margin-bottom: -8px;
-    }
-    section[data-testid="stSidebar"] hr {
-        border-color: #343D49 !important;
-    }
-    section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
-        background: #1D2530 !important;
-        color: #EDEEF0 !important;
-        border: 1px solid #3C4552 !important;
-        border-radius: 3px !important;
-        box-shadow: none !important;
-    }
-    section[data-testid="stSidebar"] div[data-testid="stButton"] > button:hover {
-        border-color: var(--mz-brass) !important;
-        color: var(--mz-brass-light) !important;
-    }
-
-    /* Cabecera visual */
-    .mz-topbar {
-        display:flex; align-items:center; justify-content:space-between;
-        gap:24px; padding:18px 28px; margin-bottom:0;
-        background:var(--mz-graphite); color:var(--mz-offwhite);
-        border-bottom:1px solid #2A3340;
-    }
-    .mz-wordmark { font-weight:700; font-size:21px; letter-spacing:.7px; }
-    .mz-wordmark span { color:var(--mz-brass-light); }
-    .mz-toplinks { display:flex; gap:26px; align-items:center; font-size:13px; color:#AEB6C2; }
-    .mz-eval-pill {
-        display:inline-flex; align-items:center; gap:8px; background:var(--mz-offwhite);
-        color:var(--mz-graphite); padding:8px 13px; border-radius:3px; font-weight:600;
-    }
-    .mz-eval-dot { width:7px; height:7px; border-radius:50%; background:#2E9E5B; display:inline-block; }
-    .mz-lang { border:1px solid #3C4552; padding:6px 10px; border-radius:3px; color:#AEB6C2; }
-
-    /* Hero */
-    .mz-hero {
-        background-color:var(--mz-graphite); color:var(--mz-offwhite);
-        padding:64px 56px 58px; position:relative; overflow:hidden;
-        background-image:linear-gradient(var(--mz-graphite-2) 1px, transparent 1px),
-                         linear-gradient(90deg, var(--mz-graphite-2) 1px, transparent 1px);
-        background-size:48px 48px; background-position:center;
-        margin-bottom:0;
-    }
-    .mz-hero-inner { display:grid; grid-template-columns:1.15fr .85fr; gap:48px; align-items:center; max-width:1180px; margin:auto; }
-    .mz-kicker { font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:1.5px; color:var(--mz-brass-light); margin-bottom:14px; text-transform:uppercase; }
-    .mz-hero h1 { font-size:42px; font-weight:600; line-height:1.18; letter-spacing:-.4px; margin:0 0 18px; color:var(--mz-offwhite); }
-    .mz-hero p { font-size:16px; line-height:1.65; color:#B6BEC9; max-width:650px; margin:0; }
-    .mz-seal-wrap { display:flex; align-items:center; justify-content:center; }
-    .mz-seal { width:218px; height:218px; border-radius:50%; border:2px solid var(--mz-brass); display:flex; align-items:center; justify-content:center; position:relative; }
-    .mz-seal:before { content:""; position:absolute; inset:13px; border-radius:50%; border:1px dashed rgba(214,181,99,.45); }
-    .mz-seal-core { text-align:center; }
-    .mz-seal-m0 { font-size:44px; font-weight:700; color:var(--mz-brass-light); letter-spacing:1px; }
-    .mz-seal-tag { font-size:10px; color:#8B93A0; margin-top:6px; letter-spacing:1.4px; }
-    .mz-stats { display:flex; max-width:1180px; margin:42px auto 0; border-top:1px solid #2A3340; }
-    .mz-stat { flex:1; padding:20px 18px 0 0; border-right:1px solid #2A3340; }
-    .mz-stat:last-child { border-right:none; padding-left:18px; }
-    .mz-stat:nth-child(2) { padding-left:18px; }
-    .mz-stat-big { font-size:25px; font-weight:600; color:var(--mz-offwhite); }
-    .mz-stat-label { font-size:12px; color:#8B93A0; margin-top:4px; line-height:1.45; }
-
-    /* Accesos */
-    .mz-section { background:var(--mz-paper); padding:58px 28px 42px; }
-    .mz-section-head { max-width:700px; margin-bottom:28px; }
-    .mz-section-head h2 { font-size:27px; font-weight:600; margin:0 0 9px; color:var(--mz-ink); }
-    .mz-section-head p { font-size:14px; color:var(--mz-ink-soft); line-height:1.6; margin:0; }
-    .mz-access-card { background:var(--mz-paper); border:1px solid #D9DAD6; border-left:3px solid var(--mz-steel); padding:24px 22px 20px; min-height:180px; }
-    .mz-access-card.accent { border-left-color:var(--mz-brass); }
-    .mz-access-icon { width:38px; height:38px; border-radius:50%; background:var(--mz-offwhite); display:flex; align-items:center; justify-content:center; margin-bottom:14px; font-size:17px; }
-    .mz-access-card h3 { font-size:17px; font-weight:600; margin:0 0 7px; color:var(--mz-ink); }
-    .mz-access-card p { font-size:13px; color:var(--mz-ink-soft); line-height:1.55; margin:0 0 15px; }
-    .mz-ref { font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9CA3AD; letter-spacing:.5px; }
-
-    /* Botones de las tarjetas: son los botones funcionales existentes */
-    div[data-testid="column"] div[data-testid="stButton"] > button {
-        border-radius:3px !important; font-weight:600 !important;
-        border:1px solid #C9CBC7 !important; background:var(--mz-graphite) !important;
-        color:var(--mz-offwhite) !important; min-height:43px !important;
-    }
-    div[data-testid="column"] div[data-testid="stButton"] > button:hover {
-        border-color:var(--mz-brass) !important; color:var(--mz-brass-light) !important;
-    }
-
-    /* Directorio y resto de bloques */
-    .mz-directory-head { background:var(--mz-offwhite); padding:42px 28px 18px; margin-top:12px; }
-    .mz-directory-head h2 { margin:0 0 7px; color:var(--mz-ink); font-size:26px; font-weight:600; }
-    .mz-directory-head p { margin:0; color:var(--mz-ink-soft); font-size:14px; }
-
-    /* Expansores: conserva la jerarquía actual, pero la acerca a la muestra */
-    div[data-testid="stExpander"] { border-radius:3px !important; border-color:#D9DAD6 !important; overflow:hidden; }
-    div[data-testid="stExpander"] summary { min-height:46px; }
-    div[data-testid="stExpander"] summary p { font-weight:600 !important; }
-
-    /* Responsive */
-    @media (max-width: 900px) {
-        .mz-hero { padding:42px 28px; }
-        .mz-hero-inner { grid-template-columns:1fr; }
-        .mz-seal-wrap { justify-content:flex-start; margin-top:20px; }
-        .mz-stats { flex-direction:column; }
-        .mz-stat, .mz-stat:last-child, .mz-stat:nth-child(2) { border-right:none; border-bottom:1px solid #2A3340; padding:15px 0; }
-        .mz-toplinks { gap:10px; font-size:11px; }
     }
     </style>
     """,
@@ -383,7 +245,6 @@ TEXTOS = {
         "nav_titulo": "Navegación",
         "menu_docs": "Documentos",
         "menu_eval": "Evaluaciones",
-        "menu_eval_docente": "acceso docente",
         "sesion_iniciada": "Sesión iniciada:",
         "cerrar_sesion": "CERRAR SESIÓN",
         "usuario": "Usuario:",
@@ -401,21 +262,6 @@ TEXTOS = {
         "funcionalidad": "Funcionalidad",
         "contacto": "Contacto",
         "como_participar": "Manual de uso",
-        "nav_accesos": "ACCESOS",
-        "nav_como_funciona": "CÓMO FUNCIONA",
-        "nav_administracion": "Administración",
-        "accesos_titulo": "Tres formas de entrar, un mismo estándar",
-        "accesos_intro": "Cada acceso está pensado para lo que esa persona necesita resolver — no es el mismo formulario disfrazado tres veces.",
-        "accesos_asociados_desc": "Buscan perfiles ya validados, filtrando por sector y subsector, sin procesos de selección a ciegas.",
-        "accesos_colaboradores_desc": "Dan de alta sus cursos y pasan a formar parte de la red que otorga el sello M0.",
-        "accesos_candidatos_desc": "Se forman, consiguen el sello M0 y solicitan participar directamente en los cursos que buscan.",
-        "ref_acceso_asociado": "ACCESO · ASOCIADO",
-        "ref_acceso_colaborador": "ACCESO · COLABORADOR",
-        "ref_acceso_candidato": "ACCESO · CANDIDATO",
-        "acceso_sub_asociados": "Acceso y gestión para Asociados",
-        "acceso_sub_colaboradores": "Acceso y gestión para Colaboradores",
-        "acceso_sub_candidatos": "Área de acceso para Candidatos",
-        "volver": "← Volver",
         "manual_uso_ayuda_video": "Para insertar un vídeo (YouTube, Vimeo...), pega aquí el código de inserción del vídeo (en YouTube: Compartir → Insertar → copiar código).",
         "eslogan": "Conectando talento, transformando la industria",
         "aviso_login_eval": "Debes iniciar sesión en el sidebar para acceder al módulo de evaluaciones.",
@@ -630,7 +476,6 @@ TEXTOS = {
         "nav_titulo": "Navegació",
         "menu_docs": "Documents",
         "menu_eval": "Avaluacions",
-        "menu_eval_docente": "accés docent",
         "sesion_iniciada": "Sessió iniciada:",
         "cerrar_sesion": "TANCAR SESSIÓ",
         "usuario": "Usuari:",
@@ -648,21 +493,6 @@ TEXTOS = {
         "funcionalidad": "Funcionalitat",
         "contacto": "Contacte",
         "como_participar": "Manual d'ús",
-        "nav_accesos": "ACCESSOS",
-        "nav_como_funciona": "COM FUNCIONA",
-        "nav_administracion": "Administració",
-        "accesos_titulo": "Tres formes d'entrar, un mateix estàndard",
-        "accesos_intro": "Cada accés està pensat per al que aquesta persona necessita resoldre — no és el mateix formulari disfressat tres vegades.",
-        "accesos_asociados_desc": "Busquen perfils ja validats, filtrant per sector i subsector, sense processos de selecció a cegues.",
-        "accesos_colaboradores_desc": "Donen d'alta els seus cursos i passen a formar part de la xarxa que atorga el segell M0.",
-        "accesos_candidatos_desc": "Es formen, aconsegueixen el segell M0 i sol·liciten participar directament en els cursos que busquen.",
-        "ref_acceso_asociado": "ACCÉS · ASSOCIAT",
-        "ref_acceso_colaborador": "ACCÉS · COL·LABORADOR",
-        "ref_acceso_candidato": "ACCÉS · CANDIDAT",
-        "acceso_sub_asociados": "Accés i gestió per a Associats",
-        "acceso_sub_colaboradores": "Accés i gestió per a Col·laboradors",
-        "acceso_sub_candidatos": "Àrea d'accés per a Candidats",
-        "volver": "← Tornar",
         "manual_uso_ayuda_video": "Per inserir un vídeo (YouTube, Vimeo...), enganxa aquí el codi d'inserció del vídeo (a YouTube: Compartir → Insertar → copiar codi).",
         "eslogan": "Connectant talent, transformant la indústria",
         "aviso_login_eval": "Has d'iniciar sessió al sidebar per accedir al mòdul d'avaluacions.",
@@ -1583,123 +1413,235 @@ def guardar_en_sheets(titulo, nuevo_contenido, idioma=None):
     except Exception:
         return False
 
-# --- CABECERA PRINCIPAL M-ZERO: navegación visual tipo la muestra ---
-# La navegación deja de depender del sidebar. Los botones solo cambian
-# session_state; la funcionalidad existente se conserva intacta.
-if "idioma_app" not in st.session_state:
-    st.session_state["idioma_app"] = "es"
-if "navegacion" not in st.session_state:
-    st.session_state["navegacion"] = "Documentos"
-if "acceso_panel" not in st.session_state:
-    st.session_state["acceso_panel"] = None
-if "pagina_publica" not in st.session_state:
-    st.session_state["pagina_publica"] = None
-if "admin_panel" not in st.session_state:
-    st.session_state["admin_panel"] = False
+# --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
+with st.sidebar:
+    st.markdown(
+        """<style>
+        section[data-testid="stSidebar"] {
+            background-color: var(--mz-graphite) !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
+        section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] *,
+        section[data-testid="stSidebar"] label,
+        section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+        section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+            color: var(--mz-offwhite) !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stAlert"],
+        section[data-testid="stSidebar"] [data-testid="stAlert"] * {
+            color: inherit !important;
+        }
+        section[data-testid="stSidebar"] hr {
+            border-color: #2A3340 !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stImage"] {
+            background: var(--mz-offwhite);
+            border-radius: 6px;
+            padding: 10px;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    st.image("logo_mzero.png")
+    st.markdown(
+        '<div style="font-size:22px; font-weight:700; letter-spacing:0.3px; margin: 6px 0 4px;">'
+        'M<span style="color: var(--mz-brass-light);">-Zero</span> '
+        '<span style="font-weight:400; color:#8B93A0; font-size:16px;">Pro</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
 
-lang = st.session_state["idioma_app"]
-T = TEXTOS[lang]
-opcion = st.session_state["navegacion"]
+    idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
+    lang = "ca" if idioma_seleccionado == "Català" else "es"
+    T = TEXTOS[lang]
+    
+    def _abrir_acceso(tipo):
+        # Callback ejecutado antes de que se creen los widgets del siguiente rerun.
+        # Así evitamos modificar la session_state de un radio ya instanciado.
+        st.session_state["navegacion"] = T["menu_docs"]
+        st.session_state["acceso_panel"] = tipo
 
-# Mantener el valor de navegación sincronizado con el idioma actual.
-if st.session_state["navegacion"] not in (TEXTOS["es"]["menu_docs"], TEXTOS["es"]["menu_eval"], TEXTOS["ca"]["menu_docs"], TEXTOS["ca"]["menu_eval"]):
-    st.session_state["navegacion"] = T["menu_docs"]
+    def _cambiar_navegacion():
+        # Al navegar manualmente entre Documentación/Evaluaciones se cierra
+        # cualquier pantalla de acceso independiente.
+        st.session_state["acceso_panel"] = None
 
-# Callbacks de navegación.
-def _ir_documentacion():
-    st.session_state["navegacion"] = TEXTOS[st.session_state["idioma_app"]]["menu_docs"]
-    st.session_state["acceso_panel"] = None
-    st.session_state["pagina_publica"] = None
-    st.session_state["admin_panel"] = False
+    opcion = st.radio(
+        T["nav_titulo"],
+        [T["menu_docs"], T["menu_eval"]],
+        key="navegacion",
+        index=0,
+        on_change=_cambiar_navegacion
+    )
 
-def _ir_evaluaciones():
-    st.session_state["navegacion"] = TEXTOS[st.session_state["idioma_app"]]["menu_eval"]
-    st.session_state["acceso_panel"] = None
-    st.session_state["pagina_publica"] = None
-    st.session_state["admin_panel"] = False
+    st.divider()
+    st.markdown(
+        """<style>
+        section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
+            min-height: 46px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: left;
+            padding-left: 16px;
+            margin-bottom: 8px;
+            background-color: var(--mz-graphite-2);
+            border: 1px solid #2A3340;
+            color: var(--mz-offwhite);
+        }
+        section[data-testid="stSidebar"] div[data-testid="stButton"] > button:hover {
+            border-color: var(--mz-brass);
+            color: var(--mz-brass-light);
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    st.markdown("### 🔐 Accesos")
 
-def _abrir_accesos_menu():
-    st.session_state["navegacion"] = TEXTOS[st.session_state["idioma_app"]]["menu_docs"]
-    st.session_state["acceso_panel"] = "menu"
-    st.session_state["pagina_publica"] = None
-    st.session_state["admin_panel"] = False
+    # Estos botones sustituyen ÚNICAMENTE al antiguo usuario/contraseña del sidebar.
+    # Cada uno abre la funcionalidad que ya existía en 'Cómo participar'.
+    st.button(
+        f"👥  {T['acceso_asociados']}",
+        key="btn_acceso_asociados",
+        use_container_width=True,
+        on_click=_abrir_acceso,
+        args=("asociado",),
+    )
+    st.button(
+        f"🏢  {T['acceso_colaboradores']}",
+        key="btn_acceso_colaboradores",
+        use_container_width=True,
+        on_click=_abrir_acceso,
+        args=("colaborador",),
+    )
+    st.button(
+        f"🎓  {T['acceso_candidatos']}",
+        key="btn_acceso_candidatos",
+        use_container_width=True,
+        on_click=_abrir_acceso,
+        args=("candidato",),
+    )
 
-def _abrir_acceso(tipo):
-    st.session_state["navegacion"] = TEXTOS[st.session_state["idioma_app"]]["menu_docs"]
-    st.session_state["acceso_panel"] = tipo
-    st.session_state["pagina_publica"] = None
-    st.session_state["admin_panel"] = False
 
-def _abrir_como_funciona():
-    st.session_state["navegacion"] = TEXTOS[st.session_state["idioma_app"]]["menu_docs"]
-    st.session_state["acceso_panel"] = None
-    st.session_state["pagina_publica"] = "como_funciona"
-    st.session_state["admin_panel"] = False
 
-def _abrir_admin():
-    st.session_state["acceso_panel"] = None
-    st.session_state["pagina_publica"] = None
-    st.session_state["admin_panel"] = True
+# --- AVISO LEGAL: CUADRO FLOTANTE AL INICIO (una vez por sesión de navegador) ---
+if "legal_modal_mostrado" not in st.session_state:
+    st.session_state["legal_modal_mostrado"] = False
 
-def _cambiar_idioma():
-    nuevo = st.session_state.get("idioma_selector_top", "ES")
-    st.session_state["idioma_app"] = "ca" if nuevo == "CA" else "es"
-    # La navegación visible ya no incluye Documentos; mantenemos la pantalla
-    # actual y solo traducimos sus textos.
-    if st.session_state.get("pagina_publica") or st.session_state.get("acceso_panel") or st.session_state.get("admin_panel"):
-        return
-    st.session_state["navegacion"] = TEXTOS[st.session_state["idioma_app"]]["menu_docs"]
 
-# Cabecera visual. Los botones Streamlit están colocados encima/entre los
-# elementos HTML para conservar accesibilidad y funcionalidad real.
-st.markdown("""
-<style>
-.mz-nav-shell{background:#151B23;border-bottom:1px solid #2A3340;padding:16px 28px 12px;margin-bottom:0;}
-.mz-nav-grid{display:flex;align-items:center;gap:22px;max-width:1240px;margin:auto;}
-.mz-nav-brand{font-weight:700;font-size:21px;letter-spacing:.7px;color:#EDEEF0;white-space:nowrap;margin-right:auto;}
-.mz-nav-brand span{color:#D6B563;}
-.mz-nav-sub{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#7F8996;letter-spacing:1.2px;margin-top:2px;}
-/* Hacemos transparentes los contenedores de los botones del menú */
-.mz-nav-actions{max-width:1240px;margin:-46px auto 0;display:flex;justify-content:flex-end;gap:7px;position:relative;z-index:5;}
-.mz-nav-actions div[data-testid="stButton"]>button{border:0!important;background:transparent!important;color:#AEB6C2!important;font-size:13px!important;font-weight:500!important;border-radius:3px!important;min-height:36px!important;padding:7px 10px!important;}
-.mz-nav-actions div[data-testid="stButton"]>button:hover{color:#D6B563!important;background:#1D2530!important;}
-.mz-nav-actions .st-key-nav_accesos>div>button{background:#B8923A!important;color:#151B23!important;font-weight:700!important;}
-.mz-nav-actions .st-key-nav_accesos>div>button:hover{background:#D6B563!important;color:#151B23!important;}
-.mz-nav-actions .st-key-nav_eval>div>button{background:#EDEEF0!important;color:#151B23!important;font-weight:600!important;}
-.mz-nav-actions .st-key-nav_eval>div>button:hover{background:#fff!important;}
-.mz-nav-lang{margin-left:4px;}
-.mz-nav-lang div[data-testid="stRadio"]{margin-top:0!important;}
-.mz-nav-lang div[role="radiogroup"]{gap:0!important;border:1px solid #3C4552;border-radius:3px;overflow:hidden;padding:0!important;}
-.mz-nav-lang label{padding:7px 10px!important;margin:0!important;color:#8B93A0!important;font-size:11px!important;}
-.mz-nav-lang label:has(input:checked){background:#B8923A!important;color:#151B23!important;font-weight:700!important;}
-.mz-admin-row{max-width:1240px;margin:8px auto 0;display:flex;justify-content:flex-end;}
-.mz-admin-row div[data-testid="stButton"]>button{border:0!important;background:transparent!important;color:#6F7885!important;font-size:11px!important;padding:2px 8px!important;min-height:28px!important;}
-.mz-admin-row div[data-testid="stButton"]>button:hover{color:#D6B563!important;}
-</style>
-<div class="mz-nav-shell"><div class="mz-nav-grid"><div><div class="mz-nav-brand">M<span>-ZERO</span></div><div class="mz-nav-sub">CERTIFICACIÓN · NIVEL TÉCNICO</div></div></div></div>
-""", unsafe_allow_html=True)
+@st.dialog(T["legal_titulo"])
+def _mostrar_aviso_legal():
+    with st.expander(T["aviso_legal"], expanded=False):
+        st.markdown(f"**{T['legal_nombre_comercial']}**")
+        st.markdown(f"**{T['legal_responsable']}**")
+        st.markdown(f"**{T['legal_nif']}**")
+        st.markdown(f"**{T['legal_domicilio']}**")
+        st.markdown(f"**{T['legal_email']}**")
+        st.write(T["legal_aviso_texto"])
 
-st.markdown('<div class="mz-nav-actions">', unsafe_allow_html=True)
-nav1, nav2, nav3, nav4 = st.columns([1.45,0.95,1.10,0.72], gap="small")
-with nav1:
-    st.button(f"●  {T['menu_eval']} · {T['menu_eval_docente']}", key="nav_eval", use_container_width=True, on_click=_ir_evaluaciones)
-with nav2:
-    st.button(T["nav_accesos"], key="nav_accesos", use_container_width=True, on_click=_abrir_accesos_menu)
-with nav3:
-    st.button(T["nav_como_funciona"], key="nav_como", use_container_width=True, on_click=_abrir_como_funciona)
-with nav4:
-    st.radio("Idioma", ["ES","CA"], index=0 if lang=="es" else 1, horizontal=True, key="idioma_selector_top", label_visibility="collapsed", on_change=_cambiar_idioma)
-st.markdown('</div>', unsafe_allow_html=True)
+    with st.expander(T["politica_privacidad"], expanded=False):
+        st.markdown("### Responsable del tratamiento")
+        st.write(f"{T['legal_responsable']}. {T['legal_email']}")
+        st.markdown("### Finalidades")
+        st.write(T["legal_privacidad_texto"])
+        st.markdown("### Derechos")
+        st.write(T["legal_derechos_texto"])
+        st.markdown("### Actualización")
+        st.write(T["legal_actualizacion"])
 
-# Instagram y administración quedan dentro del mismo concepto de menú, pero
-# discretos para no competir con los accesos principales.
-st.markdown('<div class="mz-admin-row">', unsafe_allow_html=True)
-ig_col, admin_col = st.columns([0.82,0.18])
-with ig_col:
-    st.markdown('<a href="https://www.instagram.com/mzero.pro/" target="_blank" style="color:#8B93A0;text-decoration:none;font-size:12px;">◎ Instagram · @mzero.pro</a>', unsafe_allow_html=True)
-with admin_col:
-    st.button(f"⚙ {T['nav_administracion']}", key="nav_admin", use_container_width=True, on_click=_abrir_admin)
-st.markdown('</div>', unsafe_allow_html=True)
+    with st.expander(T["politica_cookies"], expanded=False):
+        st.write(T["legal_cookies_texto"])
+        st.write(T["legal_actualizacion"])
+
+
+if not st.session_state["legal_modal_mostrado"]:
+    st.session_state["legal_modal_mostrado"] = True
+    _mostrar_aviso_legal()
+
+# Botón fijo y siempre visible para volver a consultar el aviso legal
+with st.sidebar:
+    st.divider()
+    st.markdown(
+        """<style>
+        .st-key-legal_btn_wrapper button {
+            background-color: #172033 !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        .st-key-legal_btn_wrapper button:hover {
+            background-color: #0d1420 !important;
+            color: #ffffff !important;
+        }
+        .mzero-instagram-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 46px;
+            border-radius: 10px;
+            border: none;
+            background-color: #8a1c42;
+            font-weight: 600;
+            padding: 0 16px;
+            margin-bottom: 8px;
+            text-decoration: none !important;
+            color: #ffffff !important;
+        }
+        .mzero-instagram-btn:hover {
+            background-color: #6f1635;
+            color: #ffffff !important;
+        }
+        .mzero-instagram-btn svg { flex-shrink: 0; }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    with st.container(key="legal_btn_wrapper"):
+        if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
+            _mostrar_aviso_legal()
+    st.markdown(
+        f'<a class="mzero-instagram-btn" href="https://www.instagram.com/mzero.pro/" '
+        f'target="_blank" rel="noopener noreferrer">'
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">'
+        f'<rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/>'
+        f'<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>'
+        f'<circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/>'
+        f'</svg>'
+        f'{T["instagram_texto"]}</a>',
+        unsafe_allow_html=True,
+    )
+
+    st.divider()
+    # Acceso de administración: al final del todo, para que sea menos
+    # visible para el resto de usuarios. Valida contra la tabla
+    # "administradores" de Supabase, en vez de una hoja de Google Sheets pública.
+    with st.expander("⚙️ Administración", expanded=False):
+        if st.session_state.autenticado:
+            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
+            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
+                st.session_state.autenticado = False
+                st.session_state.usuario_actual = ""
+                st.rerun()
+        else:
+            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
+            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
+            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
+                if not SUPABASE_DISPONIBLE:
+                    st.error(T["error_cred"])
+                else:
+                    try:
+                        resultado_admin = (
+                            obtener_cliente_supabase().table("admin_credenciales").select("*")
+                            .eq("usuario", usuario_admin.strip())
+                            .eq("contrasena", pass_admin.strip())
+                            .execute()
+                        )
+                        if resultado_admin.data:
+                            st.session_state.autenticado = True
+                            st.session_state.usuario_actual = usuario_admin.strip()
+                            st.rerun()
+                        else:
+                            st.error(T["error_login"])
+                    except Exception as e:
+                        st.error(f"Error de acceso: {e}")
+
 
 # --- LÓGICA DE PANTALLAS ---
 def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=False, mostrar_en_expander=True):
@@ -2108,7 +2050,9 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         st.info(T["campo_migracion_cursos"])
         return
 
-    tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])# ---------------------------------------------------------------
+    tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])
+
+# ---------------------------------------------------------------
     # CREAR NUEVA EDICIÓN
     # ---------------------------------------------------------------
     with tab_crear:
@@ -2782,73 +2726,7 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
 
 
 
-if st.session_state.get("admin_panel"):
-    st.markdown("<div class='mz-public-page'><div class='mz-page-kicker'>CONTROL · M-ZERO</div><h1 class='mz-page-title'>Administración</h1><p class='mz-page-intro'>Acceso reservado para la gestión interna de contenidos y datos de la aplicación.</p></div>", unsafe_allow_html=True)
-    with st.container(border=True):
-        if st.session_state.autenticado:
-            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
-            if st.button(T["cerrar_sesion"], key="admin_logout_main"):
-                st.session_state.autenticado = False
-                st.session_state.usuario_actual = ""
-                st.session_state["admin_panel"] = False
-                st.rerun()
-        else:
-            usuario_admin = st.text_input(T["usuario"], key="admin_user_main")
-            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_main")
-            if st.button(T["btn_acceder"], key="admin_login_main", type="primary"):
-                if not SUPABASE_DISPONIBLE:
-                    st.error(T["error_cred"])
-                else:
-                    try:
-                        resultado_admin = (
-                            obtener_cliente_supabase().table("admin_credenciales").select("*")
-                            .eq("usuario", usuario_admin.strip())
-                            .eq("contrasena", pass_admin.strip())
-                            .execute()
-                        )
-                        if resultado_admin.data:
-                            st.session_state.autenticado = True
-                            st.session_state.usuario_actual = usuario_admin.strip()
-                            st.rerun()
-                        else:
-                            st.error(T["error_login"])
-                    except Exception as e:
-                        st.error(f"Error de acceso: {e}")
-    if st.button("← Volver", key="admin_volver"):
-        st.session_state["admin_panel"] = False
-        st.rerun()
-
-elif st.session_state.get("pagina_publica") == "como_funciona":
-    st.markdown("<div class='mz-public-page'><div class='mz-page-kicker'>M-ZERO · METODOLOGÍA</div><h1 class='mz-page-title'>Cómo funciona</h1><p class='mz-page-intro'>Aquí se explica el porqué de M-Zero, qué aporta el sello y por qué interesa a asociados, colaboradores y candidatos.</p></div>", unsafe_allow_html=True)
-    datos_func = st.session_state.get("contenido_funcionalidad", {})
-    if not datos_func:
-        datos_func = cargar_datos_de_google()
-        st.session_state.contenido_funcionalidad = datos_func
-    for titulo in T["titulos_func"]:
-        with st.expander(titulo, expanded=False):
-            contenido = datos_func.get(titulo, "")
-            equivalencias = {
-                "Arguments M-Zero": "Argumentos M-Zero",
-                "Per què ser Associat o Col·laborador?": "¿Por qué ser Asociado o Colaborador?",
-                "Metodologia M0": "Metodología M0",
-                "El segell M-Zero 'Certificació de qualitat'": "El sello M-Zero 'Certificación de calidad'",
-            }
-            if not contenido:
-                contenido = datos_func.get(equivalencias.get(titulo, titulo), "")
-            st.markdown(contenido, unsafe_allow_html=True)
-    instrucciones = cargar_instrucciones_participar()
-    if instrucciones:
-        st.markdown("### Participación")
-        for clave, bloque in instrucciones.items():
-            texto = bloque.get(lang, "") if isinstance(bloque, dict) else ""
-            if texto:
-                with st.expander(str(clave), expanded=False):
-                    st.markdown(texto, unsafe_allow_html=True)
-    if st.button(T["volver"], key="volver_como_funciona"):
-        st.session_state["pagina_publica"] = None
-        st.rerun()
-
-elif st.session_state.get("acceso_panel"):
+if st.session_state.get("acceso_panel"):
     acceso_panel = st.session_state["acceso_panel"]
 
     # Pantallas independientes: al entrar aquí NO se renderiza el bloque
@@ -2874,34 +2752,17 @@ elif st.session_state.get("acceso_panel"):
 
     st.markdown('<div class="access-page">', unsafe_allow_html=True)
 
-    if acceso_panel == "menu":
-        st.markdown(f"<div class='mz-public-page'><div class='mz-page-kicker'>M-ZERO · ACCESOS</div><h1 class='mz-page-title'>{T['accesos_titulo']}</h1><p class='mz-page-intro'>{T['accesos_intro']}</p></div>", unsafe_allow_html=True)
-        ac1, ac2, ac3 = st.columns(3, gap="small")
-        with ac1:
-            st.markdown(f"<div class='mz-access-card'><div class='mz-access-icon'>🏭</div><h3>{T['asociados']}</h3><p>{T['accesos_asociados_desc']}</p><div class='mz-ref'>{T['ref_acceso_asociado']}</div></div>", unsafe_allow_html=True)
-            st.button(f"👥  {T['acceso_asociados']}", key="menu_acceso_asociado", use_container_width=True, on_click=_abrir_acceso, args=("asociado",))
-        with ac2:
-            st.markdown(f"<div class='mz-access-card accent'><div class='mz-access-icon'>🎓</div><h3>{T['colaboradores']}</h3><p>{T['accesos_colaboradores_desc']}</p><div class='mz-ref'>{T['ref_acceso_colaborador']}</div></div>", unsafe_allow_html=True)
-            st.button(f"🏢  {T['acceso_colaboradores']}", key="menu_acceso_colaborador", use_container_width=True, on_click=_abrir_acceso, args=("colaborador",))
-        with ac3:
-            st.markdown(f"<div class='mz-access-card'><div class='mz-access-icon'>👷</div><h3>{T['acceso_candidatos'].replace('Acceso ','').replace('Accés ','')}</h3><p>{T['accesos_candidatos_desc']}</p><div class='mz-ref'>{T['ref_acceso_candidato']}</div></div>", unsafe_allow_html=True)
-            st.button(f"🎓  {T['acceso_candidatos']}", key="menu_acceso_candidato", use_container_width=True, on_click=_abrir_acceso, args=("candidato",))
-        st.markdown(f"<div class='mz-note'>{T['menu_eval']} · {T['menu_eval_docente']} permanece en el menú superior y conserva su funcionamiento actual.</div>", unsafe_allow_html=True)
-        if st.button(T['volver'], key="volver_menu_accesos"):
-            st.session_state["acceso_panel"] = None
-            st.rerun()
-
-    elif acceso_panel == "asociado":
+    if acceso_panel == "asociado":
         st.markdown(f'<div class="access-title">👥 {T["acceso_asociados"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="access-subtitle">{T["acceso_sub_asociados"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-subtitle">Acceso y gestión para Asociados</div>', unsafe_allow_html=True)
         bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part", usar_supabase=True)
-        if st.button(T["volver"], key="volver_desde_asociados", use_container_width=False):
+        if st.button("← Volver a Documentación", key="volver_desde_asociados", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     elif acceso_panel == "colaborador":
         st.markdown(f'<div class="access-title">🏢 {T["acceso_colaboradores"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="access-subtitle">{T["acceso_sub_colaboradores"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-subtitle">Acceso y gestión para Colaboradores</div>', unsafe_allow_html=True)
         bloque_acceso_y_peticion(
             "colaborador",
             "Credenciales Colaboradores",
@@ -2909,13 +2770,13 @@ elif st.session_state.get("acceso_panel"):
             incluir_centro_registro=True,
             usar_supabase=True
         )
-        if st.button(T["volver"], key="volver_desde_colaboradores", use_container_width=False):
+        if st.button("← Volver a Documentación", key="volver_desde_colaboradores", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     elif acceso_panel == "candidato":
         st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="access-subtitle">{T["acceso_sub_candidatos"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
         st.info(T["aviso_candidato_cursos"])
 
         cand_login_key = "cand_login_ok"
@@ -3099,7 +2960,7 @@ elif st.session_state.get("acceso_panel"):
                 st.session_state[cand_ubic_key] = None
                 st.rerun()
 
-        if st.button(T["volver"], key="volver_desde_candidatos", use_container_width=False):
+        if st.button("← Volver a Documentación", key="volver_desde_candidatos", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
@@ -3107,41 +2968,6 @@ elif st.session_state.get("acceso_panel"):
 
 
 elif opcion == T["menu_docs"]:
-    # --- PORTADA VISUAL M-ZERO ---
-    # Esta capa es exclusivamente visual. Los botones de acceso llaman a la
-    # misma funcionalidad existente mediante los callbacks actuales.
-    st.markdown(
-        f"""
-        <section class="mz-hero">
-            <div class="mz-hero-inner">
-                <div>
-                    <div class="mz-kicker">M-ZERO · CERTIFICACIÓN TÉCNICA</div>
-                    <h1>Cada perfil que sale de M-Zero ya ha sido puesto a prueba.</h1>
-                    <p>{T['eslogan']}. Conectamos empresas, centros de formación y candidatos mediante un sistema de evaluación que permite conocer el nivel antes de tomar una decisión.</p>
-                </div>
-                <div class="mz-seal-wrap">
-                    <div class="mz-seal">
-                        <div class="mz-seal-core">
-                            <div class="mz-seal-m0">M0</div>
-                            <div class="mz-seal-tag">SELLO&nbsp;DE&nbsp;NIVEL</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="mz-stats">
-                <div class="mz-stat"><div class="mz-stat-big">10</div><div class="mz-stat-label">Sectores industriales cubiertos</div></div>
-                <div class="mz-stat"><div class="mz-stat-big">3</div><div class="mz-stat-label">Formas de acceso — asociados, colaboradores, candidatos</div></div>
-                <div class="mz-stat"><div class="mz-stat-big">M0</div><div class="mz-stat-label">Un sello, un nivel mínimo exigido</div></div>
-            </div>
-        </section>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # La portada deja el directorio visible como en la aplicación actual.
-    # Los tres accesos se abren desde la pestaña amarilla ACCESOS del menú superior.
-
-    st.markdown('<div class="mz-directory-head"><h2>Asociados y colaboradores</h2><p>Organizados por categoría, provincia y población.</p></div>', unsafe_allow_html=True)
 
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
     # (y solo una vez por sesión) en vez de en cada carga de la app, para no
@@ -3397,12 +3223,7 @@ elif opcion == T["menu_docs"]:
         f"<b>{T['eslogan']}</b></h3>",
         unsafe_allow_html=True
     )
-    lcol, icol = st.columns([0.5, 0.5])
-    with lcol:
-        if st.button(T["legal_titulo"], key="btn_ver_legal_main", use_container_width=True):
-            _mostrar_aviso_legal()
-    with icol:
-        st.markdown('<a href="https://www.instagram.com/mzero.pro/" target="_blank" style="display:block;text-align:center;padding:10px;color:#8a1c42;text-decoration:none;font-weight:600;">◎ Instagram · @mzero.pro</a>', unsafe_allow_html=True)
+
 
 elif opcion == T["menu_eval"]:
     if 'envio_resultado' in st.session_state:
@@ -3780,4 +3601,4 @@ elif opcion == T["menu_eval"]:
                             st.rerun()
                         except Exception as e:
                             st.session_state.envio_resultado = ("error", f"Error al guardar en la base de datos: {e}")
-                            st.rerun()
+                            st.rerun()  
