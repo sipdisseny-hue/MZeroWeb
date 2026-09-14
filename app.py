@@ -3036,31 +3036,65 @@ elif opcion == T["menu_docs"]:
                 <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Un sello, un nivel mínimo exigido</div>
             </div>
         </div>
-
-        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1px; background:#D9DAD6; margin-bottom:40px;">
-            <div style="background:var(--mz-paper); padding:26px 22px; border-left:3px solid var(--mz-steel);">
-                <div style="width:34px; height:34px; border-radius:50%; background:var(--mz-offwhite);
-                            display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px;">🏭</div>
-                <div style="font-size:16px; font-weight:600; margin-bottom:8px; color:var(--mz-ink);">{T['acceso_asociados']}</div>
-                <div style="font-size:13.5px; color:var(--mz-ink-soft); line-height:1.55;">Perfiles ya validados, filtrando por sector y subsector.</div>
-            </div>
-            <div style="background:var(--mz-paper); padding:26px 22px; border-left:3px solid var(--mz-brass);">
-                <div style="width:34px; height:34px; border-radius:50%; background:var(--mz-offwhite);
-                            display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px;">🎓</div>
-                <div style="font-size:16px; font-weight:600; margin-bottom:8px; color:var(--mz-ink);">{T['acceso_colaboradores']}</div>
-                <div style="font-size:13.5px; color:var(--mz-ink-soft); line-height:1.55;">Dan de alta sus cursos y forman parte de la red del sello M0.</div>
-            </div>
-            <div style="background:var(--mz-paper); padding:26px 22px; border-left:3px solid var(--mz-steel);">
-                <div style="width:34px; height:34px; border-radius:50%; background:var(--mz-offwhite);
-                            display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px;">👷</div>
-                <div style="font-size:16px; font-weight:600; margin-bottom:8px; color:var(--mz-ink);">{T['acceso_candidatos']}</div>
-                <div style="font-size:13.5px; color:var(--mz-ink-soft); line-height:1.55;">Se forman, consiguen el sello M0 y solicitan participar en cursos.</div>
-            </div>
-        </div>
         """,
         unsafe_allow_html=True,
     )
-    st.caption("👈 Usa el menú lateral para entrar en cada acceso.")
+
+    def _abrir_acceso_directo(tipo):
+        st.session_state["navegacion"] = T["menu_docs"]
+        st.session_state["acceso_panel"] = tipo
+
+    st.markdown(
+        """<style>
+        .st-key-card_asociado, .st-key-card_colaborador, .st-key-card_candidato {
+            background: var(--mz-paper);
+            padding: 0 2px 2px;
+            margin-bottom: 40px;
+        }
+        .st-key-card_asociado { border-left: 3px solid var(--mz-steel); }
+        .st-key-card_colaborador { border-left: 3px solid var(--mz-brass); }
+        .st-key-card_candidato { border-left: 3px solid var(--mz-steel); }
+        .st-key-card_asociado button, .st-key-card_colaborador button, .st-key-card_candidato button {
+            background: var(--mz-graphite) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 4px !important;
+        }
+        .st-key-card_asociado button:hover, .st-key-card_colaborador button:hover, .st-key-card_candidato button:hover {
+            background: var(--mz-brass) !important;
+            color: var(--mz-graphite) !important;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+
+    tarjetas_acceso = [
+        ("asociado", "🏭", T["acceso_asociados"], "Perfiles ya validados, filtrando por sector y subsector.", "card_asociado"),
+        ("colaborador", "🎓", T["acceso_colaboradores"], "Da de alta tus cursos y forma parte de la red del sello M0.", "card_colaborador"),
+        ("candidato", "👷", T["acceso_candidatos"], "Fórmate, consigue el sello M0 y solicita participar en cursos.", "card_candidato"),
+    ]
+    cols_acceso = st.columns(3)
+    for col, (tipo_acc, icono_acc, titulo_acc, desc_acc, key_acc) in zip(cols_acceso, tarjetas_acceso):
+        with col:
+            with st.container(key=key_acc):
+                st.markdown(
+                    f"""
+                    <div style="padding:22px 18px 4px;">
+                        <div style="width:34px; height:34px; border-radius:50%; background:var(--mz-offwhite);
+                                    display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px;">{icono_acc}</div>
+                        <div style="font-size:16px; font-weight:600; margin-bottom:8px; color:var(--mz-ink);">{titulo_acc}</div>
+                        <div style="font-size:13.5px; color:var(--mz-ink-soft); line-height:1.55; margin-bottom:14px;">{desc_acc}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.button(
+                    f"Acceder",
+                    key=f"btn_{key_acc}",
+                    on_click=_abrir_acceso_directo,
+                    args=(tipo_acc,),
+                    use_container_width=True,
+                )
 
     with st.container(border=True):
         st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
