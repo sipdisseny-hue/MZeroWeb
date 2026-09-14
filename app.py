@@ -137,6 +137,179 @@ if SUPABASE_DISPONIBLE:
 # CONFIGURACIÓN
 st.set_page_config(page_title="MZero Web", layout="wide")
 
+# --- IDENTIDAD VISUAL M-ZERO: tipografía, paleta de colores, fondo ---
+st.markdown(
+    """
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --mz-graphite: #151B23;
+        --mz-graphite-2: #1D2530;
+        --mz-steel: #3E6B92;
+        --mz-offwhite: #EDEEF0;
+        --mz-paper: #F7F7F5;
+        --mz-brass: #B8923A;
+        --mz-brass-light: #D6B563;
+        --mz-ink: #151B23;
+        --mz-ink-soft: #5B6472;
+    }
+    html, body, [class*="css"] {
+        font-family: 'IBM Plex Sans', sans-serif !important;
+    }
+    .stApp {
+        background-color: var(--mz-paper) !important;
+    }
+    code, .mz-mono {
+        font-family: 'IBM Plex Mono', monospace !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# --- CAPA VISUAL M-ZERO: DISEÑO BASADO EN LA PROPUESTA DE LANDING ---
+st.markdown(
+    """
+    <style>
+    :root {
+        --mz-graphite: #151B23;
+        --mz-graphite-2: #1D2530;
+        --mz-steel: #3E6B92;
+        --mz-offwhite: #EDEEF0;
+        --mz-paper: #F7F7F5;
+        --mz-brass: #B8923A;
+        --mz-brass-light: #D6B563;
+        --mz-ink: #151B23;
+        --mz-ink-soft: #5B6472;
+    }
+
+    /* Fondo general */
+    .stApp { background: var(--mz-paper) !important; }
+    .main .block-container {
+        max-width: 1280px !important;
+        padding-top: 1.2rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+        padding-bottom: 3rem !important;
+    }
+
+    /* Sidebar: conserva toda la funcionalidad, cambia solo su aspecto */
+    section[data-testid="stSidebar"] {
+        background: var(--mz-graphite) !important;
+        border-right: 1px solid #2A3340 !important;
+    }
+    section[data-testid="stSidebar"] * {
+        color: var(--mz-offwhite);
+    }
+    section[data-testid="stSidebar"] [data-testid="stImage"] {
+        margin-bottom: -8px;
+    }
+    section[data-testid="stSidebar"] hr {
+        border-color: #343D49 !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
+        background: #1D2530 !important;
+        color: #EDEEF0 !important;
+        border: 1px solid #3C4552 !important;
+        border-radius: 3px !important;
+        box-shadow: none !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stButton"] > button:hover {
+        border-color: var(--mz-brass) !important;
+        color: var(--mz-brass-light) !important;
+    }
+
+    /* Cabecera visual */
+    .mz-topbar {
+        display:flex; align-items:center; justify-content:space-between;
+        gap:24px; padding:18px 28px; margin-bottom:0;
+        background:var(--mz-graphite); color:var(--mz-offwhite);
+        border-bottom:1px solid #2A3340;
+    }
+    .mz-wordmark { font-weight:700; font-size:21px; letter-spacing:.7px; }
+    .mz-wordmark span { color:var(--mz-brass-light); }
+    .mz-toplinks { display:flex; gap:26px; align-items:center; font-size:13px; color:#AEB6C2; }
+    .mz-eval-pill {
+        display:inline-flex; align-items:center; gap:8px; background:var(--mz-offwhite);
+        color:var(--mz-graphite); padding:8px 13px; border-radius:3px; font-weight:600;
+    }
+    .mz-eval-dot { width:7px; height:7px; border-radius:50%; background:#2E9E5B; display:inline-block; }
+    .mz-lang { border:1px solid #3C4552; padding:6px 10px; border-radius:3px; color:#AEB6C2; }
+
+    /* Hero */
+    .mz-hero {
+        background-color:var(--mz-graphite); color:var(--mz-offwhite);
+        padding:64px 56px 58px; position:relative; overflow:hidden;
+        background-image:linear-gradient(var(--mz-graphite-2) 1px, transparent 1px),
+                         linear-gradient(90deg, var(--mz-graphite-2) 1px, transparent 1px);
+        background-size:48px 48px; background-position:center;
+        margin-bottom:0;
+    }
+    .mz-hero-inner { display:grid; grid-template-columns:1.15fr .85fr; gap:48px; align-items:center; max-width:1180px; margin:auto; }
+    .mz-kicker { font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:1.5px; color:var(--mz-brass-light); margin-bottom:14px; text-transform:uppercase; }
+    .mz-hero h1 { font-size:42px; font-weight:600; line-height:1.18; letter-spacing:-.4px; margin:0 0 18px; color:var(--mz-offwhite); }
+    .mz-hero p { font-size:16px; line-height:1.65; color:#B6BEC9; max-width:650px; margin:0; }
+    .mz-seal-wrap { display:flex; align-items:center; justify-content:center; }
+    .mz-seal { width:218px; height:218px; border-radius:50%; border:2px solid var(--mz-brass); display:flex; align-items:center; justify-content:center; position:relative; }
+    .mz-seal:before { content:""; position:absolute; inset:13px; border-radius:50%; border:1px dashed rgba(214,181,99,.45); }
+    .mz-seal-core { text-align:center; }
+    .mz-seal-m0 { font-size:44px; font-weight:700; color:var(--mz-brass-light); letter-spacing:1px; }
+    .mz-seal-tag { font-size:10px; color:#8B93A0; margin-top:6px; letter-spacing:1.4px; }
+    .mz-stats { display:flex; max-width:1180px; margin:42px auto 0; border-top:1px solid #2A3340; }
+    .mz-stat { flex:1; padding:20px 18px 0 0; border-right:1px solid #2A3340; }
+    .mz-stat:last-child { border-right:none; padding-left:18px; }
+    .mz-stat:nth-child(2) { padding-left:18px; }
+    .mz-stat-big { font-size:25px; font-weight:600; color:var(--mz-offwhite); }
+    .mz-stat-label { font-size:12px; color:#8B93A0; margin-top:4px; line-height:1.45; }
+
+    /* Accesos */
+    .mz-section { background:var(--mz-paper); padding:58px 28px 42px; }
+    .mz-section-head { max-width:700px; margin-bottom:28px; }
+    .mz-section-head h2 { font-size:27px; font-weight:600; margin:0 0 9px; color:var(--mz-ink); }
+    .mz-section-head p { font-size:14px; color:var(--mz-ink-soft); line-height:1.6; margin:0; }
+    .mz-access-card { background:var(--mz-paper); border:1px solid #D9DAD6; border-left:3px solid var(--mz-steel); padding:24px 22px 20px; min-height:180px; }
+    .mz-access-card.accent { border-left-color:var(--mz-brass); }
+    .mz-access-icon { width:38px; height:38px; border-radius:50%; background:var(--mz-offwhite); display:flex; align-items:center; justify-content:center; margin-bottom:14px; font-size:17px; }
+    .mz-access-card h3 { font-size:17px; font-weight:600; margin:0 0 7px; color:var(--mz-ink); }
+    .mz-access-card p { font-size:13px; color:var(--mz-ink-soft); line-height:1.55; margin:0 0 15px; }
+    .mz-ref { font-family:'IBM Plex Mono',monospace; font-size:10px; color:#9CA3AD; letter-spacing:.5px; }
+
+    /* Botones de las tarjetas: son los botones funcionales existentes */
+    div[data-testid="column"] div[data-testid="stButton"] > button {
+        border-radius:3px !important; font-weight:600 !important;
+        border:1px solid #C9CBC7 !important; background:var(--mz-graphite) !important;
+        color:var(--mz-offwhite) !important; min-height:43px !important;
+    }
+    div[data-testid="column"] div[data-testid="stButton"] > button:hover {
+        border-color:var(--mz-brass) !important; color:var(--mz-brass-light) !important;
+    }
+
+    /* Directorio y resto de bloques */
+    .mz-directory-head { background:var(--mz-offwhite); padding:42px 28px 18px; margin-top:12px; }
+    .mz-directory-head h2 { margin:0 0 7px; color:var(--mz-ink); font-size:26px; font-weight:600; }
+    .mz-directory-head p { margin:0; color:var(--mz-ink-soft); font-size:14px; }
+
+    /* Expansores: conserva la jerarquía actual, pero la acerca a la muestra */
+    div[data-testid="stExpander"] { border-radius:3px !important; border-color:#D9DAD6 !important; overflow:hidden; }
+    div[data-testid="stExpander"] summary { min-height:46px; }
+    div[data-testid="stExpander"] summary p { font-weight:600 !important; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .mz-hero { padding:42px 28px; }
+        .mz-hero-inner { grid-template-columns:1fr; }
+        .mz-seal-wrap { justify-content:flex-start; margin-top:20px; }
+        .mz-stats { flex-direction:column; }
+        .mz-stat, .mz-stat:last-child, .mz-stat:nth-child(2) { border-right:none; border-bottom:1px solid #2A3340; padding:15px 0; }
+        .mz-toplinks { gap:10px; font-size:11px; }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # --- BOTÓN DE COLAPSAR/EXPANDIR EL MENÚ LATERAL: MÁS GRANDE Y VISIBLE ---
 # No dependemos del nombre interno del botón (cambia según la versión de
 # Streamlit): lo localizamos por su tamaño y posición en pantalla, así
@@ -159,7 +332,7 @@ components.html(
                 var arribaIzquierda = r.top < 70 && r.left < 70;
                 if (esPequeno && arribaIzquierda && !el.dataset.mzeroEstilado) {
                     el.dataset.mzeroEstilado = "1";
-                    el.style.setProperty('background-color', '#0066cc', 'important');
+                    el.style.setProperty('background-color', '#B8923A', 'important');
                     el.style.setProperty('border-radius', '0 10px 10px 0', 'important');
                     el.style.setProperty('box-shadow', '0 3px 10px rgba(0,0,0,0.30)', 'important');
                     el.style.setProperty('padding', '10px 12px', 'important');
@@ -182,7 +355,7 @@ components.html(
                     var esPequenoB = rb.width > 0 && rb.width < 55 && rb.height > 0 && rb.height < 55;
                     if (esPequenoB && rb.top < 130 && !btn.dataset.mzeroEstilado) {
                         btn.dataset.mzeroEstilado = "1";
-                        btn.style.setProperty('background-color', '#0066cc', 'important');
+                        btn.style.setProperty('background-color', '#B8923A', 'important');
                         btn.style.setProperty('border-radius', '8px', 'important');
                         btn.style.setProperty('box-shadow', '0 2px 6px rgba(0,0,0,0.25)', 'important');
                         btn.style.setProperty('padding', '8px', 'important');
@@ -258,6 +431,7 @@ TEXTOS = {
         "campo_vacio_peticion": "Escribe algo antes de enviar.",
         "buscar_perfil_titulo": "Buscar un perfil por sector",
         "buscar_perfil_intro": "Selecciona el sector y el subsector del perfil que necesitas.",
+        "aviso_candidato_cursos": "ℹ️ Una vez dentro, podrás explorar los cursos disponibles por sector y localidad, y enviar tu solicitud para participar en el que te interese.",
         "campo_nivel_candidato": "Nivel del candidato",
         "campo_trabajos_candidato": "Trabajos / tareas a realizar",
         "btn_enviar_busqueda_perfil": "Enviar petición de perfil",
@@ -488,6 +662,7 @@ TEXTOS = {
         "campo_vacio_peticion": "Escriu alguna cosa abans d'enviar.",
         "buscar_perfil_titulo": "Cercar un perfil per sector",
         "buscar_perfil_intro": "Selecciona el sector i el subsector del perfil que necessites.",
+        "aviso_candidato_cursos": "ℹ️ Un cop dins, podràs explorar els cursos disponibles per sector i localitat, i enviar la teva sol·licitud per participar en el que t'interessi.",
         "campo_nivel_candidato": "Nivell del candidat",
         "campo_trabajos_candidato": "Treballs / tasques a realitzar",
         "btn_enviar_busqueda_perfil": "Enviar petició de perfil",
@@ -1444,37 +1619,6 @@ with st.sidebar:
         args=("candidato",),
     )
 
-    # Acceso de administración: ahora valida contra la tabla "administradores"
-    # de Supabase, en vez de una hoja de Google Sheets pública.
-    with st.expander("⚙️ Administración", expanded=False):
-        if st.session_state.autenticado:
-            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
-            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
-                st.session_state.autenticado = False
-                st.session_state.usuario_actual = ""
-                st.rerun()
-        else:
-            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
-            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
-            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
-                if not SUPABASE_DISPONIBLE:
-                    st.error(T["error_cred"])
-                else:
-                    try:
-                        resultado_admin = (
-                            obtener_cliente_supabase().table("admin_credenciales").select("*")
-                            .eq("usuario", usuario_admin.strip())
-                            .eq("contrasena", pass_admin.strip())
-                            .execute()
-                        )
-                        if resultado_admin.data:
-                            st.session_state.autenticado = True
-                            st.session_state.usuario_actual = usuario_admin.strip()
-                            st.rerun()
-                        else:
-                            st.error(T["error_login"])
-                    except Exception as e:
-                        st.error(f"Error de acceso: {e}")
 
 
 # --- AVISO LEGAL: CUADRO FLOTANTE AL INICIO (una vez por sesión de navegador) ---
@@ -1514,31 +1658,42 @@ if not st.session_state["legal_modal_mostrado"]:
 # Botón fijo y siempre visible para volver a consultar el aviso legal
 with st.sidebar:
     st.divider()
-    if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
-        _mostrar_aviso_legal()
     st.markdown(
         """<style>
+        .st-key-legal_btn_wrapper button {
+            background-color: #172033 !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        .st-key-legal_btn_wrapper button:hover {
+            background-color: #0d1420 !important;
+            color: #ffffff !important;
+        }
         .mzero-instagram-btn {
             display: flex;
             align-items: center;
             gap: 10px;
             min-height: 46px;
             border-radius: 10px;
-            border: 1px solid rgba(49, 51, 63, 0.2);
+            border: none;
+            background-color: #8a1c42;
             font-weight: 600;
             padding: 0 16px;
             margin-bottom: 8px;
             text-decoration: none !important;
-            color: inherit !important;
+            color: #ffffff !important;
         }
         .mzero-instagram-btn:hover {
-            border-color: #E1306C;
-            color: #E1306C !important;
+            background-color: #6f1635;
+            color: #ffffff !important;
         }
         .mzero-instagram-btn svg { flex-shrink: 0; }
         </style>""",
         unsafe_allow_html=True,
     )
+    with st.container(key="legal_btn_wrapper"):
+        if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
+            _mostrar_aviso_legal()
     st.markdown(
         f'<a class="mzero-instagram-btn" href="https://www.instagram.com/mzero.pro/" '
         f'target="_blank" rel="noopener noreferrer">'
@@ -1550,6 +1705,40 @@ with st.sidebar:
         f'{T["instagram_texto"]}</a>',
         unsafe_allow_html=True,
     )
+
+    st.divider()
+    # Acceso de administración: al final del todo, para que sea menos
+    # visible para el resto de usuarios. Valida contra la tabla
+    # "administradores" de Supabase, en vez de una hoja de Google Sheets pública.
+    with st.expander("⚙️ Administración", expanded=False):
+        if st.session_state.autenticado:
+            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
+            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
+                st.session_state.autenticado = False
+                st.session_state.usuario_actual = ""
+                st.rerun()
+        else:
+            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
+            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
+            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
+                if not SUPABASE_DISPONIBLE:
+                    st.error(T["error_cred"])
+                else:
+                    try:
+                        resultado_admin = (
+                            obtener_cliente_supabase().table("admin_credenciales").select("*")
+                            .eq("usuario", usuario_admin.strip())
+                            .eq("contrasena", pass_admin.strip())
+                            .execute()
+                        )
+                        if resultado_admin.data:
+                            st.session_state.autenticado = True
+                            st.session_state.usuario_actual = usuario_admin.strip()
+                            st.rerun()
+                        else:
+                            st.error(T["error_login"])
+                    except Exception as e:
+                        st.error(f"Error de acceso: {e}")
 
 
 # --- LÓGICA DE PANTALLAS ---
@@ -1959,9 +2148,7 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         st.info(T["campo_migracion_cursos"])
         return
 
-    tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])
-
-# ---------------------------------------------------------------
+    tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])# ---------------------------------------------------------------
     # CREAR NUEVA EDICIÓN
     # ---------------------------------------------------------------
     with tab_crear:
@@ -2686,6 +2873,7 @@ if st.session_state.get("acceso_panel"):
     elif acceso_panel == "candidato":
         st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
         st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
+        st.info(T["aviso_candidato_cursos"])
 
         cand_login_key = "cand_login_ok"
         cand_id_key = "cand_id"
@@ -2876,6 +3064,65 @@ if st.session_state.get("acceso_panel"):
 
 
 elif opcion == T["menu_docs"]:
+    # --- PORTADA VISUAL M-ZERO ---
+    # Esta capa es exclusivamente visual. Los botones de acceso llaman a la
+    # misma funcionalidad existente mediante los callbacks actuales.
+    st.markdown(
+        f"""
+        <div class="mz-topbar">
+            <div class="mz-wordmark">M<span>-ZERO</span></div>
+            <div class="mz-toplinks">
+                <span>{T['menu_docs']}</span>
+                <span class="mz-eval-pill"><span class="mz-eval-dot"></span>{T['menu_eval']} · acceso docente</span>
+                <span class="mz-lang">{'CA' if lang == 'ca' else 'ES'}</span>
+            </div>
+        </div>
+        <section class="mz-hero">
+            <div class="mz-hero-inner">
+                <div>
+                    <div class="mz-kicker">M-ZERO · CERTIFICACIÓN TÉCNICA</div>
+                    <h1>Cada perfil que sale de M-Zero ya ha sido puesto a prueba.</h1>
+                    <p>{T['eslogan']}. Conectamos empresas, centros de formación y candidatos mediante un sistema de evaluación que permite conocer el nivel antes de tomar una decisión.</p>
+                </div>
+                <div class="mz-seal-wrap">
+                    <div class="mz-seal">
+                        <div class="mz-seal-core">
+                            <div class="mz-seal-m0">M0</div>
+                            <div class="mz-seal-tag">SELLO&nbsp;DE&nbsp;NIVEL</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mz-stats">
+                <div class="mz-stat"><div class="mz-stat-big">10</div><div class="mz-stat-label">Sectores industriales cubiertos</div></div>
+                <div class="mz-stat"><div class="mz-stat-big">3</div><div class="mz-stat-label">Formas de acceso — asociados, colaboradores, candidatos</div></div>
+                <div class="mz-stat"><div class="mz-stat-big">M0</div><div class="mz-stat-label">Un sello, un nivel mínimo exigido</div></div>
+            </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f"""<div class="mz-section"><div class="mz-section-head">
+        <h2>Tres formas de entrar, un mismo estándar</h2>
+        <p>Cada acceso está pensado para lo que esa persona necesita resolver.</p>
+        </div></div>""",
+        unsafe_allow_html=True,
+    )
+
+    ac1, ac2, ac3 = st.columns(3, gap="small")
+    with ac1:
+        st.markdown("""<div class="mz-access-card"><div class="mz-access-icon">🏭</div><h3>Asociados</h3><p>Buscan perfiles ya validados, filtrando por sector y subsector.</p><div class="mz-ref">ACCESO · ASOCIADO</div></div>""", unsafe_allow_html=True)
+        st.button(f"👥  {T['acceso_asociados']}", key="landing_acceso_asociados", use_container_width=True, on_click=_abrir_acceso, args=("asociado",))
+    with ac2:
+        st.markdown("""<div class="mz-access-card accent"><div class="mz-access-icon">🎓</div><h3>Colaboradores</h3><p>Dan de alta sus cursos y forman parte de la red que otorga el sello M0.</p><div class="mz-ref">ACCESO · COLABORADOR</div></div>""", unsafe_allow_html=True)
+        st.button(f"🏢  {T['acceso_colaboradores']}", key="landing_acceso_colaboradores", use_container_width=True, on_click=_abrir_acceso, args=("colaborador",))
+    with ac3:
+        st.markdown("""<div class="mz-access-card"><div class="mz-access-icon">👷</div><h3>Candidatos</h3><p>Se forman, consiguen el sello M0 y solicitan participar en los cursos.</p><div class="mz-ref">ACCESO · CANDIDATO</div></div>""", unsafe_allow_html=True)
+        st.button(f"🎓  {T['acceso_candidatos']}", key="landing_acceso_candidatos", use_container_width=True, on_click=_abrir_acceso, args=("candidato",))
+
+    st.markdown('<div class="mz-directory-head"><h2>Asociados y colaboradores</h2><p>Organizados por categoría, provincia y población.</p></div>', unsafe_allow_html=True)
 
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
     # (y solo una vez por sesión) en vez de en cada carga de la app, para no
@@ -2898,7 +3145,7 @@ elif opcion == T["menu_docs"]:
     st.markdown(f"## {T['area_docs']}")
     
     with st.container(border=True):
-        st.markdown(f"<h3 style='color: #0066cc;'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
 
         asociados_db, colaboradores_db = cargar_asociados_colaboradores()
@@ -3011,7 +3258,7 @@ elif opcion == T["menu_docs"]:
             background: #f5f5f5 !important;
         }
         </style>""", unsafe_allow_html=True)
-        st.markdown(f"<h4 style='color: #0066cc; margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: var(--mz-ink); margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
 
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
@@ -3024,7 +3271,7 @@ elif opcion == T["menu_docs"]:
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
-        st.markdown(f"<h4 style='color: #0066cc;'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: var(--mz-ink);'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
 
         titulos_colaboradores = [
             ["Centros de formación"],
@@ -3063,7 +3310,7 @@ elif opcion == T["menu_docs"]:
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
-    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
     titulos_func = T["titulos_func"]
 
     for titulo in titulos_func:
@@ -3105,7 +3352,7 @@ elif opcion == T["menu_docs"]:
             st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 3: CONTACTO ---
-    st.markdown(f"<h3 style='color: #0066cc;'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
     titulos_cont = ["Móvil / WhatsApp", "Email"]
     for titulo in titulos_cont:
         with st.expander(titulo):
@@ -3127,7 +3374,7 @@ elif opcion == T["menu_docs"]:
 
     # --- ESLOGAN ---
     st.markdown(
-        f"<h3 align='center' style='color: #0066cc; margin-top: 30px; margin-bottom: 24px;'>"
+        f"<h3 align='center' style='color: var(--mz-ink); margin-top: 30px; margin-bottom: 24px;'>"
         f"<b>{T['eslogan']}</b></h3>",
         unsafe_allow_html=True
     )
