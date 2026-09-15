@@ -297,6 +297,16 @@ TEXTOS = {
         "buscar_perfil_titulo": "Buscar un perfil por sector",
         "buscar_perfil_intro": "Selecciona el sector y el subsector del perfil que necesitas.",
         "aviso_candidato_cursos": "ℹ️ Una vez dentro, podrás explorar los cursos disponibles por sector y localidad, y enviar tu solicitud para participar en el que te interese.",
+        "flow_titulo": "Cómo encuentra un candidato su curso",
+        "flow_subtitulo": "El mismo recorrido que ya usa la app, mostrado como lo que es: un proceso de filtrado, no una lista sin orden.",
+        "flow_paso1_t": "Sector",
+        "flow_paso1_d": "Elige entre los 10 sectores industriales.",
+        "flow_paso2_t": "Subsector",
+        "flow_paso2_d": "Afina dentro del sector elegido.",
+        "flow_paso3_t": "Localidad",
+        "flow_paso3_d": "Solo centros con cursos activos ahí.",
+        "flow_paso4_t": "Curso",
+        "flow_paso4_d": "Ficha real: centro, horas, estado, módulos.",
         "campo_nivel_candidato": "Nivel del candidato",
         "campo_trabajos_candidato": "Trabajos / tareas a realizar",
         "btn_enviar_busqueda_perfil": "Enviar petición de perfil",
@@ -528,6 +538,16 @@ TEXTOS = {
         "buscar_perfil_titulo": "Cercar un perfil per sector",
         "buscar_perfil_intro": "Selecciona el sector i el subsector del perfil que necessites.",
         "aviso_candidato_cursos": "ℹ️ Un cop dins, podràs explorar els cursos disponibles per sector i localitat, i enviar la teva sol·licitud per participar en el que t'interessi.",
+        "flow_titulo": "Com troba un candidat el seu curs",
+        "flow_subtitulo": "El mateix recorregut que ja fa servir l'app, mostrat com el que és: un procés de filtratge, no una llista sense ordre.",
+        "flow_paso1_t": "Sector",
+        "flow_paso1_d": "Tria entre els 10 sectors industrials.",
+        "flow_paso2_t": "Subsector",
+        "flow_paso2_d": "Afina dins del sector triat.",
+        "flow_paso3_t": "Localitat",
+        "flow_paso3_d": "Només centres amb cursos actius allà.",
+        "flow_paso4_t": "Curs",
+        "flow_paso4_d": "Fitxa real: centre, hores, estat, mòduls.",
         "campo_nivel_candidato": "Nivell del candidat",
         "campo_trabajos_candidato": "Treballs / tasques a realitzar",
         "btn_enviar_busqueda_perfil": "Enviar petició de perfil",
@@ -1004,6 +1024,43 @@ def mostrar_olvide_contrasena(tipo_texto, key_prefix):
                 st.warning(T["olvide_contrasena_vacio"])
 
 
+def mostrar_pestanas_principales(opcion_actual):
+    """Pestañas destacadas de navegación en la pantalla principal
+    (Documentación / Evaluaciones), sustituyen al antiguo selector del
+    sidebar. 'Evaluaciones' se resalta como acceso directo para docentes."""
+    st.markdown(
+        """<style>
+        .st-key-mz_navpill_doc button {
+            background: var(--mz-graphite) !important;
+            color: #ffffff !important;
+            border: none !important;
+            font-weight: 600 !important;
+        }
+        .st-key-mz_navpill_eval button {
+            background: var(--mz-offwhite) !important;
+            color: var(--mz-ink) !important;
+            border: 1px solid #D9DAD6 !important;
+            font-weight: 600 !important;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    col_doc, col_eval, col_resto = st.columns([1.3, 1.9, 5])
+    with col_doc:
+        with st.container(key="mz_navpill_doc"):
+            if st.button(f"📄 {T['menu_docs']}", key="nav_pill_doc", use_container_width=True):
+                st.session_state["navegacion"] = T["menu_docs"]
+                st.session_state["acceso_panel"] = None
+                st.rerun()
+    with col_eval:
+        with st.container(key="mz_navpill_eval"):
+            if st.button(f"🟢 {T['menu_eval']} · acceso docente", key="nav_pill_eval", use_container_width=True):
+                st.session_state["navegacion"] = T["menu_eval"]
+                st.session_state["acceso_panel"] = None
+                st.rerun()
+    st.markdown("<div style='margin-bottom:18px;'></div>", unsafe_allow_html=True)
+
+
 # --- NUEVO: REGISTRO Y LOGIN DE EMPRESAS (Colaboradores) CONTRA SUPABASE ---
 def enviar_peticion_registro_supabase(tipo, campos, usuario, contrasena):
     if not SUPABASE_DISPONIBLE:
@@ -1454,6 +1511,33 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
+    st.markdown(
+        """<style>
+        section[data-testid="stSidebar"] div[role="radiogroup"] {
+            display: inline-flex !important;
+            border: 1px solid #3C4552;
+            border-radius: 4px;
+            overflow: hidden;
+            gap: 0 !important;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label {
+            padding: 5px 14px !important;
+            margin: 0 !important;
+            background: transparent;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
+            display: none !important;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+            background: var(--mz-brass) !important;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p {
+            color: var(--mz-graphite) !important;
+            font-weight: 600 !important;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
     idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     T = TEXTOS[lang]
@@ -1469,13 +1553,11 @@ with st.sidebar:
         # cualquier pantalla de acceso independiente.
         st.session_state["acceso_panel"] = None
 
-    opcion = st.radio(
-        T["nav_titulo"],
-        [T["menu_docs"], T["menu_eval"]],
-        key="navegacion",
-        index=0,
-        on_change=_cambiar_navegacion
-    )
+    # La navegación Documentación/Evaluaciones ya no vive en el sidebar:
+    # se controla con las pestañas destacadas de la pantalla principal.
+    if "navegacion" not in st.session_state:
+        st.session_state["navegacion"] = T["menu_docs"]
+    opcion = st.session_state["navegacion"]
 
     st.divider()
     st.markdown(
@@ -1497,31 +1579,6 @@ with st.sidebar:
         }
         </style>""",
         unsafe_allow_html=True,
-    )
-    st.markdown("### 🔐 Accesos")
-
-    # Estos botones sustituyen ÚNICAMENTE al antiguo usuario/contraseña del sidebar.
-    # Cada uno abre la funcionalidad que ya existía en 'Cómo participar'.
-    st.button(
-        f"👥  {T['acceso_asociados']}",
-        key="btn_acceso_asociados",
-        use_container_width=True,
-        on_click=_abrir_acceso,
-        args=("asociado",),
-    )
-    st.button(
-        f"🏢  {T['acceso_colaboradores']}",
-        key="btn_acceso_colaboradores",
-        use_container_width=True,
-        on_click=_abrir_acceso,
-        args=("colaborador",),
-    )
-    st.button(
-        f"🎓  {T['acceso_candidatos']}",
-        key="btn_acceso_candidatos",
-        use_container_width=True,
-        on_click=_abrir_acceso,
-        args=("candidato",),
     )
 
 
@@ -2971,6 +3028,7 @@ if st.session_state.get("acceso_panel"):
 
 
 elif opcion == T["menu_docs"]:
+    mostrar_pestanas_principales(opcion)
 
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
     # (y solo una vez por sesión) en vez de en cada carga de la app, para no
@@ -3095,6 +3153,49 @@ elif opcion == T["menu_docs"]:
                     args=(tipo_acc,),
                     use_container_width=True,
                 )
+
+    st.markdown(
+        f"""
+        <div style="background:var(--mz-offwhite); border-radius:8px; padding:36px 40px; margin-bottom:40px;">
+            <div style="font-size:20px; font-weight:600; color:var(--mz-ink); margin-bottom:8px;">{T['flow_titulo']}</div>
+            <div style="font-size:14px; color:var(--mz-ink-soft); line-height:1.6; max-width:62ch; margin-bottom:28px;">{T['flow_subtitulo']}</div>
+            <div style="display:flex; align-items:stretch; gap:0;">
+                <div style="flex:1; position:relative; padding-right:24px;">
+                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
+                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">01</div>
+                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso1_t']}</div>
+                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso1_d']}</div>
+                    </div>
+                    <div style="position:absolute; top:50%; right:-1px; width:24px; height:0; border-top:1px dashed #B7BCC2;"></div>
+                </div>
+                <div style="flex:1; position:relative; padding-right:24px;">
+                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
+                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">02</div>
+                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso2_t']}</div>
+                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso2_d']}</div>
+                    </div>
+                    <div style="position:absolute; top:50%; right:-1px; width:24px; height:0; border-top:1px dashed #B7BCC2;"></div>
+                </div>
+                <div style="flex:1; position:relative; padding-right:24px;">
+                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
+                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">03</div>
+                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso3_t']}</div>
+                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso3_d']}</div>
+                    </div>
+                    <div style="position:absolute; top:50%; right:-1px; width:24px; height:0; border-top:1px dashed #B7BCC2;"></div>
+                </div>
+                <div style="flex:1;">
+                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
+                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">04</div>
+                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso4_t']}</div>
+                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso4_d']}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     with st.container(border=True):
         st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
@@ -3326,6 +3427,8 @@ elif opcion == T["menu_docs"]:
 
 
 elif opcion == T["menu_eval"]:
+    mostrar_pestanas_principales(opcion)
+
     if 'envio_resultado' in st.session_state:
         tipo_msg, texto_msg = st.session_state.pop('envio_resultado')
         if tipo_msg == "success":
