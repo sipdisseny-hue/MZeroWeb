@@ -3364,10 +3364,26 @@ elif opcion == "docs":
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
     st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(
+        """<style>
+        div[data-testid="stTabs"] button[role="tab"] {
+            font-weight: 600;
+            color: var(--mz-ink-soft);
+        }
+        div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+            color: var(--mz-ink) !important;
+        }
+        div[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
+            background-color: var(--mz-brass) !important;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
     titulos_func = T["titulos_func"]
 
-    for titulo in titulos_func:
-        with st.expander(titulo):
+    pestanas_func = st.tabs(titulos_func)
+    for pestana, titulo in zip(pestanas_func, titulos_func):
+        with pestana:
             if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
                 tipos_admitidos = (["docx"] if MAMMOTH_DISPONIBLE else []) + ["odt"]
                 docx_version_key = f"docx_version_{titulo}"
@@ -3407,15 +3423,34 @@ elif opcion == "docs":
     # --- BLOQUE 3: CONTACTO ---
     st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
     titulos_cont = ["Móvil / WhatsApp", "Email"]
-    for titulo in titulos_cont:
-        with st.expander(titulo):
-            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+
+    if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+        for titulo in titulos_cont:
+            with st.expander(f"✏️ {titulo}"):
                 nuevo_cont = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_contacto.get(titulo, ""), height=70, key=f"cont_{titulo}")
                 if st.button(f"Guardar {titulo}", key=f"btn_save_cont_{titulo}"):
                     if guardar_en_sheets(titulo, nuevo_cont):
                         st.session_state.contenido_contacto[titulo] = nuevo_cont
                         refrescar_app()
-            st.markdown(st.session_state.contenido_contacto.get(titulo, ""), unsafe_allow_html=True)
+
+    cols_cont = st.columns(len(titulos_cont))
+    iconos_cont = {"Móvil / WhatsApp": "📱", "Email": "✉️"}
+    for col_cont, titulo in zip(cols_cont, titulos_cont):
+        with col_cont:
+            st.markdown(
+                f"""
+                <div style="background:var(--mz-offwhite); border-left:3px solid var(--mz-brass);
+                            border-radius:3px; padding:18px 20px; margin-bottom:28px;">
+                    <div style="font-size:12px; color:var(--mz-ink-soft); letter-spacing:0.5px; margin-bottom:6px;">
+                        {iconos_cont.get(titulo, '')} {titulo}
+                    </div>
+                    <div style="font-size:16px; font-weight:600; color:var(--mz-ink);">
+                        {st.session_state.contenido_contacto.get(titulo, '')}
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
     instrucciones_participar = cargar_instrucciones_participar()
 
