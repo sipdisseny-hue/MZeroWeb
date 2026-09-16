@@ -3366,31 +3366,22 @@ elif opcion == "docs":
     st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
     st.markdown(
         """<style>
-        div[data-testid="stTabs"] div[data-baseweb="tab-list"] {
-            gap: 6px;
-        }
         div[data-testid="stTabs"] button[role="tab"] {
-            font-weight: 600;
-            font-size: 14.5px;
-            color: var(--mz-ink-soft);
-            background: var(--mz-offwhite);
-            border-radius: 6px 6px 0 0;
-            padding: 10px 18px;
-            border: 1px solid transparent;
-            border-bottom: none;
+            font-weight: 600 !important;
+            font-size: 14.5px !important;
+            color: var(--mz-ink-soft) !important;
+            background: var(--mz-offwhite) !important;
+            border-radius: 6px 6px 0 0 !important;
+            padding: 10px 18px !important;
+            margin-right: 6px !important;
+            border: 1px solid #D9DAD6 !important;
+            border-bottom: 3px solid transparent !important;
         }
         div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
             color: var(--mz-ink) !important;
-            background: var(--mz-paper);
-            border: 1px solid #D9DAD6;
-            border-bottom: none;
-        }
-        div[data-testid="stTabs"] [data-baseweb="tab-highlight"] {
-            background-color: var(--mz-brass) !important;
-            height: 3px !important;
-        }
-        div[data-testid="stTabs"] [data-baseweb="tab-border"] {
-            background-color: #D9DAD6 !important;
+            background: var(--mz-paper) !important;
+            border: 1px solid #D9DAD6 !important;
+            border-bottom: 3px solid var(--mz-brass) !important;
         }
         </style>""",
         unsafe_allow_html=True,
