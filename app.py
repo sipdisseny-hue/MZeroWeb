@@ -1,5 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import json
 import pandas as pd
 import requests
 import re
@@ -3364,27 +3365,38 @@ elif opcion == "docs":
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
     st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
-    st.markdown(
-        """<style>
-        div[data-testid="stTabs"] button[role="tab"] {
-            font-weight: 600 !important;
-            font-size: 14.5px !important;
-            color: var(--mz-ink-soft) !important;
-            background: var(--mz-offwhite) !important;
-            border-radius: 6px 6px 0 0 !important;
-            padding: 10px 18px !important;
-            margin-right: 6px !important;
-            border: 1px solid #D9DAD6 !important;
-            border-bottom: 3px solid transparent !important;
-        }
-        div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
-            color: var(--mz-ink) !important;
-            background: var(--mz-paper) !important;
-            border: 1px solid #D9DAD6 !important;
-            border-bottom: 3px solid var(--mz-brass) !important;
-        }
-        </style>""",
-        unsafe_allow_html=True,
+    components.html(
+        f"""
+        <script>
+        (function () {{
+            var textosPestanas = {json.dumps(T["titulos_func"])};
+            function estilizarPestanas() {{
+                var doc = window.parent.document;
+                var candidatos = doc.querySelectorAll('button, [role="tab"], p, div');
+                candidatos.forEach(function (el) {{
+                    var txt = (el.textContent || '').trim();
+                    if (textosPestanas.indexOf(txt) === -1) {{ return; }}
+                    // Nos quedamos con el elemento clicable más cercano (o el propio si ya lo es)
+                    var tab = el.closest('button') || el.closest('[role="tab"]') || el;
+                    if (tab.dataset.mzeroPestana) {{ return; }}
+                    tab.dataset.mzeroPestana = "1";
+                    tab.style.setProperty('font-weight', '600', 'important');
+                    tab.style.setProperty('font-size', '14.5px', 'important');
+                    tab.style.setProperty('border-radius', '6px 6px 0 0', 'important');
+                    tab.style.setProperty('padding', '10px 18px', 'important');
+                    tab.style.setProperty('margin-right', '6px', 'important');
+                    tab.style.setProperty('border', '1px solid #D9DAD6', 'important');
+                    tab.style.setProperty('background', '#EDEEF0', 'important');
+                    tab.style.setProperty('color', '#5B6472', 'important');
+                    tab.style.setProperty('cursor', 'pointer', 'important');
+                }});
+            }}
+            estilizarPestanas();
+            setInterval(estilizarPestanas, 600);
+        }})();
+        </script>
+        """,
+        height=0,
     )
     titulos_func = T["titulos_func"]
 
