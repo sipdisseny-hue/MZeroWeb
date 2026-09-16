@@ -1049,13 +1049,13 @@ def mostrar_pestanas_principales(opcion_actual):
     with col_doc:
         with st.container(key="mz_navpill_doc"):
             if st.button(f"📄 {T['menu_docs']}", key="nav_pill_doc", use_container_width=True):
-                st.session_state["navegacion"] = T["menu_docs"]
+                st.session_state["navegacion"] = "docs"
                 st.session_state["acceso_panel"] = None
                 st.rerun()
     with col_eval:
         with st.container(key="mz_navpill_eval"):
             if st.button(f"🟢 {T['menu_eval']} · acceso docente", key="nav_pill_eval", use_container_width=True):
-                st.session_state["navegacion"] = T["menu_eval"]
+                st.session_state["navegacion"] = "eval"
                 st.session_state["acceso_panel"] = None
                 st.rerun()
     st.markdown("<div style='margin-bottom:18px;'></div>", unsafe_allow_html=True)
@@ -1545,7 +1545,7 @@ with st.sidebar:
     def _abrir_acceso(tipo):
         # Callback ejecutado antes de que se creen los widgets del siguiente rerun.
         # Así evitamos modificar la session_state de un radio ya instanciado.
-        st.session_state["navegacion"] = T["menu_docs"]
+        st.session_state["navegacion"] = "docs"
         st.session_state["acceso_panel"] = tipo
 
     def _cambiar_navegacion():
@@ -1556,7 +1556,7 @@ with st.sidebar:
     # La navegación Documentación/Evaluaciones ya no vive en el sidebar:
     # se controla con las pestañas destacadas de la pantalla principal.
     if "navegacion" not in st.session_state:
-        st.session_state["navegacion"] = T["menu_docs"]
+        st.session_state["navegacion"] = "docs"
     opcion = st.session_state["navegacion"]
 
     st.divider()
@@ -3027,7 +3027,7 @@ if st.session_state.get("acceso_panel"):
     st.markdown('</div>', unsafe_allow_html=True)
 
 
-elif opcion == T["menu_docs"]:
+elif opcion == "docs":
     mostrar_pestanas_principales(opcion)
 
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
@@ -3099,7 +3099,7 @@ elif opcion == T["menu_docs"]:
     )
 
     def _abrir_acceso_directo(tipo):
-        st.session_state["navegacion"] = T["menu_docs"]
+        st.session_state["navegacion"] = "docs"
         st.session_state["acceso_panel"] = tipo
 
     st.markdown(
@@ -3426,7 +3426,7 @@ elif opcion == T["menu_docs"]:
     # Los accesos se muestran en pantallas independientes desde el sidebar.
 
 
-elif opcion == T["menu_eval"]:
+elif opcion == "eval":
     mostrar_pestanas_principales(opcion)
 
     if 'envio_resultado' in st.session_state:
