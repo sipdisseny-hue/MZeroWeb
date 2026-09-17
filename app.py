@@ -407,6 +407,7 @@ TEXTOS = {
         "plan_volver": "← Volver a las opciones",
         "reg_plan_seleccionado": "Plan seleccionado: BASIC",
         "plan_subtitulo": "Selecciona una modalidad para continuar con el registro.",
+        "plan_banner_gratis": "✅ El registro es gratuito y no tiene cuota. Solo se paga cuando das de alta un curso.",
         "asoc_plan_basic_precio": "70 €/informe",
         "asoc_plan_standard_precio": "100 €/mes",
         "asoc_plan_promocion": "PROMOCIÓN",
@@ -419,6 +420,7 @@ TEXTOS = {
         "asoc_plan_standard_bloqueado": "STANDARD no disponible",
         "asoc_plan_volver": "← Volver a las opciones",
         "asoc_plan_subtitulo": "Selecciona una modalidad para continuar con el registro.",
+        "asoc_plan_banner_gratis": "✅ El registro es gratuito y no tiene cuota. Solo se paga cuando solicitas un informe de un candidato.",
         "asoc_reg_plan_seleccionado": "Plan seleccionado: BASIC",
         "gestion_cursos": 'Gestión de cursos',
         "gestion_cursos_desc": 'Crea una nueva edición de un curso, reutiliza la información que ya exista y gestiona posteriormente sus docentes y alumnos.',
@@ -648,6 +650,7 @@ TEXTOS = {
         "plan_volver": "← Tornar a les opcions",
         "reg_plan_seleccionado": "Pla seleccionat: BASIC",
         "plan_subtitulo": "Selecciona una modalitat per continuar amb el registre.",
+        "plan_banner_gratis": "✅ El registre és gratuït i no té quota. Només es paga quan dones d'alta un curs.",
         "asoc_plan_basic_precio": "70 €/informe",
         "asoc_plan_standard_precio": "100 €/mes",
         "asoc_plan_promocion": "PROMOCIÓ",
@@ -660,6 +663,7 @@ TEXTOS = {
         "asoc_plan_standard_bloqueado": "STANDARD no disponible",
         "asoc_plan_volver": "← Tornar a les opcions",
         "asoc_plan_subtitulo": "Selecciona una modalitat per continuar amb el registre.",
+        "asoc_plan_banner_gratis": "✅ El registre és gratuït i no té quota. Només es paga quan sol·licites un informe d'un candidat.",
         "asoc_reg_plan_seleccionado": "Pla seleccionat: BASIC",
         "gestion_cursos": 'Gestió de cursos',
         "gestion_cursos_desc": 'Crea una nova edició d’un curs, reutilitza la informació que ja existeixi i gestiona posteriorment els seus docents i alumnes.',
@@ -2532,6 +2536,10 @@ def bloque_seleccion_plan_asociado(key_prefix):
         f"<div style=\"margin:10px 0 18px 0;\"><h3 style=\"margin-bottom:4px;\">{T['solicitar_alta']}</h3><p style=\"color:#667085;margin-top:0;\">{T['asoc_plan_subtitulo']}</p></div>",
         unsafe_allow_html=True,
     )
+    st.markdown(
+        f"<div style=\"background:#eafaf0;border:1px solid #a9e2bd;border-radius:8px;padding:10px 16px;margin-bottom:18px;color:#1a7a3c;font-weight:600;\">{T['asoc_plan_banner_gratis']}</div>",
+        unsafe_allow_html=True,
+    )
 
     st.markdown(
         """<style>
@@ -2585,6 +2593,10 @@ def bloque_seleccion_plan_colaborador(key_prefix):
 
     st.markdown(
         f"<div style=\"margin:10px 0 18px 0;\"><h3 style=\"margin-bottom:4px;\">{T['solicitar_alta']}</h3><p style=\"color:#667085;margin-top:0;\">{T['plan_subtitulo']}</p></div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f"<div style=\"background:#eafaf0;border:1px solid #a9e2bd;border-radius:8px;padding:10px 16px;margin-bottom:18px;color:#1a7a3c;font-weight:600;\">{T['plan_banner_gratis']}</div>",
         unsafe_allow_html=True,
     )
 
