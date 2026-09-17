@@ -1676,27 +1676,44 @@ with st.sidebar:
     # Acceso de administración: discreto a propósito, para que pase
     # desapercibido para el resto de usuarios. Valida contra la tabla
     # "administradores" de Supabase, en vez de una hoja de Google Sheets pública.
-    st.markdown(
-        """<style>
-        section[data-testid="stSidebar"] [data-testid="stExpander"]:last-of-type {
-            border: none !important;
-            background: transparent !important;
-            margin-top: 24px;
-        }
-        section[data-testid="stSidebar"] [data-testid="stExpander"]:last-of-type summary {
-            background: transparent !important;
-            color: #4A5262 !important;
-            font-size: 11px !important;
-            padding: 2px 0 !important;
-            min-height: 0 !important;
-        }
-        section[data-testid="stSidebar"] [data-testid="stExpander"]:last-of-type summary svg {
-            width: 11px !important;
-            height: 11px !important;
-            opacity: 0.6;
-        }
-        </style>""",
-        unsafe_allow_html=True,
+    components.html(
+        """
+        <script>
+        (function () {
+            function estilizarAdmin() {
+                var doc = window.parent.document;
+                var sidebar = doc.querySelector('section[data-testid="stSidebar"]');
+                if (!sidebar) { return; }
+                var expansores = sidebar.querySelectorAll('[data-testid="stExpander"]');
+                expansores.forEach(function (exp) {
+                    var texto = (exp.textContent || '').trim();
+                    // Nos quedamos solo con el que contiene el símbolo de administrador
+                    if (texto.indexOf('⚙') === -1) { return; }
+                    exp.style.setProperty('border', 'none', 'important');
+                    exp.style.setProperty('background', 'transparent', 'important');
+                    exp.style.setProperty('margin-top', '24px', 'important');
+                    var resumen = exp.querySelector('summary');
+                    if (resumen) {
+                        resumen.style.setProperty('background', 'transparent', 'important');
+                        resumen.style.setProperty('color', '#4A5262', 'important');
+                        resumen.style.setProperty('font-size', '11px', 'important');
+                        resumen.style.setProperty('padding', '2px 0', 'important');
+                        resumen.style.setProperty('min-height', '0', 'important');
+                        var icono = resumen.querySelector('svg');
+                        if (icono) {
+                            icono.style.setProperty('width', '11px', 'important');
+                            icono.style.setProperty('height', '11px', 'important');
+                            icono.style.setProperty('opacity', '0.6', 'important');
+                        }
+                    }
+                });
+            }
+            estilizarAdmin();
+            setInterval(estilizarAdmin, 600);
+        })();
+        </script>
+        """,
+        height=0,
     )
     with st.expander("⚙", expanded=False):
         if st.session_state.autenticado:
