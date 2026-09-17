@@ -1676,78 +1676,62 @@ with st.sidebar:
     # Acceso de administración: discreto a propósito, para que pase
     # desapercibido para el resto de usuarios. Valida contra la tabla
     # "administradores" de Supabase, en vez de una hoja de Google Sheets pública.
-    # Se mete en una columna estrecha para que ocupe poco espacio siempre,
-    # sin depender de que el intento de recolor por JS funcione o no.
-    components.html(
-        """
-        <script>
-        (function () {
-            function estilizarAdmin() {
-                var doc = window.parent.document;
-                var sidebar = doc.querySelector('section[data-testid="stSidebar"]');
-                if (!sidebar) { return; }
-                var expansores = sidebar.querySelectorAll('[data-testid="stExpander"]');
-                expansores.forEach(function (exp) {
-                    var texto = (exp.textContent || '').trim();
-                    // Nos quedamos solo con el que contiene el símbolo de administrador
-                    if (texto.indexOf('⚙') === -1) { return; }
-                    exp.style.setProperty('border', 'none', 'important');
-                    exp.style.setProperty('background', 'transparent', 'important');
-                    exp.style.setProperty('margin-top', '24px', 'important');
-                    var resumen = exp.querySelector('summary');
-                    if (resumen) {
-                        resumen.style.setProperty('background', 'transparent', 'important');
-                        resumen.style.setProperty('color', '#4A5262', 'important');
-                        resumen.style.setProperty('font-size', '11px', 'important');
-                        resumen.style.setProperty('padding', '2px 0', 'important');
-                        resumen.style.setProperty('min-height', '0', 'important');
-                        var icono = resumen.querySelector('svg');
-                        if (icono) {
-                            icono.style.setProperty('width', '11px', 'important');
-                            icono.style.setProperty('height', '11px', 'important');
-                            icono.style.setProperty('opacity', '0.6', 'important');
-                        }
-                    }
-                });
-            }
-            estilizarAdmin();
-            setInterval(estilizarAdmin, 600);
-        })();
-        </script>
-        """,
-        height=0,
+    # Usa un botón normal (no un desplegable) porque es la técnica que sí
+    # se ha demostrado fiable en esta app para recolorear un elemento.
+    if "mz_admin_abierto" not in st.session_state:
+        st.session_state["mz_admin_abierto"] = False
+
+    st.markdown(
+        """<style>
+        .st-key-mz_admin_toggle button {
+            background: var(--mz-graphite) !important;
+            color: #4A5262 !important;
+            border: none !important;
+            font-size: 11px !important;
+            padding: 2px 10px !important;
+            min-height: 0 !important;
+            height: 22px !important;
+            box-shadow: none !important;
+        }
+        .st-key-mz_admin_toggle button:hover {
+            color: #8B93A0 !important;
+        }
+        </style>""",
+        unsafe_allow_html=True,
     )
-    col_admin, _col_resto = st.columns([1, 2])
-    with col_admin:
-        with st.expander("⚙", expanded=False):
-            if st.session_state.autenticado:
-                st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
-                if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
-                    st.session_state.autenticado = False
-                    st.session_state.usuario_actual = ""
-                    st.rerun()
-            else:
-                usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
-                pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
-                if st.button(T["btn_acceder"], key="admin_login_sidebar"):
-                    if not SUPABASE_DISPONIBLE:
-                        st.error(T["error_cred"])
-                    else:
-                        try:
-                            resultado_admin = (
-                                obtener_cliente_supabase().table("admin_credenciales").select("*")
-                                .eq("usuario", usuario_admin.strip())
-                                .eq("contrasena", pass_admin.strip())
-                                .execute()
-                            )
-                            if resultado_admin.data:
-                                st.session_state.autenticado = True
-                                st.session_state.usuario_actual = usuario_admin.strip()
-                                st.rerun()
-                            else:
-                                st.error(T["error_login"])
-                        except Exception as e:
-                            st.error(f"Error de acceso: {e}")
+    with st.container(key="mz_admin_toggle"):
+        if st.button("⚙", key="admin_toggle_btn"):
+            st.session_state["mz_admin_abierto"] = not st.session_state["mz_admin_abierto"]
+
+    if st.session_state["mz_admin_abierto"]:
+        if st.session_state.autenticado:
+            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
+            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
+                st.session_state.autenticado = False
+                st.session_state.usuario_actual = ""
+                st.rerun()
+        else:
+            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
+            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
+            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
+                if not SUPABASE_DISPONIBLE:
+                    st.error(T["error_cred"])
+                else:
+                    try:
+                        resultado_admin = (
+                            obtener_cliente_supabase().table("admin_credenciales").select("*")
+                            .eq("usuario", usuario_admin.strip())
+                            .eq("contrasena", pass_admin.strip())
+                            .execute()
+                        )
+                        if resultado_admin.data:
+                            st.session_state.autenticado = True
+                            st.session_state.usuario_actual = usuario_admin.strip()
+                            st.rerun()
+                        else:
+                            st.error(T["error_login"])
+                    except Exception as e:
+                        st.error(f"Error de acceso: {e}")
 
 
 # --- LÓGICA DE PANTALLAS ---
