@@ -1676,6 +1676,8 @@ with st.sidebar:
     # Acceso de administración: discreto a propósito, para que pase
     # desapercibido para el resto de usuarios. Valida contra la tabla
     # "administradores" de Supabase, en vez de una hoja de Google Sheets pública.
+    # Se mete en una columna estrecha para que ocupe poco espacio siempre,
+    # sin depender de que el intento de recolor por JS funcione o no.
     components.html(
         """
         <script>
@@ -1715,34 +1717,36 @@ with st.sidebar:
         """,
         height=0,
     )
-    with st.expander("⚙", expanded=False):
-        if st.session_state.autenticado:
-            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
-            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
-                st.session_state.autenticado = False
-                st.session_state.usuario_actual = ""
-                st.rerun()
-        else:
-            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
-            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
-            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
-                if not SUPABASE_DISPONIBLE:
-                    st.error(T["error_cred"])
-                else:
-                    try:
-                        resultado_admin = (
-                            obtener_cliente_supabase().table("admin_credenciales").select("*")
-                            .eq("usuario", usuario_admin.strip())
-                            .eq("contrasena", pass_admin.strip())
-                            .execute()
-                        )
-                        if resultado_admin.data:
-                            st.session_state.autenticado = True
-                            st.session_state.usuario_actual = usuario_admin.strip()
-                            st.rerun()
-                        else:
-                            st.error(T["error_login"])
-                    except Exception as e:
+    col_admin, _col_resto = st.columns([1, 2])
+    with col_admin:
+        with st.expander("⚙", expanded=False):
+            if st.session_state.autenticado:
+                st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
+                if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
+                    st.session_state.autenticado = False
+                    st.session_state.usuario_actual = ""
+                    st.rerun()
+            else:
+                usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
+                pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
+                if st.button(T["btn_acceder"], key="admin_login_sidebar"):
+                    if not SUPABASE_DISPONIBLE:
+                        st.error(T["error_cred"])
+                    else:
+                        try:
+                            resultado_admin = (
+                                obtener_cliente_supabase().table("admin_credenciales").select("*")
+                                .eq("usuario", usuario_admin.strip())
+                                .eq("contrasena", pass_admin.strip())
+                                .execute()
+                            )
+                            if resultado_admin.data:
+                                st.session_state.autenticado = True
+                                st.session_state.usuario_actual = usuario_admin.strip()
+                                st.rerun()
+                            else:
+                                st.error(T["error_login"])
+                        except Exception as e:
                             st.error(f"Error de acceso: {e}")
 
 
