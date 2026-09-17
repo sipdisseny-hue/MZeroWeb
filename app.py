@@ -1678,19 +1678,19 @@ with st.sidebar:
     # "administradores" de Supabase, en vez de una hoja de Google Sheets pública.
     st.markdown(
         """<style>
-        .st-key-mz_admin_hidden [data-testid="stExpander"] {
+        section[data-testid="stSidebar"] [data-testid="stExpander"]:last-of-type {
             border: none !important;
             background: transparent !important;
             margin-top: 24px;
         }
-        .st-key-mz_admin_hidden [data-testid="stExpander"] summary {
+        section[data-testid="stSidebar"] [data-testid="stExpander"]:last-of-type summary {
             background: transparent !important;
             color: #4A5262 !important;
             font-size: 11px !important;
             padding: 2px 0 !important;
             min-height: 0 !important;
         }
-        .st-key-mz_admin_hidden [data-testid="stExpander"] summary svg {
+        section[data-testid="stSidebar"] [data-testid="stExpander"]:last-of-type summary svg {
             width: 11px !important;
             height: 11px !important;
             opacity: 0.6;
@@ -1698,35 +1698,34 @@ with st.sidebar:
         </style>""",
         unsafe_allow_html=True,
     )
-    with st.container(key="mz_admin_hidden"):
-        with st.expander("⚙", expanded=False):
-            if st.session_state.autenticado:
-                st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
-                if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
-                    st.session_state.autenticado = False
-                    st.session_state.usuario_actual = ""
-                    st.rerun()
-            else:
-                usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
-                pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
-                if st.button(T["btn_acceder"], key="admin_login_sidebar"):
-                    if not SUPABASE_DISPONIBLE:
-                        st.error(T["error_cred"])
-                    else:
-                        try:
-                            resultado_admin = (
-                                obtener_cliente_supabase().table("admin_credenciales").select("*")
-                                .eq("usuario", usuario_admin.strip())
-                                .eq("contrasena", pass_admin.strip())
-                                .execute()
-                            )
-                            if resultado_admin.data:
-                                st.session_state.autenticado = True
-                                st.session_state.usuario_actual = usuario_admin.strip()
-                                st.rerun()
-                            else:
-                                st.error(T["error_login"])
-                        except Exception as e:
+    with st.expander("⚙", expanded=False):
+        if st.session_state.autenticado:
+            st.success(f"{T['sesion_iniciada']} {st.session_state.usuario_actual}")
+            if st.button(T["cerrar_sesion"], key="admin_logout_sidebar"):
+                st.session_state.autenticado = False
+                st.session_state.usuario_actual = ""
+                st.rerun()
+        else:
+            usuario_admin = st.text_input(T["usuario"], key="admin_user_sidebar")
+            pass_admin = st.text_input(T["password"], type="password", key="admin_pass_sidebar")
+            if st.button(T["btn_acceder"], key="admin_login_sidebar"):
+                if not SUPABASE_DISPONIBLE:
+                    st.error(T["error_cred"])
+                else:
+                    try:
+                        resultado_admin = (
+                            obtener_cliente_supabase().table("admin_credenciales").select("*")
+                            .eq("usuario", usuario_admin.strip())
+                            .eq("contrasena", pass_admin.strip())
+                            .execute()
+                        )
+                        if resultado_admin.data:
+                            st.session_state.autenticado = True
+                            st.session_state.usuario_actual = usuario_admin.strip()
+                            st.rerun()
+                        else:
+                            st.error(T["error_login"])
+                    except Exception as e:
                             st.error(f"Error de acceso: {e}")
 
 
