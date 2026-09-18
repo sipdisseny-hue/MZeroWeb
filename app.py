@@ -811,7 +811,9 @@ TRADUCCION_CATEGORIAS_CA = {
     "Renovables": "Renovables",
     "Hidráulica": "Hidràulica",
     "Construcción Metálica": "Construcció Metàlica",
-    "Asociaciones y Gremios": "Associacions i Gremis",
+    "Macrosector Textil": "Macrosector Tèxtil",
+    "Fabricación": "Fabricació",
+    "Distribuidores de materiales": "Distribuïdors de materials",
     "Centros de formación": "Centres de formació",
     "Gremios": "Gremis",
     "Asociaciones": "Associacions"
@@ -3355,10 +3357,34 @@ elif opcion == "docs":
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
             ["Electricidad", "Obra", "Electromecánica", "Renovables"],
-            ["Hidráulica", "Construcción Metálica", "Asociaciones y Gremios"]
+            ["Hidráulica", "Construcción Metálica", "Macrosector Textil", "Fabricación"],
+            ["Distribuidores de materiales"]
         ]
 
         mostrar_bloque_categorias(asociados_db, titulos_asociados, "asoc")
+
+        components.html(
+            """
+            <script>
+            (function () {
+                var objetivos = ["Distribuidores de materiales", "Distribuïdors de materials"];
+                function estilizarDistribuidores() {
+                    var doc = window.parent.document;
+                    var resumenes = doc.querySelectorAll('[data-testid="stExpander"] summary');
+                    resumenes.forEach(function (resumen) {
+                        var texto = (resumen.textContent || '').trim();
+                        if (objetivos.indexOf(texto) === -1) { return; }
+                        resumen.style.setProperty('background', '#1d4ed8', 'important');
+                        resumen.style.setProperty('color', '#ffffff', 'important');
+                    });
+                }
+                estilizarDistribuidores();
+                setInterval(estilizarDistribuidores, 600);
+            })();
+            </script>
+            """,
+            height=0,
+        )
 
         st.divider()
 
