@@ -3358,7 +3358,7 @@ elif opcion == "docs":
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
             ["Electricidad", "Obra", "Electromecánica", "Renovables"],
             ["Hidráulica", "Construcción Metálica", "Macrosector Textil", "Fabricación"],
-            ["Distribuidores de materiales"]
+            ["Distribuidores de materiales y herramientas"]
         ]
 
         mostrar_bloque_categorias(asociados_db, titulos_asociados, "asoc")
