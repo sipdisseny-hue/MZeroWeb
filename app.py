@@ -813,7 +813,7 @@ TRADUCCION_CATEGORIAS_CA = {
     "Construcción Metálica": "Construcció Metàlica",
     "Macrosector Textil": "Macrosector Tèxtil",
     "Fabricación": "Fabricació",
-    "Distribuidores de materiales": "Distribuïdors de materials",
+    "Distribuidores de materiales y herramientas": "Distribuïdors de materials i eines",
     "Centros de formación": "Centres de formació",
     "Gremios": "Gremis",
     "Asociaciones": "Associacions"
@@ -856,42 +856,15 @@ def cargar_datos_de_google():
 # provincia, poblacion, empresa, descripcion, enlace.
 @st.cache_data(ttl=600)
 def cargar_asociados_colaboradores():
-    """Directorio público de Asociados y Colaboradores, leído de la tabla
-    'empresas' de Supabase (solo empresas activas). Se mantiene el mismo
-    nombre de función y la misma forma de los datos que antes (diccionarios
-    con 'empresa', 'provincia', 'poblacion', 'categoria', etc.) para no
-    tener que tocar el resto de la pantalla."""
-    if not SUPABASE_DISPONIBLE:
-        return [], []
+    url_script = "https://script.google.com/macros/s/AKfycbyD03Ix8JF6jx8wbiu8_imQoNXDwYVGhjEvMlXTV5NaeC5fWZ-0ysRRssmlfv5YCb95tg/exec"
     try:
-        cliente = obtener_cliente_supabase()
-        filas = (
-            cliente.table("empresas").select("*")
-            .eq("estado", "activo")
-            .execute().data
-        )
-        asociados, colaboradores = [], []
-        for f in filas:
-            item = {
-                "empresa": f.get("nombre_empresa", "") or "",
-                "empresa_html": "",
-                "provincia": f.get("provincia", "") or "",
-                "poblacion": f.get("poblacion", "") or "",
-                "categoria": f.get("categoria", "") or "",
-                "categoria_ca": f.get("categoria_ca", "") or "",
-                "logo": f.get("logo", "") or "",
-                "descripcion": f.get("descripcion", "") or "",
-                "descripcion_ca": f.get("descripcion_ca", "") or "",
-                "enlace": f.get("web", "") or "",
-            }
-            if f.get("tipo") == "colaborador":
-                colaboradores.append(item)
-            elif f.get("tipo") == "asociado":
-                asociados.append(item)
-        return asociados, colaboradores
+        response = requests.get(url_script, timeout=20)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("asociados", []), data.get("colaboradores", [])
     except Exception as e:
         st.error(f"Error al cargar Asociados y Colaboradores: {e}")
-        return [], []
+    return [], []
 
 # --- NUEVO: TEXTOS DE "CÓMO PARTICIPAR" (Asociados / Colaboradores / Candidato) ---
 # Usa la MISMA URL que ya usan cargar_datos_de_google() y guardar_en_sheets()
