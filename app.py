@@ -813,7 +813,7 @@ TRADUCCION_CATEGORIAS_CA = {
     "Construcción Metálica": "Construcció Metàlica",
     "Macrosector Textil": "Macrosector Tèxtil",
     "Fabricación": "Fabricació",
-    "Distribuidores de materiales": "Distribuïdors de materials",
+    "Distribuidores de materiales y herramientas": "Distribuïdors de materials i eines",
     "Centros de formación": "Centres de formació",
     "Gremios": "Gremis",
     "Asociaciones": "Associacions"
