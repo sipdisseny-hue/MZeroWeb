@@ -333,6 +333,12 @@ TEXTOS = {
         "campo_nombre_empresa": "Nombre Empresa",
         "campo_nombre_centro": "Nombre del Centro",
         "campo_sector": "Sector",
+        "campo_descripcion_empresa": "Descripción de la empresa (se mostrará en el directorio)",
+        "placeholder_descripcion_empresa": "Ej: Empresa de suministro de materiales para instalaciones eléctricas...",
+        "aviso_sector_no_disponible": "¿No encuentras tu sector en la lista? Escríbenos a {email} indicando el sector que quieres que añadamos.",
+        "campo_ambito": "¿Dónde ofreces tus servicios?",
+        "ambito_provincia": "Provincia y población concretas",
+        "ambito_nacional": "Toda España (ámbito nacional)",
         "campo_provincia": "Provincia",
         "campo_poblacion": "Población",
         "campo_cp": "CP",
@@ -576,6 +582,12 @@ TEXTOS = {
         "campo_nombre_empresa": "Nom Empresa",
         "campo_nombre_centro": "Nom del Centre",
         "campo_sector": "Sector",
+        "campo_descripcion_empresa": "Descripció de l'empresa (es mostrarà al directori)",
+        "placeholder_descripcion_empresa": "Ex: Empresa de subministrament de materials per a instal·lacions elèctriques...",
+        "aviso_sector_no_disponible": "No trobes el teu sector a la llista? Escriu-nos a {email} indicant el sector que vols que afegim.",
+        "campo_ambito": "On ofereixes els teus serveis?",
+        "ambito_provincia": "Província i població concretes",
+        "ambito_nacional": "Tot Espanya (àmbit nacional)",
         "campo_provincia": "Província",
         "campo_poblacion": "Població",
         "campo_cp": "CP",
@@ -774,6 +786,17 @@ SECTORES_INDUSTRIALES = [
     },
 ]
 
+# --- SECTORES/CATEGORÍAS DEL DIRECTORIO DE ASOCIADOS ---
+# Mismo listado que se usa para pintar las pestañas del directorio público
+# (ver titulos_asociados en la parte 2) y para el desplegable de sector que
+# elige la empresa al registrarse, así quedan siempre sincronizados.
+SECTORES_ASOCIADOS = [
+    "Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal",
+    "Electricidad", "Obra", "Electromecánica", "Renovables",
+    "Hidráulica", "Construcción Metálica", "Macrosector Textil", "Fabricación",
+    "Distribuidores de materiales",
+]
+
 
 # No afecta a los datos que se envían al Excel ni a las claves internas
 # (Alumno, Curso, "1. Tasa de eficiencia"...); solo se usa para mostrar en
@@ -813,7 +836,7 @@ TRADUCCION_CATEGORIAS_CA = {
     "Construcción Metálica": "Construcció Metàlica",
     "Macrosector Textil": "Macrosector Tèxtil",
     "Fabricación": "Fabricació",
-    "Distribuidores de materiales y herramientas": "Distribuïdors de materials i eines",
+    "Distribuidores de materiales": "Distribuïdors de materials",
     "Centros de formación": "Centres de formació",
     "Gremios": "Gremis",
     "Asociaciones": "Associacions"
@@ -856,15 +879,42 @@ def cargar_datos_de_google():
 # provincia, poblacion, empresa, descripcion, enlace.
 @st.cache_data(ttl=600)
 def cargar_asociados_colaboradores():
-    url_script = "https://script.google.com/macros/s/AKfycbyD03Ix8JF6jx8wbiu8_imQoNXDwYVGhjEvMlXTV5NaeC5fWZ-0ysRRssmlfv5YCb95tg/exec"
+    """Directorio público de Asociados y Colaboradores, leído de la tabla
+    'empresas' de Supabase (solo empresas activas). Se mantiene el mismo
+    nombre de función y la misma forma de los datos que antes (diccionarios
+    con 'empresa', 'provincia', 'poblacion', 'categoria', etc.) para no
+    tener que tocar el resto de la pantalla."""
+    if not SUPABASE_DISPONIBLE:
+        return [], []
     try:
-        response = requests.get(url_script, timeout=20)
-        if response.status_code == 200:
-            data = response.json()
-            return data.get("asociados", []), data.get("colaboradores", [])
+        cliente = obtener_cliente_supabase()
+        filas = (
+            cliente.table("empresas").select("*")
+            .eq("estado", "activo")
+            .execute().data
+        )
+        asociados, colaboradores = [], []
+        for f in filas:
+            item = {
+                "empresa": f.get("nombre_empresa", "") or "",
+                "empresa_html": "",
+                "provincia": f.get("provincia", "") or "",
+                "poblacion": f.get("poblacion", "") or "",
+                "categoria": f.get("categoria", "") or "",
+                "categoria_ca": f.get("categoria_ca", "") or "",
+                "logo": f.get("logo", "") or "",
+                "descripcion": f.get("descripcion", "") or "",
+                "descripcion_ca": f.get("descripcion_ca", "") or "",
+                "enlace": f.get("web", "") or "",
+            }
+            if f.get("tipo") == "colaborador":
+                colaboradores.append(item)
+            elif f.get("tipo") == "asociado":
+                asociados.append(item)
+        return asociados, colaboradores
     except Exception as e:
         st.error(f"Error al cargar Asociados y Colaboradores: {e}")
-    return [], []
+        return [], []
 
 # --- NUEVO: TEXTOS DE "CÓMO PARTICIPAR" (Asociados / Colaboradores / Candidato) ---
 # Usa la MISMA URL que ya usan cargar_datos_de_google() y guardar_en_sheets()
@@ -1758,11 +1808,32 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
         if incluir_centro:
             nombre_centro = st.text_input(T["campo_nombre_centro"], key=f"{key_prefix}_reg_centro_{version}")
 
-        sector = st.text_input(T["campo_sector"], key=f"{key_prefix}_reg_sector_{version}")
+        descripcion_empresa = ""
+        if tipo == "asociado":
+            sector = st.selectbox(T["campo_sector"], SECTORES_ASOCIADOS, key=f"{key_prefix}_reg_sector_{version}")
+            email_contacto_app = st.session_state.get("contenido_contacto", {}).get("Email", "")
+            st.caption(T["aviso_sector_no_disponible"].format(email=email_contacto_app or "—"))
+            descripcion_empresa = st.text_area(
+                T["campo_descripcion_empresa"],
+                key=f"{key_prefix}_reg_descripcion_{version}",
+                placeholder=T["placeholder_descripcion_empresa"],
+            )
+        else:
+            sector = st.text_input(T["campo_sector"], key=f"{key_prefix}_reg_sector_{version}")
 
-        c1, c2 = st.columns(2)
-        provincia = c1.text_input(T["campo_provincia"], key=f"{key_prefix}_reg_prov_{version}")
-        poblacion = c2.text_input(T["campo_poblacion"], key=f"{key_prefix}_reg_pob_{version}")
+        ambito = st.radio(
+            T["campo_ambito"],
+            [T["ambito_provincia"], T["ambito_nacional"]],
+            key=f"{key_prefix}_reg_ambito_{version}",
+            horizontal=True,
+        )
+        if ambito == T["ambito_nacional"]:
+            provincia, poblacion = "Nacional", "Toda España"
+            st.caption(f"📍 {T['ambito_nacional']}")
+        else:
+            c1, c2 = st.columns(2)
+            provincia = c1.text_input(T["campo_provincia"], key=f"{key_prefix}_reg_prov_{version}")
+            poblacion = c2.text_input(T["campo_poblacion"], key=f"{key_prefix}_reg_pob_{version}")
 
         c3, c4 = st.columns(2)
         cp = c3.text_input(T["campo_cp"], key=f"{key_prefix}_reg_cp_{version}")
@@ -1808,6 +1879,9 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
                 }
                 if incluir_centro:
                     campos["nombre_centro"] = nombre_centro.strip()
+                if tipo == "asociado":
+                    campos["categoria"] = sector.strip()
+                    campos["descripcion"] = descripcion_empresa.strip()
 
                 if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
                     st.session_state[f"{key_prefix}_reg_ok"] = T["solicitud_pendiente_aviso"]
