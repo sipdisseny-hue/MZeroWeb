@@ -339,6 +339,9 @@ TEXTOS = {
         "campo_ambito": "¿Dónde ofreces tus servicios?",
         "ambito_provincia": "Provincia y población concretas",
         "ambito_nacional": "Toda España (ámbito nacional)",
+        "ambito_region": "Región (Comunidad Autónoma)",
+        "campo_categoria": "Categoría (puedes elegir varias)",
+        "campo_region": "Comunidad Autónoma",
         "campo_provincia": "Provincia",
         "campo_poblacion": "Población",
         "campo_cp": "CP",
@@ -588,6 +591,9 @@ TEXTOS = {
         "campo_ambito": "On ofereixes els teus serveis?",
         "ambito_provincia": "Província i població concretes",
         "ambito_nacional": "Tot Espanya (àmbit nacional)",
+        "ambito_region": "Regió (Comunitat Autònoma)",
+        "campo_categoria": "Categoria (pots triar-ne diverses)",
+        "campo_region": "Comunitat Autònoma",
         "campo_provincia": "Província",
         "campo_poblacion": "Població",
         "campo_cp": "CP",
@@ -795,6 +801,14 @@ SECTORES_ASOCIADOS = [
     "Electricidad", "Obra", "Electromecánica", "Renovables",
     "Hidráulica", "Construcción Metálica", "Macrosector Textil", "Fabricación",
     "Distribuidores de materiales",
+]
+
+# Para el ámbito "Región" del registro de empresas
+COMUNIDADES_AUTONOMAS = [
+    "Andalucía", "Aragón", "Asturias", "Islas Baleares", "Canarias", "Cantabria",
+    "Castilla-La Mancha", "Castilla y León", "Cataluña", "Extremadura", "Galicia",
+    "Madrid", "Murcia", "Navarra", "País Vasco", "La Rioja", "Comunidad Valenciana",
+    "Ceuta", "Melilla",
 ]
 
 
@@ -1809,8 +1823,9 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
             nombre_centro = st.text_input(T["campo_nombre_centro"], key=f"{key_prefix}_reg_centro_{version}")
 
         descripcion_empresa = ""
+        categorias_sel = []
         if tipo == "asociado":
-            sector = st.selectbox(T["campo_sector"], SECTORES_ASOCIADOS, key=f"{key_prefix}_reg_sector_{version}")
+            categorias_sel = st.multiselect(T["campo_categoria"], SECTORES_ASOCIADOS, key=f"{key_prefix}_reg_categoria_{version}")
             email_contacto_app = st.session_state.get("contenido_contacto", {}).get("Email", "")
             st.caption(T["aviso_sector_no_disponible"].format(email=email_contacto_app or "—"))
             descripcion_empresa = st.text_area(
@@ -1823,13 +1838,16 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
 
         ambito = st.radio(
             T["campo_ambito"],
-            [T["ambito_provincia"], T["ambito_nacional"]],
+            [T["ambito_provincia"], T["ambito_region"], T["ambito_nacional"]],
             key=f"{key_prefix}_reg_ambito_{version}",
             horizontal=True,
         )
         if ambito == T["ambito_nacional"]:
             provincia, poblacion = "Nacional", "Toda España"
             st.caption(f"📍 {T['ambito_nacional']}")
+        elif ambito == T["ambito_region"]:
+            region_sel = st.selectbox(T["campo_region"], COMUNIDADES_AUTONOMAS, key=f"{key_prefix}_reg_region_{version}")
+            provincia, poblacion = region_sel, "Toda la región"
         else:
             c1, c2 = st.columns(2)
             provincia = c1.text_input(T["campo_provincia"], key=f"{key_prefix}_reg_prov_{version}")
@@ -1866,7 +1884,6 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
             elif usar_supabase:
                 campos = {
                     "nombre_empresa": nombre_empresa.strip(),
-                    "sector": sector.strip(),
                     "provincia": provincia.strip(),
                     "poblacion": poblacion.strip(),
                     "cp": cp.strip(),
@@ -1880,8 +1897,10 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
                 if incluir_centro:
                     campos["nombre_centro"] = nombre_centro.strip()
                 if tipo == "asociado":
-                    campos["categoria"] = sector.strip()
+                    campos["categoria"] = ", ".join(categorias_sel)
                     campos["descripcion"] = descripcion_empresa.strip()
+                else:
+                    campos["sector"] = sector.strip()
 
                 if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
                     st.session_state[f"{key_prefix}_reg_ok"] = T["solicitud_pendiente_aviso"]
@@ -1892,7 +1911,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
             else:
                 campos = {
                     "Nombre empresa": nombre_empresa.strip(),
-                    "Sector": sector.strip(),
+                    "Sector": ", ".join(categorias_sel) if tipo == "asociado" else sector.strip(),
                     "Provincia": provincia.strip(),
                     "Población": poblacion.strip(),
                     "CP": cp.strip(),
@@ -3401,12 +3420,13 @@ elif opcion == "docs":
                                 objetivo = etiqueta_visible.strip().lower()
                                 datos_categoria = [
                                     d for d in datos
-                                    if d.get("categoria_ca", "").strip().lower() == objetivo
+                                    if objetivo in [c.strip().lower() for c in d.get("categoria_ca", "").split(",")]
                                 ]
                             else:
+                                objetivo = titulo.strip().lower()
                                 datos_categoria = [
                                     d for d in datos
-                                    if d.get("categoria", "").strip().lower() == titulo.strip().lower()
+                                    if objetivo in [c.strip().lower() for c in d.get("categoria", "").split(",")]
                                 ]
                             mostrar_provincia_poblacion_empresa(datos_categoria, f"{key_prefix}_{titulo}")
 
@@ -3432,7 +3452,7 @@ elif opcion == "docs":
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
             ["Electricidad", "Obra", "Electromecánica", "Renovables"],
             ["Hidráulica", "Construcción Metálica", "Macrosector Textil", "Fabricación"],
-            ["Distribuidores de materiales y herramientas"]
+            ["Distribuidores de materiales"]
         ]
 
         mostrar_bloque_categorias(asociados_db, titulos_asociados, "asoc")
