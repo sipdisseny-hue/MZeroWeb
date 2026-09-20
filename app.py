@@ -341,6 +341,7 @@ TEXTOS = {
         "ambito_nacional": "Toda España (ámbito nacional)",
         "ambito_region": "Región (Comunidad Autónoma)",
         "campo_categoria": "Categoría (puedes elegir varias)",
+        "campo_categoria_colaborador": "Categoría",
         "campo_region": "Comunidad Autónoma",
         "campo_provincia": "Provincia",
         "campo_poblacion": "Población",
@@ -593,6 +594,7 @@ TEXTOS = {
         "ambito_nacional": "Tot Espanya (àmbit nacional)",
         "ambito_region": "Regió (Comunitat Autònoma)",
         "campo_categoria": "Categoria (pots triar-ne diverses)",
+        "campo_categoria_colaborador": "Categoria",
         "campo_region": "Comunitat Autònoma",
         "campo_provincia": "Província",
         "campo_poblacion": "Població",
@@ -810,6 +812,10 @@ COMUNIDADES_AUTONOMAS = [
     "Madrid", "Murcia", "Navarra", "País Vasco", "La Rioja", "Comunidad Valenciana",
     "Ceuta", "Melilla",
 ]
+
+# Mismo listado que las pestañas del directorio de Colaboradores (ver
+# titulos_colaboradores en la parte 2), para que quede sincronizado.
+CATEGORIAS_COLABORADORES = ["Centros de formación", "Gremios", "Asociaciones"]
 
 
 # No afecta a los datos que se envían al Excel ni a las claves internas
@@ -1824,6 +1830,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
 
         descripcion_empresa = ""
         categorias_sel = []
+        categoria_colaborador = ""
         if tipo == "asociado":
             categorias_sel = st.multiselect(T["campo_categoria"], SECTORES_ASOCIADOS, key=f"{key_prefix}_reg_categoria_{version}")
             email_contacto_app = st.session_state.get("contenido_contacto", {}).get("Email", "")
@@ -1834,7 +1841,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
                 placeholder=T["placeholder_descripcion_empresa"],
             )
         else:
-            sector = st.text_input(T["campo_sector"], key=f"{key_prefix}_reg_sector_{version}")
+            categoria_colaborador = st.selectbox(T["campo_categoria_colaborador"], CATEGORIAS_COLABORADORES, key=f"{key_prefix}_reg_categoria_{version}")
 
         ambito = st.radio(
             T["campo_ambito"],
@@ -1900,7 +1907,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
                     campos["categoria"] = ", ".join(categorias_sel)
                     campos["descripcion"] = descripcion_empresa.strip()
                 else:
-                    campos["sector"] = sector.strip()
+                    campos["categoria"] = categoria_colaborador
 
                 if enviar_peticion_registro_supabase(tipo, campos, usuario_deseado.strip(), contrasena_deseada.strip()):
                     st.session_state[f"{key_prefix}_reg_ok"] = T["solicitud_pendiente_aviso"]
@@ -1911,7 +1918,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
             else:
                 campos = {
                     "Nombre empresa": nombre_empresa.strip(),
-                    "Sector": ", ".join(categorias_sel) if tipo == "asociado" else sector.strip(),
+                    "Sector": ", ".join(categorias_sel) if tipo == "asociado" else categoria_colaborador,
                     "Provincia": provincia.strip(),
                     "Población": poblacion.strip(),
                     "CP": cp.strip(),
