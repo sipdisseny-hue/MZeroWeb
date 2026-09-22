@@ -853,7 +853,7 @@ TRADUCCION_CATEGORIAS_CA = {
     "Electromecánica": "Electromecànica",
     "Renovables": "Renovables",
     "Hidráulica": "Hidràulica",
-    "Construcción Metálica": "Construcció Metàlica",
+    "Construcción Metálica": "Construcció Metàl·lica",
     "Macrosector Textil": "Macrosector Tèxtil",
     "Fabricación": "Fabricació",
     "Distribuidores de materiales": "Distribuïdors de materials",
