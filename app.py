@@ -2686,7 +2686,7 @@ def bloque_seleccion_plan_asociado(key_prefix):
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(
-            f"""<div class=\"asoc-plan-card\"><div class=\"asoc-plan-head-basic\">{T['plan_basic']}</div><div class=\"asoc-plan-price\">{T['asoc_plan_basic_precio']}</div><div class=\"asoc-plan-divider\"></div><div class=\"asoc-plan-promo\">{T['asoc_plan_promocion']}</div><ul class=\"asoc-plan-list\"><li>{T['asoc_plan_uso_app']}</li><li>{T['asoc_plan_etiqueta_web']}</li><li>{T['asoc_plan_informe_max']}</li><li>{T['plan_impuestos']}</li></ul></div>""",
+            f"""<div class=\"asoc-plan-card\"><div class=\"asoc-plan-head-basic\">{T['plan_basic']}</div><div class=\"asoc-plan-price\">70€/Informe</div><div class=\"asoc-plan-divider\"></div><ul class=\"asoc-plan-list\"><li>Uso de la app para peticiones de informes. (Máximo 20 candidatos por informe).</li><li>Pago por vía bancaria. Sin sorpresas.</li><li>Impuestos incluidos.</li></ul><div class=\"asoc-plan-divider\"></div><div class=\"asoc-plan-promo\">PROMOCIÓN (Uso gratuito)</div><ul class=\"asoc-plan-list\"><li>Uso de la app para peticiones de características de candidatos.</li><li>Uso de la app para peticiones de formación adaptada.</li><li>Etiqueta publicitaria con enlace a su web.</li></ul></div>""",
             unsafe_allow_html=True,
         )
         if st.button(T["asoc_plan_seleccionar_basic"], key=f"{key_prefix}_plan_basic", type="primary", use_container_width=True):
@@ -2744,7 +2744,7 @@ def bloque_seleccion_plan_colaborador(key_prefix):
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(
-            f"""<div class=\"plan-card\"><div class=\"plan-head-basic\">{T['plan_basic']}</div><div class=\"plan-price\">{T['plan_basic_precio']}</div><div class=\"plan-promo\">{T['plan_promocion']}</div><ul class=\"plan-list\"><li>{T['plan_basic_uso_app']}</li><li>{T['plan_etiqueta_web']}</li><li>{T['plan_impuestos']}</li></ul></div>""",
+            f"""<div class=\"plan-card\"><div class=\"plan-head-basic\">{T['plan_basic']}</div><div class=\"plan-price\">70€/curso</div><div class=\"plan-promo\"></div><ul class=\"plan-list\"><li>Subir cursos fuera de la metodología M0, visibles para los candidatos registrados.</li><li>Subir cursos con la metodología M0, visibles para los candidatos registrados.</li><li>Sin límites de registros de docentes.</li><li>Pago por vía bancaria. Sin sorpresas.</li><li>Impuestos incluidos.</li></ul><div class=\"plan-promo\">PROMOCIÓN (Uso gratuito)</div><ul class=\"plan-list\"><li>Etiqueta publicitaria con enlace a su web.</li><li>Recepción de peticiones de cursos por parte de empresas asociadas registradas.</li><li>Recepción de peticiones para acceso a sus cursos por parte de los candidatos registrados.</li></ul></div>""",
             unsafe_allow_html=True,
         )
         if st.button(T["plan_seleccionar_basic"], key=f"{key_prefix}_plan_basic", type="primary", use_container_width=True):
