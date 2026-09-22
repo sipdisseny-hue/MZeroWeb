@@ -3223,7 +3223,7 @@ elif opcion == "docs":
         <div style="background:var(--mz-graphite); border-radius:0 0 8px 8px; margin:0 0 40px;
                     display:flex; border-top:1px solid #2A3340; padding:22px 48px;">
             <div style="flex:1; border-right:1px solid #2A3340;">
-                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">10</div>
+                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">{len(SECTORES_ASOCIADOS)}</div>
                 <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Sectores industriales cubiertos</div>
             </div>
             <div style="flex:1; border-right:1px solid #2A3340; padding-left:28px;">
