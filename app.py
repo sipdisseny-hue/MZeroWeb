@@ -2674,7 +2674,7 @@ def bloque_seleccion_plan_asociado(key_prefix):
 
     if st.session_state.get(plan_key) == "basic":
         st.markdown(
-            f"<div style=\"padding:10px 14px;border-radius:10px;background:#eef6ff;border:1px solid #b8d8ff;margin:10px 0 16px 0;\"><b>{T['asoc_reg_plan_seleccionado']}</b></div>",
+            f"""<div class=\"asoc-plan-card\"><div class=\"asoc-plan-head-basic\">{T['plan_basic']}</div><div class=\"asoc-plan-price\">{T['asoc_plan_precio_nuevo']}</div><div class=\"asoc-plan-divider\"></div><ul class=\"asoc-plan-list\"><li>{T['asoc_plan_informe_nuevo']}</li><li>{T['asoc_plan_pago_nuevo']}</li><li>{T['asoc_plan_impuestos_nuevo']}</li></ul><div class=\"asoc-plan-divider\"></div><div class=\"asoc-plan-promo\">{T['asoc_plan_promocion_nuevo']}</div><ul class=\"asoc-plan-list\"><li>{T['asoc_plan_promo_caracteristicas']}</li><li>{T['asoc_plan_promo_formacion']}</li><li>{T['asoc_plan_promo_web']}</li></ul></div>""",
             unsafe_allow_html=True,
         )
         if st.button(T["asoc_plan_volver"], key=f"{key_prefix}_plan_volver"):
@@ -2731,9 +2731,8 @@ def bloque_seleccion_plan_colaborador(key_prefix):
     if plan_key not in st.session_state:
         st.session_state[plan_key] = None
 
-    if st.session_state.get(plan_key) == "basic":
-        st.markdown(
-            f"<div style=\"padding:10px 14px;border-radius:10px;background:#eef6ff;border:1px solid #b8d8ff;margin:10px 0 16px 0;\"><b>{T['reg_plan_seleccionado']}</b></div>",
+    st.markdown(
+        f"""<div class=\"plan-card\"><div class=\"plan-head-basic\">{T['plan_basic']}</div><div class=\"plan-price\">{T['colab_plan_precio_nuevo']}</div><div class=\"plan-promo\"></div><ul class=\"plan-list\"><li>{T['colab_plan_fuera_m0']}</li><li>{T['colab_plan_con_m0']}</li><li>{T['colab_plan_docentes']}</li><li>{T['colab_plan_pago']}</li><li>{T['colab_plan_impuestos']}</li></ul><div class=\"plan-promo\">{T['colab_plan_promocion']}</div><ul class=\"plan-list\"><li>{T['colab_plan_promo_web']}</li><li>{T['colab_plan_promo_empresas']}</li><li>{T['colab_plan_promo_candidatos']}</li></ul></div>""",
             unsafe_allow_html=True,
         )
         if st.button(T["plan_volver"], key=f"{key_prefix}_plan_volver"):
