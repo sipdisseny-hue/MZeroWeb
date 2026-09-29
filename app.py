@@ -364,11 +364,6 @@ TEXTOS = {
         "campo_competencias": "Competencias adquiridas",
         "campo_sector_curso": "Sector del curso",
         "campo_subsector_curso": "Subsector del curso",
-        "campo_sello_m0": "Este curso lleva el Sello M0",
-        "ayuda_sello_m0": "Desmárcalo si es un curso fuera de la metodología M0 (igualmente quedará visible en la app, identificado como tal).",
-        "sello_m0_badge": "🏅 Sello M0",
-        "sin_sello_m0_badge": "Sin Sello M0",
-        "guardar_sello_m0": "Guardar",
         "editar_sector_cursos": "Sector / subsector de mis cursos",
         "sin_cursos_para_editar": "Todavía no tienes cursos en el catálogo.",
         "guardar_sector_curso": "Guardar sector/subsector",
@@ -409,19 +404,23 @@ TEXTOS = {
         "estado_activo": "activo",
         "plan_basic": "BASIC",
         "plan_standard": "STANDARD",
-        "plan_basic_precio": "70 €/curso",
+        "plan_basic_precio": "50 €/curso",
         "plan_standard_precio": "38 €/mes",
-        "plan_promocion": "PROMOCIÓN (Uso gratuito)",
+        "plan_promocion": "Promoción 2026",
         "plan_uso_app": "Uso indefinido de la app",
         "plan_basic_uso_app": "Uso por curso",
-        "plan_etiqueta_web": "Etiqueta publicitaria con enlace a su web",
-        "plan_basic_li1": "Subir cursos fuera de la metodología M0, visibles para los candidatos registrados.",
-        "plan_basic_li2": "Subir cursos con la metodología M0, visibles para los candidatos registrados.",
-        "plan_basic_li3": "Sin límites de registros de docentes.",
-        "plan_basic_li4": "Pago por vía bancaria. Sin sorpresas.",
-        "plan_basic_promo_li1": "Recepción de peticiones de cursos por parte de empresas asociadas registradas.",
-        "plan_basic_promo_li2": "Recepción de peticiones para acceso a sus cursos por parte de los candidatos registrados.",
+        "plan_etiqueta_web": "Etiqueta enlace a su web",
         "plan_impuestos": "Impuestos incluidos",
+        "colab_basic_precio_nuevo": "70 €/curso",
+        "colab_basic_curso_fuera_m0": "Subir cursos fuera de la metodología M0, visibles para los candidatos registrados.",
+        "colab_basic_curso_m0": "Subir cursos con la metodología M0, visibles para los candidatos registrados.",
+        "colab_basic_docentes": "Sin límites de registros de docentes.",
+        "colab_basic_pago": "Pago por vía bancaria. Sin sorpresas.",
+        "colab_basic_impuestos": "Impuestos incluidos.",
+        "colab_basic_promocion": "PROMOCIÓN (Uso gratuito)",
+        "colab_basic_promo_web": "Etiqueta publicitaria con enlace a su web.",
+        "colab_basic_promo_cursos": "Recepción de peticiones de cursos por parte de empresas asociadas registradas.",
+        "colab_basic_promo_acceso": "Recepción de peticiones para acceso a sus cursos por parte de los candidatos registrados.",
         "plan_standard_inactivo": "De momento no disponible",
         "plan_seleccionar_basic": "Seleccionar BASIC",
         "plan_standard_bloqueado": "STANDARD no disponible",
@@ -431,14 +430,17 @@ TEXTOS = {
         "plan_banner_gratis": "✅ El registro es gratuito y no tiene cuota. Solo se paga cuando das de alta un curso.",
         "asoc_plan_basic_precio": "70 €/informe",
         "asoc_plan_standard_precio": "100 €/mes",
-        "asoc_plan_promocion": "PROMOCIÓN (Uso gratuito)",
+        "asoc_plan_promocion": "PROMOCIÓN",
         "asoc_plan_uso_app": "Uso de la app para peticiones de candidatos o formaciones",
-        "asoc_plan_etiqueta_web": "Etiqueta publicitaria con enlace a su web",
-        "asoc_plan_informe_max": "Uso de la app para peticiones de informes. (Máximo 20 candidatos por informe).",
+        "asoc_plan_etiqueta_web": "Etiqueta enlace a su web",
+        "asoc_plan_informe_max": "Informe máximo de 20 alumnos",
+        "asoc_basic_pago_informe": "Pago por vía bancaria. Sin sorpresas.",
+        "asoc_basic_impuestos": "Impuestos incluidos.",
+        "asoc_basic_promocion": "PROMOCIÓN (Uso gratuito)",
+        "asoc_basic_promo_candidatos": "Uso de la app para peticiones de características de candidatos.",
+        "asoc_basic_promo_formacion": "Uso de la app para peticiones de formación adaptada.",
+        "asoc_basic_promo_web": "Etiqueta publicitaria con enlace a su web.",
         "asoc_plan_informe_mensual": "Informe mensual de candidatos del sector",
-        "asoc_plan_basic_li_pago": "Pago por vía bancaria. Sin sorpresas.",
-        "asoc_plan_basic_promo_li1": "Uso de la app para petición de características de candidatos.",
-        "asoc_plan_basic_promo_li2": "Uso de la app para petición de formación adaptada.",
         "asoc_plan_standard_inactivo": "De momento no disponible",
         "asoc_plan_seleccionar_basic": "Seleccionar BASIC",
         "asoc_plan_standard_bloqueado": "STANDARD no disponible",
@@ -631,11 +633,6 @@ TEXTOS = {
         "campo_competencias": "Competències adquirides",
         "campo_sector_curso": "Sector del curs",
         "campo_subsector_curso": "Subsector del curs",
-        "campo_sello_m0": "Aquest curs porta el Segell M0",
-        "ayuda_sello_m0": "Desmarca-ho si és un curs fora de la metodologia M0 (igualment quedarà visible a l'app, identificat com a tal).",
-        "sello_m0_badge": "🏅 Segell M0",
-        "sin_sello_m0_badge": "Sense Segell M0",
-        "guardar_sello_m0": "Desar",
         "editar_sector_cursos": "Sector / subsector dels meus cursos",
         "sin_cursos_para_editar": "Encara no tens cursos al catàleg.",
         "guardar_sector_curso": "Desar sector/subsector",
@@ -676,19 +673,23 @@ TEXTOS = {
         "estado_activo": "actiu",
         "plan_basic": "BASIC",
         "plan_standard": "STANDARD",
-        "plan_basic_precio": "70 €/curs",
+        "plan_basic_precio": "50 €/curs",
         "plan_standard_precio": "38 €/mes",
-        "plan_promocion": "PROMOCIÓ (Ús gratuït)",
+        "plan_promocion": "Promoció 2026",
         "plan_uso_app": "Ús indefinit de l'app",
         "plan_basic_uso_app": "Ús per curs",
-        "plan_etiqueta_web": "Etiqueta publicitària amb enllaç al seu web",
-        "plan_basic_li1": "Pujar cursos fora de la metodologia M0, visibles per als candidats registrats.",
-        "plan_basic_li2": "Pujar cursos amb la metodologia M0, visibles per als candidats registrats.",
-        "plan_basic_li3": "Sense límits de registres de docents.",
-        "plan_basic_li4": "Pagament per via bancària. Sense sorpreses.",
-        "plan_basic_promo_li1": "Recepció de peticions de cursos per part d'empreses associades registrades.",
-        "plan_basic_promo_li2": "Recepció de peticions per accedir als seus cursos per part dels candidats registrats.",
+        "plan_etiqueta_web": "Etiqueta amb enllaç al seu web",
         "plan_impuestos": "Impostos inclosos",
+        "colab_basic_precio_nuevo": "70 €/curs",
+        "colab_basic_curso_fuera_m0": "Pujar cursos fora de la metodologia M0, visibles per als candidats registrats.",
+        "colab_basic_curso_m0": "Pujar cursos amb la metodologia M0, visibles per als candidats registrats.",
+        "colab_basic_docentes": "Sense límits de registres de docents.",
+        "colab_basic_pago": "Pagament per via bancària. Sense sorpreses.",
+        "colab_basic_impuestos": "Impostos inclosos.",
+        "colab_basic_promocion": "PROMOCIÓ (Ús gratuït)",
+        "colab_basic_promo_web": "Etiqueta publicitària amb enllaç al seu web.",
+        "colab_basic_promo_cursos": "Recepció de peticions de cursos per part d'empreses associades registrades.",
+        "colab_basic_promo_acceso": "Recepció de peticions per accedir als seus cursos per part dels candidats registrats.",
         "plan_standard_inactivo": "De moment no disponible",
         "plan_seleccionar_basic": "Seleccionar BASIC",
         "plan_standard_bloqueado": "STANDARD no disponible",
@@ -698,14 +699,17 @@ TEXTOS = {
         "plan_banner_gratis": "✅ El registre és gratuït i no té quota. Només es paga quan dones d'alta un curs.",
         "asoc_plan_basic_precio": "70 €/informe",
         "asoc_plan_standard_precio": "100 €/mes",
-        "asoc_plan_promocion": "PROMOCIÓ (Ús gratuït)",
+        "asoc_plan_promocion": "PROMOCIÓ",
         "asoc_plan_uso_app": "Ús de l'app per a peticions de candidats o formacions",
-        "asoc_plan_etiqueta_web": "Etiqueta publicitària amb enllaç al seu web",
-        "asoc_plan_informe_max": "Ús de l'app per a peticions d'informes. (Màxim 20 candidats per informe).",
+        "asoc_plan_etiqueta_web": "Etiqueta amb enllaç al seu web",
+        "asoc_plan_informe_max": "Informe màxim de 20 alumnes",
+        "asoc_basic_pago_informe": "Pagament per via bancària. Sense sorpreses.",
+        "asoc_basic_impuestos": "Impostos inclosos.",
+        "asoc_basic_promocion": "PROMOCIÓ (Ús gratuït)",
+        "asoc_basic_promo_candidatos": "Ús de l'app per a peticions de característiques de candidats.",
+        "asoc_basic_promo_formacion": "Ús de l'app per a peticions de formació adaptada.",
+        "asoc_basic_promo_web": "Etiqueta publicitària amb enllaç al seu web.",
         "asoc_plan_informe_mensual": "Informe mensual de candidats del sector",
-        "asoc_plan_basic_li_pago": "Pagament per via bancària. Sense sorpreses.",
-        "asoc_plan_basic_promo_li1": "Ús de l'app per a petició de característiques de candidats.",
-        "asoc_plan_basic_promo_li2": "Ús de l'app per a petició de formació adaptada.",
         "asoc_plan_standard_inactivo": "De moment no disponible",
         "asoc_plan_seleccionar_basic": "Seleccionar BASIC",
         "asoc_plan_standard_bloqueado": "STANDARD no disponible",
@@ -1334,7 +1338,6 @@ def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
                 "competencias": curso.get("competencias"),
                 "estado": estado_visible,
                 "modulos": modulos,
-                "sello_m0": curso.get("sello_m0", True),
             })
         return resultado
     except Exception:
@@ -1342,7 +1345,7 @@ def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
 
 
 # --- NUEVO: EL COLABORADOR PROPONE CURSO+MÓDULO Y DOCENTE ---
-def enviar_curso_modulo_supabase(empresa_id, nombre_empresa, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias, sector=None, subsector=None, sello_m0=True):
+def enviar_curso_modulo_supabase(empresa_id, nombre_empresa, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias, sector=None, subsector=None):
     if not SUPABASE_DISPONIBLE:
         return False
     try:
@@ -1358,8 +1361,7 @@ def enviar_curso_modulo_supabase(empresa_id, nombre_empresa, referencia, nombre_
                 "horas_totales": horas or None,
                 "competencias": competencias,
                 "sector": sector or None,
-                "subsector": subsector or None,
-                "sello_m0": sello_m0
+                "subsector": subsector or None
             }).execute()
 
         modulos_existentes = cliente.table("modulos").select("subcodigo").eq("codigo_curso", referencia).execute().data
@@ -2030,7 +2032,7 @@ def _cargar_docentes_curso(codigo):
         return []
 
 
-def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias, nombre_empresa, sector=None, subsector=None, sello_m0=True):
+def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias, nombre_empresa, sector=None, subsector=None):
     """
     Relación de catálogo por código de curso.
 
@@ -2048,7 +2050,7 @@ def _crear_o_reutilizar_curso(empresa_id, referencia, nombre_curso, nombre_modul
 
     ok = enviar_curso_modulo_supabase(
         empresa_id, nombre_empresa, referencia, nombre_curso, nombre_modulo,
-        nivel, horas, competencias, sector, subsector, sello_m0
+        nivel, horas, competencias, sector, subsector
     )
     if not ok:
         return None
@@ -2291,7 +2293,6 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         curso_existente = _cargar_curso_por_codigo(referencia.strip()) if referencia.strip() else None
         sector_curso = None
         subsector_curso = None
-        sello_m0_curso = True
 
         if curso_existente:
             nombre_catalogo = curso_existente.get("nombre_es") or curso_existente.get("nombre_ca") or referencia.strip()
@@ -2315,9 +2316,6 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
             sector_curso = c5.selectbox(T["campo_sector_curso"], nombres_sectores_curso, key=f"{key_prefix}_nuevo_sector_{cv}")
             subsectores_curso_opts = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_curso)
             subsector_curso = c6.selectbox(T["campo_subsector_curso"], subsectores_curso_opts, key=f"{key_prefix}_nuevo_subsector_{cv}")
-
-            sello_m0_curso = st.checkbox(T["campo_sello_m0"], value=True, key=f"{key_prefix}_nuevo_sellom0_{cv}")
-            st.caption(T["ayuda_sello_m0"])
 
         # -----------------------------------------------------------
         # DOCENTES
@@ -2449,7 +2447,6 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                             nombre_empresa,
                             sector_curso,
                             subsector_curso,
-                            sello_m0_curso,
                         )
                         if not curso:
                             raise RuntimeError("No se pudo crear el curso." if lang == "es" else "No s’ha pogut crear el curs.")
@@ -2539,16 +2536,11 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                         T["campo_subsector_curso"], subsectores_edit_opts, index=idx_subsector,
                         key=f"{key_prefix}_edit_subsector_{codigo_e}"
                     )
-                    sello_m0_edit = st.checkbox(
-                        T["campo_sello_m0"], value=curso_e.get("sello_m0", True),
-                        key=f"{key_prefix}_edit_sellom0_{codigo_e}"
-                    )
                     if st.button(T["guardar_sector_curso"], key=f"{key_prefix}_edit_sector_btn_{codigo_e}"):
                         try:
                             obtener_cliente_supabase().table("cursos").update({
                                 "sector": sector_edit,
-                                "subsector": subsector_edit,
-                                "sello_m0": sello_m0_edit
+                                "subsector": subsector_edit
                             }).eq("codigo_curso", codigo_e).execute()
                             st.success(T["sector_curso_actualizado"])
                             st.rerun()
@@ -2726,7 +2718,7 @@ def bloque_seleccion_plan_asociado(key_prefix):
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(
-            f"""<div class=\"asoc-plan-card\"><div class=\"asoc-plan-head-basic\">{T['plan_basic']}</div><div class=\"asoc-plan-price\">{T['asoc_plan_basic_precio']}</div><div class=\"asoc-plan-divider\"></div><ul class=\"asoc-plan-list\"><li>{T['asoc_plan_informe_max']}</li><li>{T['asoc_plan_basic_li_pago']}</li><li>{T['plan_impuestos']}</li></ul><div class=\"asoc-plan-divider\"></div><div class=\"asoc-plan-promo\">{T['asoc_plan_promocion']}</div><ul class=\"asoc-plan-list\"><li>{T['asoc_plan_basic_promo_li1']}</li><li>{T['asoc_plan_basic_promo_li2']}</li><li>{T['asoc_plan_etiqueta_web']}</li></ul></div>""",
+            f"""<div class=\"asoc-plan-card\"><div class=\"asoc-plan-head-basic\">{T['plan_basic']}</div><div class=\"asoc-plan-price\">{T['asoc_plan_basic_precio']}</div><div class=\"asoc-plan-divider\"></div><ul class=\"asoc-plan-list\"><li>{T['asoc_plan_uso_app']}</li><li>{T['asoc_basic_pago_informe']}</li><li>{T['asoc_basic_impuestos']}</li></ul><div class=\"asoc-plan-divider\"></div><div class=\"asoc-plan-promo\">{T['asoc_basic_promocion']}</div><ul class=\"asoc-plan-list\"><li>{T['asoc_basic_promo_candidatos']}</li><li>{T['asoc_basic_promo_formacion']}</li><li>{T['asoc_basic_promo_web']}</li></ul></div>""",
             unsafe_allow_html=True,
         )
         if st.button(T["asoc_plan_seleccionar_basic"], key=f"{key_prefix}_plan_basic", type="primary", use_container_width=True):
@@ -2774,7 +2766,6 @@ def bloque_seleccion_plan_colaborador(key_prefix):
         .plan-head-basic { background:#252525; color:white; padding:10px; text-align:center; font-weight:700; }
         .plan-head-standard { background:#e6b800; color:white; padding:10px; text-align:center; font-weight:700; }
         .plan-price { font-size:26px; font-weight:800; text-align:center; padding:14px 8px 4px; color:#111827; }
-        .plan-divider { border-top:2px solid #d0d5dd; margin:4px 20px 10px; }
         .plan-promo { text-align:center; color:red; font-weight:700; font-size:14px; padding-bottom:6px; }
         .plan-list { padding:4px 20px 14px 34px; color:#111827; line-height:1.6; }
         .plan-list li { margin-bottom:5px; }
@@ -2785,7 +2776,7 @@ def bloque_seleccion_plan_colaborador(key_prefix):
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(
-            f"""<div class=\"plan-card\"><div class=\"plan-head-basic\">{T['plan_basic']}</div><div class=\"plan-price\">{T['plan_basic_precio']}</div><div class=\"plan-promo\">{T['plan_promocion']}</div><ul class=\"plan-list\"><li>{T['plan_basic_uso_app']}</li><li>{T['plan_etiqueta_web']}</li><li>{T['plan_impuestos']}</li></ul></div>""",
+            f"""<div class=\"plan-card\"><div class=\"plan-head-basic\">{T['plan_basic']}</div><div class=\"plan-price\">{T['colab_basic_precio_nuevo']}</div><div class=\"plan-promo\"></div><ul class=\"plan-list\"><li>{T['colab_basic_curso_fuera_m0']}</li><li>{T['colab_basic_curso_m0']}</li><li>{T['colab_basic_docentes']}</li><li>{T['colab_basic_pago']}</li><li>{T['colab_basic_impuestos']}</li></ul><div class=\"plan-promo\">{T['colab_basic_promocion']}</div><ul class=\"plan-list\"><li>{T['colab_basic_promo_web']}</li><li>{T['colab_basic_promo_cursos']}</li><li>{T['colab_basic_promo_acceso']}</li></ul></div>""",
             unsafe_allow_html=True,
         )
         if st.button(T["plan_seleccionar_basic"], key=f"{key_prefix}_plan_basic", type="primary", use_container_width=True):
@@ -3163,20 +3154,6 @@ if st.session_state.get("acceso_panel"):
                     for curso_cand in cursos_encontrados_cand:
                         with st.container(border=True):
                             st.markdown(f"**{curso_cand['nombre_curso']}**")
-                            if curso_cand.get("sello_m0", True):
-                                st.markdown(
-                                    f"<span style='background:var(--mz-brass); color:var(--mz-graphite); "
-                                    f"font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px;'>"
-                                    f"{T['sello_m0_badge']}</span>",
-                                    unsafe_allow_html=True,
-                                )
-                            else:
-                                st.markdown(
-                                    f"<span style='background:var(--mz-offwhite); color:var(--mz-ink-soft); "
-                                    f"font-size:11px; font-weight:600; padding:3px 10px; border-radius:12px; "
-                                    f"border:1px solid #D9DAD6;'>{T['sin_sello_m0_badge']}</span>",
-                                    unsafe_allow_html=True,
-                                )
                             st.caption(f"{T['campo_nombre_centro']}: {curso_cand['nombre_centro']}")
                             estado_txt_cand = T["curso_estado_cursado"] if curso_cand["estado"] == "cursado" else T["curso_estado_en_curso"]
                             st.write(f"**{T['estado']}** {estado_txt_cand}")
