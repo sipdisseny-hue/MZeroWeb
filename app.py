@@ -510,6 +510,18 @@ TEXTOS = {
         "legal_cookies_texto": "Esta aplicación utiliza únicamente las tecnologías de almacenamiento o cookies necesarias para su funcionamiento, mantenimiento de la sesión y prestación de las funcionalidades solicitadas. No se utilizarán cookies no necesarias para publicidad comportamental o seguimiento comercial sin obtener previamente el consentimiento exigible. Si en el futuro se incorporan cookies o tecnologías de terceros que requieran consentimiento, se informará de forma específica y se ofrecerán opciones equivalentes para aceptar o rechazar dicho uso.",
         "legal_actualizacion": "Esta información podrá actualizarse cuando cambien la aplicación, los tratamientos de datos o la normativa aplicable.",
         "instagram_texto": "Síguenos en Instagram",
+        "acceso_subtitulo_asociados": "Acceso y gestión para Asociados",
+        "acceso_subtitulo_colaboradores": "Acceso y gestión para Colaboradores",
+        "acceso_subtitulo_candidatos": "Área de acceso para Candidatos",
+        "tarjeta_desc_asociado": "Perfiles ya validados, filtrando por sector y subsector.",
+        "tarjeta_desc_colaborador": "Da de alta tus cursos y forma parte de la red del sello M0.",
+        "tarjeta_desc_candidato": "Fórmate, consigue el sello M0 y solicita participar en cursos.",
+        "sectores_industriales_cubiertos": "Sectores industriales cubiertos",
+        "formas_acceso": "Formas de acceso: asociados, colaboradores, candidatos",
+        "un_sello_nivel_minimo": "Un sello, un nivel mínimo exigido",
+        "sello_nivel_corto": "SELLO&nbsp;DE&nbsp;NIVEL",
+        "volver_documentacion": "← Volver a Documentación",
+        "btn_acceder_tarjeta": "Acceder",
 
     },
     "ca": {
@@ -774,6 +786,18 @@ TEXTOS = {
         "legal_cookies_texto": "Aquesta aplicació utilitza únicament les tecnologies d’emmagatzematge o cookies necessàries per al seu funcionament, manteniment de la sessió i prestació de les funcionalitats sol·licitades. No s’utilitzaran cookies no necessàries per a publicitat comportamental o seguiment comercial sense obtenir prèviament el consentiment exigible. Si en el futur s’incorporen cookies o tecnologies de tercers que requereixin consentiment, s’informarà de manera específica i s’oferiran opcions equivalents per acceptar o rebutjar aquest ús.",
         "legal_actualizacion": "Aquesta informació podrà actualitzar-se quan canviïn l’aplicació, els tractaments de dades o la normativa aplicable.",
         "instagram_texto": "Segueix-nos a Instagram",
+        "acceso_subtitulo_asociados": "Accés i gestió per a Associats",
+        "acceso_subtitulo_colaboradores": "Accés i gestió per a Col·laboradors",
+        "acceso_subtitulo_candidatos": "Àrea d'accés per a Candidats",
+        "tarjeta_desc_asociado": "Perfils ja validats, filtrant per sector i subsector.",
+        "tarjeta_desc_colaborador": "Dona d'alta els teus cursos i forma part de la xarxa del segell M0.",
+        "tarjeta_desc_candidato": "Forma't, aconsegueix el segell M0 i sol·licita participar en cursos.",
+        "sectores_industriales_cubiertos": "Sectors industrials coberts",
+        "formas_acceso": "Formes d'accés: associats, col·laboradors, candidats",
+        "un_sello_nivel_minimo": "Un segell, un nivell mínim exigit",
+        "sello_nivel_corto": "SEGELL&nbsp;DE&nbsp;NIVELL",
+        "volver_documentacion": "← Tornar a Documentació",
+        "btn_acceder_tarjeta": "Accedir",
 
     }
 }
@@ -3115,15 +3139,15 @@ if st.session_state.get("acceso_panel"):
 
     if acceso_panel == "asociado":
         st.markdown(f'<div class="access-title">👥 {T["acceso_asociados"]}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="access-subtitle">Acceso y gestión para Asociados</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="access-subtitle">{T["acceso_subtitulo_asociados"]}</div>', unsafe_allow_html=True)
         bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part", usar_supabase=True)
-        if st.button("← Volver a Documentación", key="volver_desde_asociados", use_container_width=False):
+        if st.button(T["volver_documentacion"], key="volver_desde_asociados", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     elif acceso_panel == "colaborador":
         st.markdown(f'<div class="access-title">🏢 {T["acceso_colaboradores"]}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="access-subtitle">Acceso y gestión para Colaboradores</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="access-subtitle">{T["acceso_subtitulo_colaboradores"]}</div>', unsafe_allow_html=True)
         bloque_acceso_y_peticion(
             "colaborador",
             "Credenciales Colaboradores",
@@ -3131,13 +3155,13 @@ if st.session_state.get("acceso_panel"):
             incluir_centro_registro=True,
             usar_supabase=True
         )
-        if st.button("← Volver a Documentación", key="volver_desde_colaboradores", use_container_width=False):
+        if st.button(T["volver_documentacion"], key="volver_desde_colaboradores", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     elif acceso_panel == "candidato":
         st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="access-subtitle">{T["acceso_subtitulo_candidatos"]}</div>', unsafe_allow_html=True)
         st.info(T["aviso_candidato_cursos"])
 
         cand_login_key = "cand_login_ok"
@@ -3274,7 +3298,7 @@ if st.session_state.get("acceso_panel"):
 
             else:
                 provincia_sel_cand, poblacion_sel_cand = cand_ubicacion_actual
-                st.markdown(f"**{cand_sector_actual}** — {cand_subsector_actual} — {poblacion_sel_cand} ({provincia_sel_cand})")
+                st.markdown(f"**{traducir_sector_subsector(cand_sector_actual, lang)}** — {traducir_sector_subsector(cand_subsector_actual, lang)} — {poblacion_sel_cand} ({provincia_sel_cand})")
                 cursos_encontrados_cand = obtener_cursos_candidato(cand_sector_actual, cand_subsector_actual, provincia_sel_cand, poblacion_sel_cand)
                 if not cursos_encontrados_cand:
                     st.info(T["sin_cursos_ubicacion"])
@@ -3335,7 +3359,7 @@ if st.session_state.get("acceso_panel"):
                 st.session_state[cand_ubic_key] = None
                 st.rerun()
 
-        if st.button("← Volver a Documentación", key="volver_desde_candidatos", use_container_width=False):
+        if st.button(T["volver_documentacion"], key="volver_desde_candidatos", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
@@ -3389,7 +3413,7 @@ elif opcion == "docs":
                                 border:1px dashed rgba(214,181,99,0.45);"></div>
                     <div style="text-align:center;">
                         <div style="font-size:34px; font-weight:700; color:var(--mz-brass-light);">M0</div>
-                        <div style="font-size:10px; color:#8B93A0; letter-spacing:1.4px; margin-top:5px;">SELLO&nbsp;DE&nbsp;NIVEL</div>
+                        <div style="font-size:10px; color:#8B93A0; letter-spacing:1.4px; margin-top:5px;">{T["sello_nivel_corto"]}</div>
                     </div>
                 </div>
             </div>
@@ -3398,15 +3422,15 @@ elif opcion == "docs":
                     display:flex; border-top:1px solid #2A3340; padding:22px 48px;">
             <div style="flex:1; border-right:1px solid #2A3340;">
                 <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">{len(SECTORES_ASOCIADOS)}</div>
-                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Sectores industriales cubiertos</div>
+                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">{T["sectores_industriales_cubiertos"]}</div>
             </div>
             <div style="flex:1; border-right:1px solid #2A3340; padding-left:28px;">
                 <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">3</div>
-                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Formas de acceso: asociados, colaboradores, candidatos</div>
+                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">{T["formas_acceso"]}</div>
             </div>
             <div style="flex:1; padding-left:28px;">
                 <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">M0</div>
-                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Un sello, un nivel mínimo exigido</div>
+                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">{T["un_sello_nivel_minimo"]}</div>
             </div>
         </div>
         """,
@@ -3442,9 +3466,9 @@ elif opcion == "docs":
     )
 
     tarjetas_acceso = [
-        ("asociado", "🏭", T["acceso_asociados"], "Perfiles ya validados, filtrando por sector y subsector.", "card_asociado"),
-        ("colaborador", "🎓", T["acceso_colaboradores"], "Da de alta tus cursos y forma parte de la red del sello M0.", "card_colaborador"),
-        ("candidato", "👷", T["acceso_candidatos"], "Fórmate, consigue el sello M0 y solicita participar en cursos.", "card_candidato"),
+        ("asociado", "🏭", T["acceso_asociados"], T["tarjeta_desc_asociado"], "card_asociado"),
+        ("colaborador", "🎓", T["acceso_colaboradores"], T["tarjeta_desc_colaborador"], "card_colaborador"),
+        ("candidato", "👷", T["acceso_candidatos"], T["tarjeta_desc_candidato"], "card_candidato"),
     ]
     cols_acceso = st.columns(3)
     for col, (tipo_acc, icono_acc, titulo_acc, desc_acc, key_acc) in zip(cols_acceso, tarjetas_acceso):
@@ -3462,7 +3486,7 @@ elif opcion == "docs":
                     unsafe_allow_html=True,
                 )
                 st.button(
-                    f"Acceder",
+                    T["btn_acceder_tarjeta"],
                     key=f"btn_{key_acc}",
                     on_click=_abrir_acceso_directo,
                     args=(tipo_acc,),
