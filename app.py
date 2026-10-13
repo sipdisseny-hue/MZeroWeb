@@ -1511,21 +1511,51 @@ def generar_pdf_resumen(lista_alumnos, lang="es"):
 # ttl segundos (aquí 3600 = 1 hora); los siguientes clics usan el valor en caché
 # y son instantáneos. Ajusta el ttl a tu gusto (ver conversación: 60=1min,
 # 1800=30min, 3600=1h, 86400=1día, o quita el ttl para que no caduque nunca).
-@st.cache_data(ttl=3600)
-def cargar_rubrica():
+@st.cache_data(ttl=300)
+def cargar_rubrica(idioma="es"):
+    """Rúbricas de evaluación, leídas de la tabla 'rubrica_evaluacion' de
+    Supabase. La clave de cada criterio es siempre el nombre en castellano
+    (el que usa internamente la app); el texto devuelto es el del idioma
+    pedido, con respaldo en castellano si la versión catalana está vacía.
+
+    Transitorio: si Supabase aún no tiene contenido, se usa el antiguo script
+    de Google (solo castellano) para que la app no se quede sin rúbricas.
+    Cuando la tabla esté rellena, ese respaldo ya no se usa nunca."""
     descripciones_rubrica = {}
-    try:
-        url_apps_script = "https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec"
-        resp_rubrica = requests.get(url_apps_script, timeout=10)
-        if resp_rubrica.status_code == 200:
-            data_json = resp_rubrica.json()
-            for item in data_json:
-                descripciones_rubrica[item["criterio"].strip()] = {
-                    "que_se_mide": item["que_se_mide"],
-                    "nivel_rubrica": item["nivel_rubrica"]
-                }
-    except Exception:
-        pass
+
+    if SUPABASE_DISPONIBLE:
+        try:
+            filas = obtener_cliente_supabase().table("rubrica_evaluacion").select("*").execute().data
+            for f in filas:
+                crit = (f.get("criterio") or "").strip()
+                if not crit:
+                    continue
+                que_es = (f.get("que_se_mide") or "").strip()
+                niv_es = (f.get("nivel_rubrica") or "").strip()
+                que_ca = (f.get("que_se_mide_ca") or "").strip()
+                niv_ca = (f.get("nivel_rubrica_ca") or "").strip()
+                if idioma == "ca":
+                    que, niv = (que_ca or que_es), (niv_ca or niv_es)
+                else:
+                    que, niv = que_es, niv_es
+                if que or niv:
+                    descripciones_rubrica[crit] = {"que_se_mide": que, "nivel_rubrica": niv}
+        except Exception:
+            pass
+
+    if not descripciones_rubrica:
+        try:
+            url_apps_script = "https://script.google.com/macros/s/AKfycbxdVRFxWRPb_F5y7yL9SvlA3OAPseJ0bG-pn7jAk9PYVZ8sXqNcVLlvBFVmun48mD1R7g/exec"
+            resp_rubrica = requests.get(url_apps_script, timeout=10)
+            if resp_rubrica.status_code == 200:
+                data_json = resp_rubrica.json()
+                for item in data_json:
+                    descripciones_rubrica[item["criterio"].strip()] = {
+                        "que_se_mide": item["que_se_mide"],
+                        "nivel_rubrica": item["nivel_rubrica"]
+                    }
+        except Exception:
+            pass
     return descripciones_rubrica
 
 def refrescar_app():
@@ -3887,7 +3917,7 @@ elif opcion == "eval":
                 # --- NUEVO: traducción SOLO VISUAL de las cabeceras de la tabla resumen ---
                 traduccion_columnas_ca = TRADUCCION_EVAL_CA
 
-                descripciones_rubrica = cargar_rubrica()
+                descripciones_rubrica = cargar_rubrica(lang)
 
                 st.subheader(T["subt_puntuacion"])
 
@@ -3927,11 +3957,11 @@ elif opcion == "eval":
                             with st.container(border=True):
                                 col_t, col_b = st.columns([0.82, 0.18])
                                 with col_t:
-                                    st.markdown(f"**{crit}**")
+                                    st.markdown(f"**{TRADUCCION_EVAL_CA.get(crit, crit) if lang == 'ca' else crit}**")
                                 with col_b:
                                     info_crit = descripciones_rubrica.get(crit, {
-                                        "que_se_mide": "Información detallada en desarrollo.",
-                                        "nivel_rubrica": "Pendiente de definir rúbrica."
+                                        "que_se_mide": "Informació detallada en desenvolupament." if lang == "ca" else "Información detallada en desarrollo.",
+                                        "nivel_rubrica": "Pendent de definir la rúbrica." if lang == "ca" else "Pendiente de definir rúbrica."
                                     })
                                     with st.popover("ℹ️", help="Ver rúbrica"):
                                         st.markdown(
