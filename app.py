@@ -822,6 +822,85 @@ SECTORES_INDUSTRIALES = [
     },
 ]
 
+# Traducción visual de sectores y subsectores al catalán.
+# Se conservan los textos originales en castellano como valores internos para
+# no modificar los datos guardados en Supabase ni los filtros existentes.
+TRADUCCIONES_SECTORES_CA = {
+    "1. Metalurgia y fabricación mecánica": "1. Metal·lúrgia i fabricació mecànica",
+    "2. Electricidad y electrónica": "2. Electricitat i electrònica",
+    "3. Automatización y robótica": "3. Automatització i robòtica",
+    "4. Energía": "4. Energia",
+    "5. Climatización e instalaciones": "5. Climatització i instal·lacions",
+    "6. Plásticos y caucho": "6. Plàstics i cautxú",
+    "7. Madera y mobiliario": "7. Fusta i mobiliari",
+    "8. Construcción y materiales": "8. Construcció i materials",
+    "9. Agua, residuos y medio ambiente": "9. Aigua, residus i medi ambient",
+    "10. Mantenimiento industrial": "10. Manteniment industrial",
+    "Siderurgia": "Siderúrgia",
+    "Fundición": "Fosa",
+    "Forja": "Forja",
+    "Mecanizado": "Mecanització",
+    "Soldadura": "Soldadura",
+    "Estructuras metálicas": "Estructures metàl·liques",
+    "Fabricación de maquinaria": "Fabricació de maquinària",
+    "Instalaciones eléctricas": "Instal·lacions elèctriques",
+    "Electrónica": "Electrònica",
+    "Cuadros eléctricos": "Quadres elèctrics",
+    "Equipos eléctricos": "Equips elèctrics",
+    "Telecomunicaciones": "Telecomunicacions",
+    "Automatización industrial": "Automatització industrial",
+    "PLC": "PLC",
+    "Robótica": "Robòtica",
+    "Control industrial": "Control industrial",
+    "Industria 4.0": "Indústria 4.0",
+    "Generación eléctrica": "Generació elèctrica",
+    "Distribución eléctrica": "Distribució elèctrica",
+    "Energías renovables": "Energies renovables",
+    "Solar": "Solar",
+    "Eólica": "Eòlica",
+    "Biomasa": "Biomassa",
+    "Petróleo y gas": "Petroli i gas",
+    "Fontanería": "Lampisteria",
+    "Calefacción": "Calefacció",
+    "Climatización": "Climatització",
+    "Refrigeración": "Refrigeració",
+    "Instalaciones térmicas": "Instal·lacions tèrmiques",
+    "Eficiencia energética": "Eficiència energètica",
+    "Transformación de plásticos": "Transformació de plàstics",
+    "Inyección": "Injecció",
+    "Extrusión": "Extrusió",
+    "Caucho": "Cautxú",
+    "Composites": "Materials compostos",
+    "Madera": "Fusta",
+    "Carpintería industrial": "Fusteria industrial",
+    "Muebles": "Mobles",
+    "Tablero": "Tauler",
+    "Corcho": "Suro",
+    "Construcción": "Construcció",
+    "Cemento": "Ciment",
+    "Hormigón": "Formigó",
+    "Cerámica": "Ceràmica",
+    "Vidrio": "Vidre",
+    "Piedra": "Pedra",
+    "Materiales de construcción": "Materials de construcció",
+    "Tratamiento de aguas": "Tractament d'aigües",
+    "Depuración": "Depuració",
+    "Gestión de residuos": "Gestió de residus",
+    "Reciclaje": "Reciclatge",
+    "Recuperación de materiales": "Recuperació de materials",
+    "Mantenimiento mecánico": "Manteniment mecànic",
+    "Mantenimiento eléctrico": "Manteniment elèctric",
+    "Mantenimiento electromecánico": "Manteniment electromecànic",
+    "Mantenimiento preventivo": "Manteniment preventiu",
+    "Mantenimiento predictivo": "Manteniment predictiu",
+}
+
+def traducir_sector_subsector(texto, idioma):
+    """Traduce solo la etiqueta visible, manteniendo el valor original."""
+    if idioma == "ca":
+        return TRADUCCIONES_SECTORES_CA.get(texto, texto)
+    return texto
+
 # --- SECTORES/CATEGORÍAS DEL DIRECTORIO DE ASOCIADOS ---
 # Mismo listado que se usa para pintar las pestañas del directorio público
 # (ver titulos_asociados en la parte 2) y para el desplegable de sector que
@@ -2342,9 +2421,17 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
 
             c5, c6 = st.columns(2)
             nombres_sectores_curso = [d["sector"] for d in SECTORES_INDUSTRIALES]
-            sector_curso = c5.selectbox(T["campo_sector_curso"], nombres_sectores_curso, key=f"{key_prefix}_nuevo_sector_{cv}")
+            sector_curso = c5.selectbox(
+                T["campo_sector_curso"], nombres_sectores_curso,
+                key=f"{key_prefix}_nuevo_sector_{cv}",
+                format_func=lambda texto: traducir_sector_subsector(texto, lang)
+            )
             subsectores_curso_opts = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_curso)
-            subsector_curso = c6.selectbox(T["campo_subsector_curso"], subsectores_curso_opts, key=f"{key_prefix}_nuevo_subsector_{cv}")
+            subsector_curso = c6.selectbox(
+                T["campo_subsector_curso"], subsectores_curso_opts,
+                key=f"{key_prefix}_nuevo_subsector_{cv}",
+                format_func=lambda texto: traducir_sector_subsector(texto, lang)
+            )
 
             sello_m0_curso = st.checkbox(T["campo_sello_m0"], value=True, key=f"{key_prefix}_nuevo_sellom0_{cv}")
             st.caption(T["ayuda_sello_m0"])
@@ -2560,14 +2647,16 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                     ce1, ce2 = st.columns(2)
                     sector_edit = ce1.selectbox(
                         T["campo_sector_curso"], nombres_sectores_edit, index=idx_sector,
-                        key=f"{key_prefix}_edit_sector_{codigo_e}"
+                        key=f"{key_prefix}_edit_sector_{codigo_e}",
+                        format_func=lambda texto: traducir_sector_subsector(texto, lang)
                     )
                     subsectores_edit_opts = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_edit)
                     subsector_actual_e = curso_e.get("subsector")
                     idx_subsector = subsectores_edit_opts.index(subsector_actual_e) if subsector_actual_e in subsectores_edit_opts else 0
                     subsector_edit = ce2.selectbox(
                         T["campo_subsector_curso"], subsectores_edit_opts, index=idx_subsector,
-                        key=f"{key_prefix}_edit_subsector_{codigo_e}"
+                        key=f"{key_prefix}_edit_subsector_{codigo_e}",
+                        format_func=lambda texto: traducir_sector_subsector(texto, lang)
                     )
                     sello_m0_edit = st.checkbox(
                         T["campo_sello_m0"], value=curso_e.get("sello_m0", True),
@@ -2925,19 +3014,19 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
                     cols_sectores = st.columns(3)
                     for col, datos_sector in zip(cols_sectores, fila_sectores):
                         with col:
-                            if st.button(datos_sector["sector"], key=f"{key_prefix}_sector_btn_{datos_sector['sector']}", use_container_width=True):
+                            if st.button(traducir_sector_subsector(datos_sector["sector"], lang), key=f"{key_prefix}_sector_btn_{datos_sector['sector']}", use_container_width=True):
                                 st.session_state[sector_key] = datos_sector["sector"]
                                 st.rerun()
 
             elif not subsector_actual:
-                st.markdown(f"**{sector_actual}**")
+                st.markdown(f"**{traducir_sector_subsector(sector_actual, lang)}**")
                 subsectores_sector = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_actual)
                 for i in range(0, len(subsectores_sector), 3):
                     fila_subsectores = subsectores_sector[i:i + 3]
                     cols_subsectores = st.columns(3)
                     for col, sub in zip(cols_subsectores, fila_subsectores):
                         with col:
-                            if st.button(sub, key=f"{key_prefix}_subsector_btn_{sub}", use_container_width=True):
+                            if st.button(traducir_sector_subsector(sub, lang), key=f"{key_prefix}_subsector_btn_{sub}", use_container_width=True):
                                 st.session_state[subsector_key] = sub
                                 st.rerun()
                 if st.button(T["cambiar_sector"], key=f"{key_prefix}_cambiar_sector_btn"):
@@ -2946,7 +3035,7 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
 
             else:
                 with st.container(border=True):
-                    st.markdown(f"**{sector_actual}** — {T['subsector_seleccionado']} {subsector_actual}")
+                    st.markdown(f"**{traducir_sector_subsector(sector_actual, lang)}** — {T['subsector_seleccionado']} {traducir_sector_subsector(subsector_actual, lang)}")
                     nivel_candidato = st.text_input(T["campo_nivel_candidato"], key=f"{key_prefix}_nivel_{perfil_version}")
                     trabajos_candidato = st.text_area(T["campo_trabajos_candidato"], key=f"{key_prefix}_trabajos_{perfil_version}")
 
@@ -3148,19 +3237,19 @@ if st.session_state.get("acceso_panel"):
                     cols_sectores_cand = st.columns(3)
                     for col, datos_sector in zip(cols_sectores_cand, fila_sectores_cand):
                         with col:
-                            if st.button(datos_sector["sector"], key=f"cand_sector_btn_{datos_sector['sector']}", use_container_width=True):
+                            if st.button(traducir_sector_subsector(datos_sector["sector"], lang), key=f"cand_sector_btn_{datos_sector['sector']}", use_container_width=True):
                                 st.session_state[cand_sector_key] = datos_sector["sector"]
                                 st.rerun()
 
             elif not cand_subsector_actual:
-                st.markdown(f"**{cand_sector_actual}**")
+                st.markdown(f"**{traducir_sector_subsector(cand_sector_actual, lang)}**")
                 subsectores_cand = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == cand_sector_actual)
                 for i in range(0, len(subsectores_cand), 3):
                     fila_subsectores_cand = subsectores_cand[i:i + 3]
                     cols_subsectores_cand = st.columns(3)
                     for col, sub in zip(cols_subsectores_cand, fila_subsectores_cand):
                         with col:
-                            if st.button(sub, key=f"cand_subsector_btn_{sub}", use_container_width=True):
+                            if st.button(traducir_sector_subsector(sub, lang), key=f"cand_subsector_btn_{sub}", use_container_width=True):
                                 st.session_state[cand_subsector_key] = sub
                                 st.rerun()
                 if st.button(T["cambiar_sector"], key="cand_cambiar_sector_btn"):
@@ -3168,7 +3257,7 @@ if st.session_state.get("acceso_panel"):
                     st.rerun()
 
             elif not cand_ubicacion_actual:
-                st.markdown(f"**{cand_sector_actual}** — {cand_subsector_actual}")
+                st.markdown(f"**{traducir_sector_subsector(cand_sector_actual, lang)}** — {traducir_sector_subsector(cand_subsector_actual, lang)}")
                 ubicaciones_cand = obtener_ubicaciones_cursos_sector(cand_sector_actual, cand_subsector_actual)
                 if not ubicaciones_cand:
                     st.info(T["sin_cursos_ubicacion"])
