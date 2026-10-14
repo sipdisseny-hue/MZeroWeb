@@ -371,6 +371,29 @@ TEXTOS = {
         "guardar_sello_m0": "Guardar",
         "editar_sector_cursos": "Sector / subsector de mis cursos",
         "sin_cursos_para_editar": "Todavía no tienes cursos en el catálogo.",
+        "directorio_sin_datos": "Todavía no hay datos cargados para esta categoría.",
+        "directorio_sin_provincias": "No hay provincias registradas todavía para esta categoría.",
+        "directorio_sin_poblaciones": "No hay poblaciones registradas para esta provincia.",
+        "directorio_sin_empresas": "No hay empresas registradas en esta población.",
+        "directorio_provincia": "Provincia",
+        "directorio_poblacion": "Población",
+        "directorio_visitar_web": "Visitar web",
+        "directorio_sin_nombre": "(Sin nombre)",
+        "curso_sin_sello_aviso": "Curso informativo/publicitario sin evaluación ni certificación M0.",
+        "aviso_sin_cursos_evaluables": "No tienes cursos con Sello M0 disponibles para evaluar. Los cursos sin sello solo se muestran en el catálogo como información/publicidad.",
+        "aviso_solo_cursos_m0_evaluables": "Importante: solo se pueden evaluar los cursos que tengan el Sello M0. Los cursos sin este sello son únicamente informativos/publicitarios y no permiten realizar evaluaciones ni obtener la certificación M0.",
+        "grupo": "Grupo",
+        "estado_cerrado_curso": "Cerrado",
+        "estado_activo_curso": "Activo",
+        "selecciona_curso_valido": "Selecciona un curso válido",
+        "ver_rubrica": "Ver rúbrica",
+        "aviso_puntuaciones_evaluacion": "Debes seleccionar una puntuación del 1 al 5 en los 13 criterios antes de guardar.",
+        "aviso_selecciona_alumno": "Debes seleccionar un alumno antes de guardar.",
+        "aviso_faltan_evaluaciones": "No se puede cerrar el curso todavía. Faltan por evaluar: {alumnos}",
+        "documento_convertido": "Documento convertido. Revisa el texto de abajo y pulsa Guardar.",
+        "guardado_google_local": "Guardado en Google y localmente",
+        "guardado_solo_local": "Guardado solo localmente (Error en Sheets)",
+        "aviso_instalar_supabase": "Añade 'supabase' a requirements.txt para poder acceder a Evaluaciones.",
         "guardar_sector_curso": "Guardar sector/subsector",
         "sector_curso_actualizado": "Sector y subsector actualizados correctamente.",
         "campo_nombre_candidato": "Nombre",
@@ -650,6 +673,29 @@ TEXTOS = {
         "guardar_sello_m0": "Desar",
         "editar_sector_cursos": "Sector / subsector dels meus cursos",
         "sin_cursos_para_editar": "Encara no tens cursos al catàleg.",
+        "directorio_sin_datos": "Encara no hi ha dades carregades per a aquesta categoria.",
+        "directorio_sin_provincias": "Encara no hi ha províncies registrades per a aquesta categoria.",
+        "directorio_sin_poblaciones": "No hi ha poblacions registrades per a aquesta província.",
+        "directorio_sin_empresas": "No hi ha empreses registrades en aquesta població.",
+        "directorio_provincia": "Província",
+        "directorio_poblacion": "Població",
+        "directorio_visitar_web": "Visitar el web",
+        "directorio_sin_nombre": "(Sense nom)",
+        "curso_sin_sello_aviso": "Curs informatiu/publicitari sense avaluació ni certificació M0.",
+        "aviso_sin_cursos_evaluables": "No tens cursos amb el Segell M0 disponibles per avaluar. Els cursos sense segell només es mostren al catàleg com a informació/publicitat.",
+        "aviso_solo_cursos_m0_evaluables": "Important: només es poden avaluar els cursos que tinguin el Segell M0. Els cursos sense aquest segell són únicament informatius/publicitaris i no permeten fer avaluacions ni obtenir la certificació M0.",
+        "grupo": "Grup",
+        "estado_cerrado_curso": "Tancat",
+        "estado_activo_curso": "Actiu",
+        "selecciona_curso_valido": "Selecciona un curs vàlid",
+        "ver_rubrica": "Veure la rúbrica",
+        "aviso_puntuaciones_evaluacion": "Has de seleccionar una puntuació de l'1 al 5 en els 13 criteris abans de desar.",
+        "aviso_selecciona_alumno": "Has de seleccionar un alumne abans de desar.",
+        "aviso_faltan_evaluaciones": "Encara no es pot tancar el curs. Falta avaluar: {alumnos}",
+        "documento_convertido": "Document convertit. Revisa el text de sota i prem Desa.",
+        "guardado_google_local": "Desat a Google i localment",
+        "guardado_solo_local": "Desat només localment (error a Sheets)",
+        "aviso_instalar_supabase": "Afegeix 'supabase' a requirements.txt per poder accedir a Avaluacions.",
         "guardar_sector_curso": "Desar sector/subsector",
         "sector_curso_actualizado": "Sector i subsector actualitzats correctament.",
         "campo_nombre_candidato": "Nom",
@@ -992,6 +1038,44 @@ TRADUCCION_CATEGORIAS_CA = {
     "Gremios": "Gremis",
     "Asociaciones": "Associacions"
 }
+
+# Traducció visual de noms de província; els valors originals es conserven
+# per mantenir els filtres i les dades de Google Sheets/Supabase.
+TRADUCCION_PROVINCIAS_CA = {
+    "Lérida": "Lleida", "Lleida": "Lleida",
+    "Gerona": "Girona", "Girona": "Girona",
+    "Castellón": "Castelló", "Castelló": "Castelló",
+    "Valencia": "València", "València": "València",
+    "Alicante": "Alacant", "Alacant": "Alacant",
+    "La Coruña": "A Coruña", "A Coruña": "A Coruña",
+    "Orense": "Ourense", "Ourense": "Ourense",
+    "Islas Baleares": "Illes Balears", "Illes Balears": "Illes Balears",
+    "Álava": "Àlaba", "Araba": "Araba",
+    "Vizcaya": "Biscaia", "Bizkaia": "Bizkaia",
+    "Guipúzcoa": "Guipúscoa", "Gipuzkoa": "Gipuzkoa"
+}
+
+def traducir_provincia(texto, idioma):
+    if idioma == "ca":
+        return TRADUCCION_PROVINCIAS_CA.get(str(texto).strip(), texto)
+    return texto
+
+
+def curso_tiene_sello_m0(curso):
+    """Determina si un curso puede evaluarse con la metodología M0.
+
+    Los registros antiguos sin el campo sello_m0 se consideran M0 para mantener
+    la compatibilidad. Los valores explícitamente falsos (incluidos valores de
+    texto que pueden proceder de importaciones) no se pueden evaluar.
+    """
+    valor = curso.get("sello_m0", True) if isinstance(curso, dict) else True
+    if valor is False or valor is None:
+        return False
+    if isinstance(valor, (int, float)) and valor == 0:
+        return False
+    if isinstance(valor, str) and valor.strip().lower() in {"false", "0", "no", "n", "f"}:
+        return False
+    return True
 
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=120)
@@ -2406,10 +2490,9 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         st.info(T["campo_migracion_cursos"])
         return
 
-    tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])
+    tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])# ---------------------------------------------------------------
 
-# ---------------------------------------------------------------
-    # CREAR NUEVA EDICIÓN
+ # CREAR NUEVA EDICIÓN
     # ---------------------------------------------------------------
     with tab_crear:
         st.markdown(f"### {T['selecciona_curso']}")
@@ -3298,15 +3381,16 @@ if st.session_state.get("acceso_panel"):
 
             else:
                 provincia_sel_cand, poblacion_sel_cand = cand_ubicacion_actual
-                st.markdown(f"**{traducir_sector_subsector(cand_sector_actual, lang)}** — {traducir_sector_subsector(cand_subsector_actual, lang)} — {poblacion_sel_cand} ({provincia_sel_cand})")
+                st.markdown(f"**{traducir_sector_subsector(cand_sector_actual, lang)}** — {traducir_sector_subsector(cand_subsector_actual, lang)} — {poblacion_sel_cand} ({traducir_provincia(provincia_sel_cand, lang)})")
                 cursos_encontrados_cand = obtener_cursos_candidato(cand_sector_actual, cand_subsector_actual, provincia_sel_cand, poblacion_sel_cand)
                 if not cursos_encontrados_cand:
                     st.info(T["sin_cursos_ubicacion"])
                 else:
                     for curso_cand in cursos_encontrados_cand:
+                        tiene_sello_m0 = curso_tiene_sello_m0(curso_cand)
                         with st.container(border=True):
                             st.markdown(f"**{curso_cand['nombre_curso']}**")
-                            if curso_cand.get("sello_m0", True):
+                            if tiene_sello_m0:
                                 st.markdown(
                                     f"<span style='background:var(--mz-brass); color:var(--mz-graphite); "
                                     f"font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px;'>"
@@ -3320,6 +3404,7 @@ if st.session_state.get("acceso_panel"):
                                     f"border:1px solid #D9DAD6;'>{T['sin_sello_m0_badge']}</span>",
                                     unsafe_allow_html=True,
                                 )
+                                st.caption(T["curso_sin_sello_aviso"])
                             st.caption(f"{T['campo_nombre_centro']}: {curso_cand['nombre_centro']}")
                             estado_txt_cand = T["curso_estado_cursado"] if curso_cand["estado"] == "cursado" else T["curso_estado_en_curso"]
                             st.write(f"**{T['estado']}** {estado_txt_cand}")
@@ -3330,7 +3415,7 @@ if st.session_state.get("acceso_panel"):
                             if curso_cand.get("modulos"):
                                 st.write(f"**{T['modulos_curso']}:**")
                                 for m in curso_cand["modulos"]:
-                                    desc_m = m.get("descripcion_es") or ""
+                                    desc_m = (m.get("descripcion_ca") if lang == "ca" else m.get("descripcion_es")) or m.get("descripcion_es") or ""
                                     niv_m = m.get("nivel_bloque") or ""
                                     st.write(f"- {desc_m}" + (f" ({niv_m})" if niv_m else ""))
 
@@ -3546,27 +3631,34 @@ elif opcion == "docs":
             """Desplegable en cascada Provincia -> Población -> Empresa,
             ya filtrado de antemano por la categoría que lo llama."""
             if not datos_categoria:
-                st.info("Todavía no hay datos cargados para esta categoría.")
+                st.info(T["directorio_sin_datos"])
                 return
 
             provincias = sorted({
                 d.get("provincia", "").strip() for d in datos_categoria if d.get("provincia", "").strip()
             })
             if not provincias:
-                st.info("No hay provincias registradas todavía para esta categoría.")
+                st.info(T["directorio_sin_provincias"])
                 return
 
-            provincia_sel = st.selectbox("Provincia", provincias, key=f"{key_prefix}_prov")
+            provincia_sel = st.selectbox(T["directorio_provincia"], provincias, key=f"{key_prefix}_prov", format_func=lambda texto: traducir_provincia(texto, lang))
 
             poblaciones = sorted({
                 d.get("poblacion", "").strip() for d in datos_categoria
                 if d.get("provincia", "").strip() == provincia_sel and d.get("poblacion", "").strip()
             })
             if not poblaciones:
-                st.info("No hay poblaciones registradas para esta provincia.")
+                st.info(T["directorio_sin_poblaciones"])
                 return
 
-            poblacion_sel = st.selectbox("Población", poblaciones, key=f"{key_prefix}_pob")
+            poblacion_sel = st.selectbox(
+                T["directorio_poblacion"],
+                poblaciones,
+                key=f"{key_prefix}_pob",
+                # La población se conserva en su forma original para que el
+                # filtro coincida con Google Sheets/Supabase. El rótulo sí se
+                # traduce mediante T["directorio_poblacion"].
+            )
 
             empresas = [
                 d for d in datos_categoria
@@ -3574,7 +3666,7 @@ elif opcion == "docs":
                 and d.get("poblacion", "").strip() == poblacion_sel
             ]
             if not empresas:
-                st.info("No hay empresas registradas en esta población.")
+                st.info(T["directorio_sin_empresas"])
                 return
 
             st.markdown("""
@@ -3587,7 +3679,7 @@ elif opcion == "docs":
             """, unsafe_allow_html=True)
 
             for emp in empresas:
-                nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
+                nombre = emp.get("empresa", "").strip() or T["directorio_sin_nombre"]
                 with st.expander(nombre):
                     logo_url = emp.get("logo", "").strip()
                     if logo_url:
@@ -3605,7 +3697,7 @@ elif opcion == "docs":
                         st.markdown(descripcion, unsafe_allow_html=True)
                     enlace = emp.get("enlace", "").strip()
                     if enlace:
-                        st.markdown(f"🔗 [Visitar web]({enlace})")
+                        st.markdown(f"🔗 [{T['directorio_visitar_web']}]({enlace})")
 
         def mostrar_bloque_categorias(datos, titulos_por_columna, key_prefix):
             """Pinta los títulos de categoría en columnas (como antes) y,
@@ -3783,7 +3875,7 @@ elif opcion == "docs":
                             html_convertido = mammoth.convert_to_html(docx_subido).value
                         st.session_state[f"input_{titulo}"] = html_convertido
                         st.session_state[docx_version_key] = version_docx + 1
-                        st.success("Documento convertido. Revisa el texto de abajo y pulsa Guardar.")
+                        st.success(T["documento_convertido"])
                         st.rerun()
                     except Exception as e:
                         st.error(f"No se pudo leer el documento: {e}")
@@ -3794,9 +3886,9 @@ elif opcion == "docs":
                     st.session_state.contenido_funcionalidad[titulo] = temp_text
                 
                     if guardar_en_sheets(titulo, temp_text):
-                        st.success("Guardado en Google y localmente")
+                        st.success(T["guardado_google_local"])
                     else:
-                        st.warning("Guardado solo localmente (Error en Sheets)")
+                        st.warning(T["guardado_solo_local"])
                 
                     st.rerun()
 
@@ -3846,6 +3938,9 @@ elif opcion == "docs":
 elif opcion == "eval":
     mostrar_pestanas_principales(opcion)
 
+    # Aviso visible para docentes y usuarios antes de iniciar sesión.
+    st.info(T["aviso_solo_cursos_m0_evaluables"])
+
     if 'envio_resultado' in st.session_state:
         tipo_msg, texto_msg = st.session_state.pop('envio_resultado')
         if tipo_msg == "success":
@@ -3854,7 +3949,7 @@ elif opcion == "eval":
             st.error(texto_msg)
 
     if not SUPABASE_DISPONIBLE:
-        st.warning("Añade 'supabase' a requirements.txt para poder acceder a Evaluaciones.")
+        st.warning(T["aviso_instalar_supabase"])
     else:
         cliente_sb = obtener_cliente_supabase()
 
@@ -3897,6 +3992,9 @@ elif opcion == "eval":
                 st.rerun()
 
             # --- Cursos asignados a este docente (vía curso_docente) ---
+            codigos_permitidos = []
+            cursos_asignados_docente = []
+            cursos_permitidos = []
             try:
                 filas_curso_docente = (
                     cliente_sb.table("curso_docente").select("codigo_curso")
@@ -3905,12 +4003,19 @@ elif opcion == "eval":
                 codigos_permitidos = [f["codigo_curso"] for f in filas_curso_docente]
                 cursos_permitidos = []
                 if codigos_permitidos:
-                    cursos_permitidos = (
+                    cursos_asignados_docente = (
                         cliente_sb.table("cursos").select("*")
                         .in_("codigo_curso", codigos_permitidos)
                         .eq("estado", "activo")
                         .execute().data
                     )
+                    # Solo los cursos con Sello M0 pueden entrar en el módulo
+                    # de evaluación. Los cursos sin sello siguen en el catálogo,
+                    # pero no se ofrecen como evaluables al docente.
+                    cursos_permitidos = [
+                        curso for curso in cursos_asignados_docente
+                        if curso_tiene_sello_m0(curso)
+                    ]
             except Exception as e:
                 st.error(f"Error al cargar tus cursos: {e}")
                 cursos_permitidos = []
@@ -3926,7 +4031,10 @@ elif opcion == "eval":
             alumnos_edicion = []
 
             if not cursos_permitidos:
-                st.info(T["aviso_sin_cursos_docente"])
+                if codigos_permitidos and 'cursos_asignados_docente' in locals() and cursos_asignados_docente:
+                    st.info(T["aviso_sin_cursos_evaluables"])
+                else:
+                    st.info(T["aviso_sin_cursos_docente"])
             else:
                 c2, c3 = st.columns(2)
 
@@ -3962,13 +4070,13 @@ elif opcion == "eval":
 
                         for indice_ed, ed in enumerate(ediciones_docente, start=1):
                             estado_ed = str(ed.get("estado", "pendiente")).strip().lower()
-                            estado_visible = "Cerrado" if estado_ed == "cerrado" else "Activo"
-                            etiqueta = f"Grupo {indice_ed:02d} · {estado_visible}"
+                            estado_visible = T["estado_cerrado_curso"] if estado_ed == "cerrado" else T["estado_activo_curso"]
+                            etiqueta = f"{T['grupo']} {indice_ed:02d} · {estado_visible}"
                             opciones_ed.append(etiqueta)
                             mapa_ediciones[etiqueta] = ed
 
                         edicion_display = ed1.selectbox(
-                            "Grupo",
+                            T["grupo"],
                             opciones_ed,
                             key=f"f_ed_{st.session_state.reset_todo}"
                         )
@@ -3998,7 +4106,7 @@ elif opcion == "eval":
                     modulos_filtrados = []
 
                 campo_descripcion_modulo = "descripcion_ca" if lang == "ca" else "descripcion_es"
-                opciones_modulos_display = [f"{m['subcodigo']} - {m.get(campo_descripcion_modulo) or m.get('descripcion_es') or ''}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
+                opciones_modulos_display = [f"{m['subcodigo']} - {m.get(campo_descripcion_modulo) or m.get('descripcion_es') or ''}" for m in modulos_filtrados] if modulos_filtrados else [T["selecciona_curso_valido"]]
                 modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
                 modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
 
@@ -4017,7 +4125,12 @@ elif opcion == "eval":
                 else:
                     alumno = c5.text_input(T["alumno"], key=f"f_alu_{st.session_state.alumno_key}")
 
-            if curso_codigo_actual is not None:
+            curso_seleccionado_datos = next(
+                (c for c in cursos_permitidos if c.get("codigo_curso") == curso_codigo_actual),
+                None,
+            ) if curso_codigo_actual is not None else None
+
+            if curso_codigo_actual is not None and curso_seleccionado_datos and curso_tiene_sello_m0(curso_seleccionado_datos):
                 criterios = [
                     "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
                     "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
@@ -4076,7 +4189,7 @@ elif opcion == "eval":
                                         "que_se_mide": "Informació detallada en desenvolupament." if lang == "ca" else "Información detallada en desarrollo.",
                                         "nivel_rubrica": "Pendent de definir la rúbrica." if lang == "ca" else "Pendiente de definir rúbrica."
                                     })
-                                    with st.popover("ℹ️", help="Ver rúbrica"):
+                                    with st.popover("ℹ️", help=T["ver_rubrica"]):
                                         st.markdown(
                                             f"**{T['que_se_mide']}**\n\n"
                                             f"{info_crit['que_se_mide']}"
@@ -4112,12 +4225,9 @@ elif opcion == "eval":
 
                 if guardar_evaluacion:
                     if nota_final is None:
-                        st.warning(
-                            "Debes seleccionar una puntuación del 1 al 5 "
-                            "en los 13 criterios antes de guardar."
-                        )
+                        st.warning(T["aviso_puntuaciones_evaluacion"])
                     elif not alumno:
-                        st.warning("Debes seleccionar un alumno antes de guardar.")
+                        st.warning(T["aviso_selecciona_alumno"])
                     else:
                         registro = {
                             "Alumno": alumno,
@@ -4178,7 +4288,7 @@ elif opcion == "eval":
                                 alumnos_evaluados = {str(r.get("Alumno", "")).strip() for r in st.session_state.lista_alumnos if r.get("EditionId") == edition_id_actual}
                                 faltan = sorted(alumnos_clase - alumnos_evaluados)
                                 if faltan:
-                                    st.warning("No se puede cerrar el curso todavía. Faltan por evaluar: " + ", ".join(faltan))
+                                    st.warning(T["aviso_faltan_evaluaciones"].format(alumnos=", ".join(faltan)))
                                     st.stop()
 
                             filas_supabase = []
