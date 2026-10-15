@@ -2264,8 +2264,7 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
         if ambito == T["ambito_nacional"]:
             provincia, poblacion = "Nacional", "Toda España"
             st.caption(f"📍 {T['ambito_nacional']}")
-
-   elif ambito == T["ambito_region"]:
+        elif ambito == T["ambito_region"]:
             region_sel = st.selectbox(T["campo_region"], COMUNIDADES_AUTONOMAS, key=f"{key_prefix}_reg_region_{version}")
             provincia, poblacion = region_sel, "Toda la región"
         else:
@@ -4530,4 +4529,4 @@ elif opcion == "eval":
                             st.rerun()
                         except Exception as e:
                             st.session_state.envio_resultado = ("error", f"Error al guardar en la base de datos: {e}")
-                            st.rerun() 
+                            st.rerun()
