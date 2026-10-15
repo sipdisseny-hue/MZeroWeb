@@ -382,6 +382,22 @@ TEXTOS = {
         "curso_sin_sello_aviso": "Curso informativo/publicitario sin evaluación ni certificación M0.",
         "aviso_sin_cursos_evaluables": "No tienes cursos con Sello M0 disponibles para evaluar. Los cursos sin sello solo se muestran en el catálogo como información/publicidad.",
         "aviso_solo_cursos_m0_evaluables": "Importante: solo se pueden evaluar los cursos que tengan el Sello M0. Los cursos sin este sello son únicamente informativos/publicitarios y no permiten realizar evaluaciones ni obtener la certificación M0.",
+        "ficha_pdf_label": "Ficha del curso en PDF (opcional)",
+        "ficha_pdf_help": "Adjunta el PDF del curso. No será visible para los candidatos hasta que el administrador lo revise y apruebe. Máximo 10 MB.",
+        "ficha_pdf_pendiente": "La ficha PDF se ha enviado y queda pendiente de revisión. Los candidatos todavía no pueden verla.",
+        "ficha_pdf_error": "No se pudo guardar la ficha PDF: {error}",
+        "fichas_admin_titulo": "Revisión de fichas PDF de cursos",
+        "fichas_admin_desc": "Las fichas pendientes solo se publicarán después de tu aprobación.",
+        "fichas_sin_pendientes": "No hay fichas PDF pendientes de revisión.",
+        "ficha_ver_pdf": "Abrir PDF para revisar",
+        "ficha_aprobar": "Aprobar y publicar",
+        "ficha_rechazar": "Rechazar ficha",
+        "ficha_aprobada_ok": "Ficha aprobada. Ya puede mostrarse a los candidatos.",
+        "ficha_rechazada_ok": "Ficha rechazada. No será visible para los candidatos.",
+        "ficha_candidatos_pdf": "Ver ficha del curso (PDF)",
+        "ficha_estado_pendiente": "Pendiente de revisión",
+        "ficha_estado_rechazada": "Rechazada",
+        "ficha_estado_aprobada": "Aprobada y publicada",
         "grupo": "Grupo",
         "estado_cerrado_curso": "Cerrado",
         "estado_activo_curso": "Activo",
@@ -684,6 +700,22 @@ TEXTOS = {
         "curso_sin_sello_aviso": "Curs informatiu/publicitari sense avaluació ni certificació M0.",
         "aviso_sin_cursos_evaluables": "No tens cursos amb el Segell M0 disponibles per avaluar. Els cursos sense segell només es mostren al catàleg com a informació/publicitat.",
         "aviso_solo_cursos_m0_evaluables": "Important: només es poden avaluar els cursos que tinguin el Segell M0. Els cursos sense aquest segell són únicament informatius/publicitaris i no permeten fer avaluacions ni obtenir la certificació M0.",
+        "ficha_pdf_label": "Fitxa del curs en PDF (opcional)",
+        "ficha_pdf_help": "Adjunta el PDF del curs. No serà visible per als candidats fins que l'administrador el revisi i l'aprovi. Màxim 10 MB.",
+        "ficha_pdf_pendiente": "La fitxa PDF s'ha enviat i queda pendent de revisió. Els candidats encara no la poden veure.",
+        "ficha_pdf_error": "No s'ha pogut desar la fitxa PDF: {error}",
+        "fichas_admin_titulo": "Revisió de fitxes PDF dels cursos",
+        "fichas_admin_desc": "Les fitxes pendents només es publicaran després de la teva aprovació.",
+        "fichas_sin_pendientes": "No hi ha fitxes PDF pendents de revisió.",
+        "ficha_ver_pdf": "Obrir PDF per revisar",
+        "ficha_aprobar": "Aprovar i publicar",
+        "ficha_rechazar": "Rebutjar fitxa",
+        "ficha_aprobada_ok": "Fitxa aprovada. Ja es pot mostrar als candidats.",
+        "ficha_rechazada_ok": "Fitxa rebutjada. No serà visible per als candidats.",
+        "ficha_candidatos_pdf": "Veure fitxa del curs (PDF)",
+        "ficha_estado_pendiente": "Pendent de revisió",
+        "ficha_estado_rechazada": "Rebutjada",
+        "ficha_estado_aprobada": "Aprovada i publicada",
         "grupo": "Grup",
         "estado_cerrado_curso": "Tancat",
         "estado_activo_curso": "Actiu",
@@ -1528,6 +1560,139 @@ def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
         return []
 
 
+# --- FICHAS PDF DE CURSOS: ALMACENAMIENTO PRIVADO Y MODERACIÓN ---
+BUCKET_FICHAS_CURSOS = "mzero-fichas-cursos"
+TABLA_FICHAS_CURSOS = "mzero_fichas_cursos"
+
+
+def guardar_ficha_pdf_curso(codigo_curso, empresa_id, nombre_empresa, archivo_pdf):
+    """Sube una ficha PDF privada y la registra como pendiente de revisión."""
+    if not SUPABASE_DISPONIBLE:
+        raise RuntimeError("Supabase no está disponible.")
+    if archivo_pdf is None:
+        return None
+    if archivo_pdf.type != "application/pdf" and not archivo_pdf.name.lower().endswith(".pdf"):
+        raise ValueError("El archivo debe ser un PDF.")
+    contenido = archivo_pdf.getvalue()
+    if not contenido.startswith(b"%PDF"):
+        raise ValueError("El archivo seleccionado no parece ser un PDF válido.")
+    if len(contenido) > 10 * 1024 * 1024:
+        raise ValueError("El PDF supera el límite de 10 MB.")
+
+    import uuid
+    from datetime import datetime, timezone
+    codigo_seguro = re.sub(r"[^A-Za-z0-9_-]", "_", str(codigo_curso).strip())[:80] or "curso"
+    ruta = f"{codigo_seguro}/{uuid.uuid4().hex}.pdf"
+    cliente = obtener_cliente_supabase()
+    cliente.storage.from_(BUCKET_FICHAS_CURSOS).upload(
+        ruta,
+        contenido,
+        file_options={"content-type": "application/pdf", "upsert": "false"},
+    )
+    try:
+        cliente.table(TABLA_FICHAS_CURSOS).insert({
+            "codigo_curso": str(codigo_curso).strip(),
+            "empresa_id": empresa_id,
+            "nombre_empresa": str(nombre_empresa or "").strip(),
+            "nombre_archivo": str(archivo_pdf.name or "ficha.pdf")[:255],
+            "ruta_storage": ruta,
+            "estado": "pendiente",
+            "subido_en": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+    except Exception:
+        try:
+            cliente.storage.from_(BUCKET_FICHAS_CURSOS).remove([ruta])
+        except Exception:
+            pass
+        raise
+    return ruta
+
+
+def obtener_url_firmada_ficha(ruta, segundos=3600):
+    """Devuelve una URL temporal para abrir un PDF del bucket privado."""
+    if not ruta or not SUPABASE_DISPONIBLE:
+        return None
+    try:
+        respuesta = obtener_cliente_supabase().storage.from_(BUCKET_FICHAS_CURSOS).create_signed_url(ruta, segundos)
+        datos = getattr(respuesta, "data", None) or respuesta
+        if isinstance(datos, dict):
+            return datos.get("signedURL") or datos.get("signedUrl") or datos.get("signed_url") or datos.get("url")
+    except Exception:
+        return None
+    return None
+
+
+def obtener_ficha_aprobada_curso(codigo_curso):
+    """Solo devuelve fichas aprobadas; pendientes/rechazadas nunca se publican."""
+    if not SUPABASE_DISPONIBLE or not codigo_curso:
+        return None
+    try:
+        filas = (obtener_cliente_supabase().table(TABLA_FICHAS_CURSOS).select("*")
+                 .eq("codigo_curso", str(codigo_curso).strip())
+                 .eq("estado", "aprobada").order("subido_en", desc=True).limit(1).execute().data)
+        return filas[0] if filas else None
+    except Exception:
+        return None
+
+
+def mostrar_revision_fichas_pdf():
+    """Panel privado de revisión para el administrador autenticado."""
+    if not st.session_state.get("autenticado"):
+        return
+    with st.expander(f"📄 {T['fichas_admin_titulo']}", expanded=False):
+        st.caption(T["fichas_admin_desc"])
+        try:
+            pendientes = (obtener_cliente_supabase().table(TABLA_FICHAS_CURSOS).select("*")
+                          .eq("estado", "pendiente").order("subido_en", desc=False).execute().data)
+        except Exception as e:
+            st.error(f"No se pueden cargar las fichas. Comprueba que has ejecutado el SQL de instalación: {e}")
+            return
+        if not pendientes:
+            st.info(T["fichas_sin_pendientes"])
+            return
+        for ficha in pendientes:
+            codigo = ficha.get("codigo_curso", "")
+            nombre_archivo = ficha.get("nombre_archivo") or "ficha.pdf"
+            with st.container(border=True):
+                st.markdown(f"**{codigo}** · {nombre_archivo}")
+                st.caption(f"{ficha.get('nombre_empresa') or 'Colaborador'} · {ficha.get('subido_en') or ''}")
+                url_pdf = obtener_url_firmada_ficha(ficha.get("ruta_storage"))
+                if url_pdf:
+                    st.link_button(T["ficha_ver_pdf"], url_pdf, use_container_width=False)
+                else:
+                    st.warning("No se pudo generar el enlace temporal al PDF. Comprueba el bucket privado y sus permisos.")
+                col_aprobar, col_rechazar = st.columns(2)
+                id_ficha = ficha.get("id")
+                if col_aprobar.button(T["ficha_aprobar"], key=f"ficha_aprobar_{id_ficha}", type="primary"):
+                    try:
+                        from datetime import datetime, timezone
+                        (obtener_cliente_supabase().table(TABLA_FICHAS_CURSOS).update({
+                            "estado": "aprobada", "revisado_por": st.session_state.get("usuario_actual", "admin"),
+                            "revisado_en": datetime.now(timezone.utc).isoformat(), "motivo_rechazo": None,
+                        }).eq("id", id_ficha).execute())
+                        st.success(T["ficha_aprobada_ok"])
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"No se pudo aprobar la ficha: {e}")
+                if col_rechazar.button(T["ficha_rechazar"], key=f"ficha_rechazar_{id_ficha}"):
+                    st.session_state[f"ficha_rechazo_id_{id_ficha}"] = True
+                    st.rerun()
+                if st.session_state.get(f"ficha_rechazo_id_{id_ficha}"):
+                    motivo = st.text_input("Motivo del rechazo (opcional)", key=f"ficha_motivo_{id_ficha}")
+                    if st.button("Confirmar rechazo", key=f"ficha_confirmar_rechazo_{id_ficha}"):
+                        try:
+                            from datetime import datetime, timezone
+                            (obtener_cliente_supabase().table(TABLA_FICHAS_CURSOS).update({
+                                "estado": "rechazada", "revisado_por": st.session_state.get("usuario_actual", "admin"),
+                                "revisado_en": datetime.now(timezone.utc).isoformat(), "motivo_rechazo": motivo.strip() or None,
+                            }).eq("id", id_ficha).execute())
+                            st.session_state[f"ficha_rechazo_id_{id_ficha}"] = False
+                            st.success(T["ficha_rechazada_ok"])
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"No se pudo rechazar la ficha: {e}")
+
+
 # --- NUEVO: EL COLABORADOR PROPONE CURSO+MÓDULO Y DOCENTE ---
 def enviar_curso_modulo_supabase(empresa_id, nombre_empresa, referencia, nombre_curso, nombre_modulo, nivel, horas, competencias, sector=None, subsector=None, sello_m0=True):
     if not SUPABASE_DISPONIBLE:
@@ -2099,7 +2264,8 @@ def bloque_solicitud_alta(tipo, key_prefix, incluir_centro=False, usar_supabase=
         if ambito == T["ambito_nacional"]:
             provincia, poblacion = "Nacional", "Toda España"
             st.caption(f"📍 {T['ambito_nacional']}")
-        elif ambito == T["ambito_region"]:
+
+   elif ambito == T["ambito_region"]:
             region_sel = st.selectbox(T["campo_region"], COMUNIDADES_AUTONOMAS, key=f"{key_prefix}_reg_region_{version}")
             provincia, poblacion = region_sel, "Toda la región"
         else:
@@ -2472,7 +2638,7 @@ def _alumno_valido(datos):
 def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
     """Gestión de cursos del colaborador.
 
-- Cada edición/grupo queda relacionada con un código de curso del catálogo.
+    - Cada edición/grupo queda relacionada con un código de curso del catálogo.
     - Si el código ya existe, se reutiliza su ficha y sus docentes existentes.
     - En una nueva edición los alumnos siempre deben introducirse de nuevo.
     - Una vez que el docente envía las evaluaciones de esa edición, ésta pasa
@@ -2543,6 +2709,21 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
 
             sello_m0_curso = st.checkbox(T["campo_sello_m0"], value=True, key=f"{key_prefix}_nuevo_sellom0_{cv}")
             st.caption(T["ayuda_sello_m0"])
+
+        ficha_pdf_curso = st.file_uploader(
+            T["ficha_pdf_label"],
+            type=["pdf"],
+            accept_multiple_files=False,
+            help=T["ficha_pdf_help"],
+            key=f"{key_prefix}_ficha_pdf_{cv}",
+        )
+        st.caption(T["ficha_pdf_help"])
+        aviso_ficha_pdf_persistente = st.session_state.pop(f"{key_prefix}_ficha_pdf_aviso", None)
+        error_ficha_pdf_persistente = st.session_state.pop(f"{key_prefix}_ficha_pdf_error", None)
+        if aviso_ficha_pdf_persistente:
+            st.info(aviso_ficha_pdf_persistente)
+        if error_ficha_pdf_persistente:
+            st.warning(error_ficha_pdf_persistente)
 
         # -----------------------------------------------------------
         # DOCENTES
@@ -2679,6 +2860,15 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                         if not curso:
                             raise RuntimeError("No se pudo crear el curso." if lang == "es" else "No s’ha pogut crear el curs.")
                         nombre_edicion = nombre_curso.strip()
+
+                    if ficha_pdf_curso is not None:
+                        try:
+                            guardar_ficha_pdf_curso(
+                                referencia.strip(), empresa_id, nombre_empresa, ficha_pdf_curso
+                            )
+                            st.session_state[f"{key_prefix}_ficha_pdf_aviso"] = T["ficha_pdf_pendiente"]
+                        except Exception as e_ficha:
+                            st.session_state[f"{key_prefix}_ficha_pdf_error"] = T["ficha_pdf_error"].format(error=e_ficha)
 
                     edicion = _crear_edicion_curso(
                         empresa_id,
@@ -3391,6 +3581,11 @@ if st.session_state.get("acceso_panel"):
                         tiene_sello_m0 = curso_tiene_sello_m0(curso_cand)
                         with st.container(border=True):
                             st.markdown(f"**{curso_cand['nombre_curso']}**")
+                            ficha_aprobada = obtener_ficha_aprobada_curso(curso_cand.get("codigo_curso"))
+                            if ficha_aprobada:
+                                url_ficha_cand = obtener_url_firmada_ficha(ficha_aprobada.get("ruta_storage"))
+                                if url_ficha_cand:
+                                    st.link_button(T["ficha_candidatos_pdf"], url_ficha_cand, use_container_width=False)
                             if tiene_sello_m0:
                                 st.markdown(
                                     f"<span style='background:var(--mz-brass); color:var(--mz-graphite); "
@@ -3454,6 +3649,9 @@ if st.session_state.get("acceso_panel"):
 
 elif opcion == "docs":
     mostrar_pestanas_principales(opcion)
+
+    # La revisión de fichas PDF solo se muestra a un administrador con sesión iniciada.
+    mostrar_revision_fichas_pdf()
 
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
     # (y solo una vez por sesión) en vez de en cada carga de la app, para no
@@ -4332,4 +4530,4 @@ elif opcion == "eval":
                             st.rerun()
                         except Exception as e:
                             st.session_state.envio_resultado = ("error", f"Error al guardar en la base de datos: {e}")
-                            st.rerun()
+                            st.rerun() 
