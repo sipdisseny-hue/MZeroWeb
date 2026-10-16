@@ -1635,6 +1635,48 @@ def obtener_ficha_aprobada_curso(codigo_curso):
         return None
 
 
+def _completar_url_storage(url):
+    """Algunas versiones de supabase-py devuelven la URL firmada relativa."""
+    if url and url.startswith("/"):
+        return st.secrets["SUPABASE_URL"].rstrip("/") + "/storage/v1" + url
+    return url
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def obtener_urls_fichas_aprobadas(codigos):
+    """{codigo_curso: url_firmada} solo de fichas aprobadas (la más reciente de cada código)."""
+    codigos = [str(c).strip() for c in codigos if c]
+    if not SUPABASE_DISPONIBLE or not codigos:
+        return {}
+    try:
+        cliente = obtener_cliente_supabase()
+        filas = (cliente.table(TABLA_FICHAS_CURSOS)
+                 .select("codigo_curso, ruta_storage")
+                 .in_("codigo_curso", codigos)
+                 .eq("estado", "aprobada")
+                 .order("subido_en", desc=True)
+                 .execute().data)
+        ruta_por_codigo = {}
+        for f in filas:
+            ruta_por_codigo.setdefault(f["codigo_curso"], f["ruta_storage"])
+        if not ruta_por_codigo:
+            return {}
+
+        firmadas = cliente.storage.from_(BUCKET_FICHAS_CURSOS).create_signed_urls(
+            list(ruta_por_codigo.values()), 3600
+        )
+        url_por_ruta = {}
+        for item in firmadas or []:
+            ruta = item.get("path")
+            url = item.get("signedURL") or item.get("signedUrl") or item.get("signed_url")
+            if ruta and url and not item.get("error"):
+                url_por_ruta[ruta] = _completar_url_storage(url)
+
+        return {c: url_por_ruta[r] for c, r in ruta_por_codigo.items() if r in url_por_ruta}
+    except Exception:
+        return {}
+
+
 def mostrar_revision_fichas_pdf():
     """Panel privado de revisión para el administrador autenticado."""
     if not st.session_state.get("autenticado"):
@@ -1671,6 +1713,7 @@ def mostrar_revision_fichas_pdf():
                             "revisado_en": datetime.now(timezone.utc).isoformat(), "motivo_rechazo": None,
                         }).eq("id", id_ficha).execute())
                         st.success(T["ficha_aprobada_ok"])
+                        obtener_urls_fichas_aprobadas.clear()
                         st.rerun()
                     except Exception as e:
                         st.error(f"No se pudo aprobar la ficha: {e}")
@@ -1688,6 +1731,7 @@ def mostrar_revision_fichas_pdf():
                             }).eq("id", id_ficha).execute())
                             st.session_state[f"ficha_rechazo_id_{id_ficha}"] = False
                             st.success(T["ficha_rechazada_ok"])
+                            obtener_urls_fichas_aprobadas.clear()
                             st.rerun()
                         except Exception as e:
                             st.error(f"No se pudo rechazar la ficha: {e}")
@@ -3576,15 +3620,16 @@ if st.session_state.get("acceso_panel"):
                 if not cursos_encontrados_cand:
                     st.info(T["sin_cursos_ubicacion"])
                 else:
+                    urls_fichas = obtener_urls_fichas_aprobadas(
+                        tuple(c.get("codigo_curso") for c in cursos_encontrados_cand)
+                    )
                     for curso_cand in cursos_encontrados_cand:
                         tiene_sello_m0 = curso_tiene_sello_m0(curso_cand)
                         with st.container(border=True):
                             st.markdown(f"**{curso_cand['nombre_curso']}**")
-                            ficha_aprobada = obtener_ficha_aprobada_curso(curso_cand.get("codigo_curso"))
-                            if ficha_aprobada:
-                                url_ficha_cand = obtener_url_firmada_ficha(ficha_aprobada.get("ruta_storage"))
-                                if url_ficha_cand:
-                                    st.link_button(T["ficha_candidatos_pdf"], url_ficha_cand, use_container_width=False)
+                            url_ficha_cand = urls_fichas.get(str(curso_cand.get("codigo_curso") or "").strip())
+                            if url_ficha_cand:
+                                st.link_button(T["ficha_candidatos_pdf"], url_ficha_cand, use_container_width=False)
                             if tiene_sello_m0:
                                 st.markdown(
                                     f"<span style='background:var(--mz-brass); color:var(--mz-graphite); "
