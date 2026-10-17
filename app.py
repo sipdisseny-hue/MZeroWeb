@@ -2223,25 +2223,31 @@ def mostrar_pie_pagina():
 
     st.markdown(
         """<style>
-        .st-key-mz_admin_toggle button {
+        .st-key-mz_admin_toggle button, .st-key-mz_admin_toggle button p {
             background: transparent !important;
-            color: #4A5262 !important;
-            border: none !important;
-            font-size: 11px !important;
-            padding: 2px 10px !important;
+            color: #8B93A0 !important;
+            font-size: 18px !important;
+        }
+        .st-key-mz_admin_toggle button {
+            border: 1px solid #2A3340 !important;
+            border-radius: 8px !important;
+            padding: 2px 12px !important;
             min-height: 0 !important;
-            height: 22px !important;
+            height: 36px !important;
             box-shadow: none !important;
         }
-        .st-key-mz_admin_toggle button:hover {
-            color: #8B93A0 !important;
+        .st-key-mz_admin_toggle button:hover, .st-key-mz_admin_toggle button:hover p {
+            color: #FFB020 !important;
+            border-color: #FFB020 !important;
         }
         </style>""",
         unsafe_allow_html=True,
     )
-    with st.container(key="mz_admin_toggle"):
-        if st.button("⚙", key="admin_toggle_btn"):
-            st.session_state["mz_admin_abierto"] = not st.session_state["mz_admin_abierto"]
+    _pie_espacio, pie_admin = st.columns([8, 1], vertical_alignment="center")
+    with pie_admin:
+        with st.container(key="mz_admin_toggle"):
+            if st.button("⚙", key="admin_toggle_btn"):
+                st.session_state["mz_admin_abierto"] = not st.session_state["mz_admin_abierto"]
 
     if st.session_state["mz_admin_abierto"]:
         if st.session_state.autenticado:
@@ -3869,8 +3875,72 @@ elif opcion == "docs":
         unsafe_allow_html=True,
     )
 
-    with st.container(border=True):
-        st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(
+        """<style>
+        .st-key-mz_directorio {
+            background: #0B1016;
+            border-radius: 8px;
+            padding: clamp(24px, 4vw, 56px) !important;
+            margin-bottom: 40px;
+        }
+        .st-key-mz_directorio [data-testid="stImage"] {
+            background: #EDEEF0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            width: fit-content;
+        }
+        .st-key-mz_directorio hr { border-color: #1E2936 !important; }
+        .st-key-mz_directorio label p,
+        .st-key-mz_directorio [data-testid="stWidgetLabel"] p { color: #151B23 !important; }
+        .st-key-mz_directorio [data-testid="stExpander"] {
+            border: 1px solid #2A3340 !important;
+            border-radius: 8px !important;
+            background: #EDEEF0 !important;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] summary {
+            background: #151B23 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] summary:hover {
+            background: #1E2936 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] summary p,
+        .st-key-mz_directorio [data-testid="stExpander"] summary span {
+            color: #E8EDF3 !important;
+            font-weight: 600 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] summary:hover p {
+            color: #FFB020 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+            background: #EDEEF0 !important;
+            border-top: 3px solid #FFB020;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
+            color: #151B23 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] [data-testid="stExpander"] {
+            background: #FFFFFF !important;
+            border: 1px solid #D9DAD6 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] [data-testid="stExpander"] summary {
+            background: #FFFFFF !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] [data-testid="stExpander"] summary:hover {
+            background: #F5F5F5 !important;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    with st.container(key="mz_directorio"):
+        st.markdown(
+            f"<div class='mz-display' style='font-weight:800; font-size:clamp(26px,3.6vw,44px); letter-spacing:-1px; color:#E8EDF3; margin:0 0 20px;'>{T['asoc_colab']}</div>",
+            unsafe_allow_html=True,
+        )
         st.image("Asociados y colaboradores.png", width=300)
 
         asociados_db, colaboradores_db = cargar_asociados_colaboradores()
@@ -3991,7 +4061,7 @@ elif opcion == "docs":
             background: #f5f5f5 !important;
         }
         </style>""", unsafe_allow_html=True)
-        st.markdown(f"<h4 style='color: var(--mz-ink); margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<div class='mz-display' style='font-weight:800; font-size:clamp(22px,2.6vw,30px); color:#4F8CC4; margin:28px 0 12px;'>{T['asociados']}</div>", unsafe_allow_html=True)
 
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
@@ -4013,7 +4083,7 @@ elif opcion == "docs":
                     resumenes.forEach(function (resumen) {
                         var texto = (resumen.textContent || '').trim();
                         if (objetivos.indexOf(texto) === -1) { return; }
-                        resumen.style.setProperty('background', '#1d4ed8', 'important');
+                        resumen.style.setProperty('background', '#1F4E79', 'important');
                         resumen.style.setProperty('color', '#ffffff', 'important');
                     });
                 }
@@ -4028,7 +4098,7 @@ elif opcion == "docs":
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
-        st.markdown(f"<h4 style='color: var(--mz-ink);'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<div class='mz-display' style='font-weight:800; font-size:clamp(22px,2.6vw,30px); color:#FFB020; margin:8px 0 12px;'>{T['colaboradores']}</div>", unsafe_allow_html=True)
 
         titulos_colaboradores = [
             ["Centros de formación"],
@@ -4067,7 +4137,47 @@ elif opcion == "docs":
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
-    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(
+        """<style>
+        .st-key-mz_funcionalidad [data-baseweb="tab-list"] { gap: 6px; }
+        .st-key-mz_funcionalidad button[role="tab"],
+        .st-key-mz_funcionalidad button[role="tab"] p {
+            background: #0B1016 !important;
+            color: #9AA7B6 !important;
+            font-weight: 600 !important;
+        }
+        .st-key-mz_funcionalidad button[role="tab"] {
+            border: 1px solid #1E2936 !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+        .st-key-mz_funcionalidad button[role="tab"][aria-selected="true"],
+        .st-key-mz_funcionalidad button[role="tab"][aria-selected="true"] p {
+            background: #FFB020 !important;
+            color: #0B1016 !important;
+        }
+        .st-key-mz_funcionalidad button[role="tab"][aria-selected="true"] {
+            border-color: #FFB020 !important;
+        }
+        .st-key-mz_funcionalidad [data-baseweb="tab-highlight"] {
+            background-color: #FFB020 !important;
+            height: 3px !important;
+        }
+        .st-key-mz_funcionalidad [data-baseweb="tab-border"] { background-color: #FFB020 !important; }
+        .st-key-mz_funcionalidad [role="tabpanel"] {
+            background: #FFFFFF;
+            border: 1px solid #D9DAD6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: clamp(16px, 3vw, 40px) !important;
+            margin-bottom: 40px;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f"<div class='mz-display' style='font-weight:800; font-size:clamp(26px,3.6vw,44px); letter-spacing:-1px; color:var(--mz-ink); margin:8px 0 16px;'>{T['funcionalidad']}</div>",
+        unsafe_allow_html=True,
+    )
     components.html(
         f"""
         <script>
@@ -4088,9 +4198,6 @@ elif opcion == "docs":
                     tab.style.setProperty('border-radius', '6px 6px 0 0', 'important');
                     tab.style.setProperty('padding', '10px 18px', 'important');
                     tab.style.setProperty('margin-right', '6px', 'important');
-                    tab.style.setProperty('border', '1px solid #D9DAD6', 'important');
-                    tab.style.setProperty('background', '#EDEEF0', 'important');
-                    tab.style.setProperty('color', '#5B6472', 'important');
                     tab.style.setProperty('cursor', 'pointer', 'important');
                 }});
             }}
@@ -4103,47 +4210,51 @@ elif opcion == "docs":
     )
     titulos_func = T["titulos_func"]
 
-    pestanas_func = st.tabs(titulos_func)
-    for pestana, titulo in zip(pestanas_func, titulos_func):
-        with pestana:
-            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                tipos_admitidos = (["docx"] if MAMMOTH_DISPONIBLE else []) + ["odt"]
-                docx_version_key = f"docx_version_{titulo}"
-                version_docx = st.session_state.get(docx_version_key, 0)
-                docx_subido = st.file_uploader(
-                    "📄 O sube un Word (.docx) o un documento de OpenOffice/LibreOffice (.odt) con el texto ya formateado",
-                    type=tipos_admitidos,
-                    key=f"docx_{titulo}_{version_docx}",
-                )
-                if docx_subido is not None:
-                    try:
-                        if docx_subido.name.lower().endswith(".odt"):
-                            html_convertido = convertir_odt_a_html(docx_subido)
-                        else:
-                            html_convertido = mammoth.convert_to_html(docx_subido).value
-                        st.session_state[f"input_{titulo}"] = html_convertido
-                        st.session_state[docx_version_key] = version_docx + 1
-                        st.success(T["documento_convertido"])
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"No se pudo leer el documento: {e}")
+    with st.container(key="mz_funcionalidad"):
+        pestanas_func = st.tabs(titulos_func)
+        for pestana, titulo in zip(pestanas_func, titulos_func):
+            with pestana:
+                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                    tipos_admitidos = (["docx"] if MAMMOTH_DISPONIBLE else []) + ["odt"]
+                    docx_version_key = f"docx_version_{titulo}"
+                    version_docx = st.session_state.get(docx_version_key, 0)
+                    docx_subido = st.file_uploader(
+                        "📄 O sube un Word (.docx) o un documento de OpenOffice/LibreOffice (.odt) con el texto ya formateado",
+                        type=tipos_admitidos,
+                        key=f"docx_{titulo}_{version_docx}",
+                    )
+                    if docx_subido is not None:
+                        try:
+                            if docx_subido.name.lower().endswith(".odt"):
+                                html_convertido = convertir_odt_a_html(docx_subido)
+                            else:
+                                html_convertido = mammoth.convert_to_html(docx_subido).value
+                            st.session_state[f"input_{titulo}"] = html_convertido
+                            st.session_state[docx_version_key] = version_docx + 1
+                            st.success(T["documento_convertido"])
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"No se pudo leer el documento: {e}")
 
-                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
+                    temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
             
-                if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
-                    st.session_state.contenido_funcionalidad[titulo] = temp_text
+                    if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                        st.session_state.contenido_funcionalidad[titulo] = temp_text
                 
-                    if guardar_en_sheets(titulo, temp_text):
-                        st.success(T["guardado_google_local"])
-                    else:
-                        st.warning(T["guardado_solo_local"])
+                        if guardar_en_sheets(titulo, temp_text):
+                            st.success(T["guardado_google_local"])
+                        else:
+                            st.warning(T["guardado_solo_local"])
                 
-                    st.rerun()
+                        st.rerun()
 
-            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
+                st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 3: CONTACTO ---
-    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div class='mz-display' style='font-weight:800; font-size:clamp(26px,3.6vw,44px); letter-spacing:-1px; color:var(--mz-ink); margin:8px 0 16px;'>{T['contacto']}</div>",
+        unsafe_allow_html=True,
+    )
     titulos_cont = ["Móvil / WhatsApp", "Email"]
 
     if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
@@ -4161,7 +4272,7 @@ elif opcion == "docs":
         with col_cont:
             st.markdown(
                 f"""
-                <div style="background:var(--mz-offwhite); border-left:3px solid var(--mz-brass);
+                <div style="background:var(--mz-offwhite); border-left:4px solid #FFB020;
                             border-radius:3px; padding:18px 20px; margin-bottom:28px;">
                     <div style="font-size:12px; color:var(--mz-ink-soft); letter-spacing:0.5px; margin-bottom:6px;">
                         {iconos_cont.get(titulo, '')} {titulo}
