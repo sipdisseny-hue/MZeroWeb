@@ -2052,7 +2052,7 @@ st.markdown(
     .st-key-mz_topbar [data-testid="stImage"] {
         background: #EDEEF0;
         border-radius: 6px;
-        padding: 6px 10px;
+        padding: 18px 12px;
         width: fit-content;
     }
     .st-key-mz_topbar div[role="radiogroup"] {
@@ -2155,6 +2155,9 @@ def mostrar_pie_pagina():
         .st-key-mz_pie label p, .st-key-mz_pie [data-testid="stWidgetLabel"] p {
             color: #EDEEF0 !important;
         }
+        [data-testid="stAppViewContainer"] .mz-display.mz-display.mz-display {
+            font-family: 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif !important;
+        }
         .st-key-legal_btn_wrapper button {
             background-color: #172033 !important;
             color: #ffffff !important;
@@ -2195,7 +2198,13 @@ def mostrar_pie_pagina():
         </style>""",
         unsafe_allow_html=True,
     )
-    pie_legal, pie_instagram, pie_resto = st.columns([2.4, 2, 3], vertical_alignment="center")
+    pie_m0, pie_legal, pie_instagram, pie_espacio, pie_admin = st.columns([1.1, 2.6, 2.1, 1.2, 0.9], vertical_alignment="center")
+    with pie_m0:
+        st.markdown(
+            "<div class='mz-display' style='font-weight:800; font-size:44px; line-height:1; "
+            "color:transparent; -webkit-text-stroke:2px #FFB020;'>M0</div>",
+            unsafe_allow_html=True,
+        )
     with pie_legal:
         with st.container(key="legal_btn_wrapper"):
             if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
@@ -2243,7 +2252,6 @@ def mostrar_pie_pagina():
         </style>""",
         unsafe_allow_html=True,
     )
-    _pie_espacio, pie_admin = st.columns([8, 1], vertical_alignment="center")
     with pie_admin:
         with st.container(key="mz_admin_toggle"):
             if st.button("⚙", key="admin_toggle_btn"):
