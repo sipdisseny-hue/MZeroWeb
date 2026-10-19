@@ -301,7 +301,7 @@ TEXTOS = {
         "flow_titulo": "Cómo encuentra un candidato su curso",
         "flow_subtitulo": "El mismo recorrido que ya usa la app, mostrado como lo que es: un proceso de filtrado, no una lista sin orden.",
         "flow_paso1_t": "Sector",
-        "flow_paso1_d": "Elige entre los 10 sectores industriales.",
+        "flow_paso1_d": "Elige el sector industrial que te interesa.",
         "flow_paso2_t": "Subsector",
         "flow_paso2_d": "Afina dentro del sector elegido.",
         "flow_paso3_t": "Localidad",
@@ -569,6 +569,7 @@ TEXTOS = {
         "banner_cand_texto": "Explora los cursos disponibles por sector y localidad y envía tu solicitud para participar en el que te interese.",
         "flow_paso_label": "PASO",
         "nav_acceso_docente": "acceso docente",
+        "banner_gratis": "Registro gratuito, sin cuotas",
         "sectores_industriales_cubiertos": "Sectores industriales cubiertos",
         "formas_acceso": "Formas de acceso: asociados, colaboradores, candidatos",
         "un_sello_nivel_minimo": "Un sello, un nivel mínimo exigido",
@@ -633,7 +634,7 @@ TEXTOS = {
         "flow_titulo": "Com troba un candidat el seu curs",
         "flow_subtitulo": "El mateix recorregut que ja fa servir l'app, mostrat com el que és: un procés de filtratge, no una llista sense ordre.",
         "flow_paso1_t": "Sector",
-        "flow_paso1_d": "Tria entre els 10 sectors industrials.",
+        "flow_paso1_d": "Tria el sector industrial que t'interessa.",
         "flow_paso2_t": "Subsector",
         "flow_paso2_d": "Afina dins del sector triat.",
         "flow_paso3_t": "Localitat",
@@ -898,6 +899,7 @@ TEXTOS = {
         "banner_cand_texto": "Explora els cursos disponibles per sector i localitat i envia la teva sol·licitud per participar en el que t'interessi.",
         "flow_paso_label": "PAS",
         "nav_acceso_docente": "accés docent",
+        "banner_gratis": "Registre gratuït, sense quotes",
         "sectores_industriales_cubiertos": "Sectors industrials coberts",
         "formas_acceso": "Formes d'accés: associats, col·laboradors, candidats",
         "un_sello_nivel_minimo": "Un segell, un nivell mínim exigit",
@@ -2086,9 +2088,9 @@ st.markdown(
 if "navegacion" not in st.session_state:
     st.session_state["navegacion"] = "docs"
 with st.container(key="mz_topbar"):
-    barra_logo, barra_doc, barra_eval, barra_idioma = st.columns([1.5, 1.2, 2.3, 1.5], vertical_alignment="center")
+    barra_logo, barra_doc, barra_eval, barra_idioma = st.columns([1.8, 1.2, 2.3, 1.5], vertical_alignment="center")
     with barra_logo:
-        st.image("logo_mzero.png", width=150)
+        st.image("logo_mzero.png", width=188)
     with barra_idioma:
         idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
@@ -3840,7 +3842,8 @@ elif opcion == "docs":
                 f"""
                 <div class="mz-mono2" style="font-size:13px; color:{color_tag}; letter-spacing:3px; margin-bottom:20px;">{T['banner_' + clave_txt + '_tag']}</div>
                 <div class="mz-display" style="font-weight:800; font-size:clamp(28px,5vw,52px); line-height:1.08; letter-spacing:-1px; color:{color_txt}; margin-bottom:20px;">{T['banner_' + clave_txt + '_titulo']}</div>
-                <div style="font-size:clamp(15px,1.6vw,17px); line-height:1.6; max-width:56ch; color:{color_txt}; margin-bottom:12px;">{T['banner_' + clave_txt + '_texto']}</div>
+                <div style="font-size:clamp(15px,1.6vw,17px); line-height:1.6; max-width:56ch; color:{color_txt}; margin-bottom:16px;">{T['banner_' + clave_txt + '_texto']}</div>
+                <div style="display:inline-block; border:2px solid {color_tag}; color:{color_tag}; border-radius:999px; padding:6px 16px; font-size:14px; font-weight:600; margin-bottom:16px;">✔ {T['banner_gratis']}</div>
                 """,
                 unsafe_allow_html=True,
             )
