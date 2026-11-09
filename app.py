@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import json
+import html as _html
 import pandas as pd
 import requests
 import re
@@ -143,7 +144,7 @@ st.markdown(
     """
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&family=Bricolage+Grotesque:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
     :root {
         --mz-graphite: #151B23;
@@ -301,7 +302,7 @@ TEXTOS = {
         "flow_titulo": "Cómo encuentra un candidato su curso",
         "flow_subtitulo": "El mismo recorrido que ya usa la app, mostrado como lo que es: un proceso de filtrado, no una lista sin orden.",
         "flow_paso1_t": "Sector",
-        "flow_paso1_d": "Elige el sector industrial que te interesa.",
+        "flow_paso1_d": "Elige entre los 10 sectores industriales.",
         "flow_paso2_t": "Subsector",
         "flow_paso2_d": "Afina dentro del sector elegido.",
         "flow_paso3_t": "Localidad",
@@ -368,48 +369,16 @@ TEXTOS = {
         "ayuda_sello_m0": "Desmárcalo si es un curso fuera de la metodología M0 (igualmente quedará visible en la app, identificado como tal).",
         "sello_m0_badge": "🏅 Sello M0",
         "sin_sello_m0_badge": "Sin Sello M0",
+        "aviso_curso_sin_sello": "Este curso no lleva Sello M0. Se publicará solo para que los candidatos puedan verlo: sin ediciones, docentes ni alumnos, y sin posibilidad de evaluación en el sistema.",
+        "curso_existente_sin_sello": "Este curso ya está en el catálogo sin Sello M0, así que no admite ediciones ni evaluación en el sistema.",
+        "publicar_curso_sin_sello_btn": "Publicar curso (sin evaluación)",
+        "aviso_cursos_sin_sello": "Algunos de tus cursos no llevan Sello M0 y no aparecen aquí: solo los cursos con Sello M0 se pueden evaluar en el sistema.",
+        "ficha_centro": "Centro",
+        "ficha_horas": "Horas",
+        "ficha_estado": "Estado",
         "guardar_sello_m0": "Guardar",
         "editar_sector_cursos": "Sector / subsector de mis cursos",
         "sin_cursos_para_editar": "Todavía no tienes cursos en el catálogo.",
-        "directorio_sin_datos": "Todavía no hay datos cargados para esta categoría.",
-        "directorio_sin_provincias": "No hay provincias registradas todavía para esta categoría.",
-        "directorio_sin_poblaciones": "No hay poblaciones registradas para esta provincia.",
-        "directorio_sin_empresas": "No hay empresas registradas en esta población.",
-        "directorio_provincia": "Provincia",
-        "directorio_poblacion": "Población",
-        "directorio_visitar_web": "Visitar web",
-        "directorio_sin_nombre": "(Sin nombre)",
-        "curso_sin_sello_aviso": "Curso informativo/publicitario sin evaluación ni certificación M0.",
-        "aviso_sin_cursos_evaluables": "No tienes cursos con Sello M0 disponibles para evaluar. Los cursos sin sello solo se muestran en el catálogo como información/publicidad.",
-        "aviso_solo_cursos_m0_evaluables": "Importante: solo se pueden evaluar los cursos que tengan el Sello M0. Los cursos sin este sello son únicamente informativos/publicitarios y no permiten realizar evaluaciones ni obtener la certificación M0.",
-        "ficha_pdf_label": "Ficha del curso en PDF (opcional)",
-        "ficha_pdf_help": "Adjunta el PDF del curso. No será visible para los candidatos hasta que el administrador lo revise y apruebe. Máximo 10 MB.",
-        "ficha_pdf_pendiente": "La ficha PDF se ha enviado y queda pendiente de revisión. Los candidatos todavía no pueden verla.",
-        "ficha_pdf_error": "No se pudo guardar la ficha PDF: {error}",
-        "fichas_admin_titulo": "Revisión de fichas PDF de cursos",
-        "fichas_admin_desc": "Las fichas pendientes solo se publicarán después de tu aprobación.",
-        "fichas_sin_pendientes": "No hay fichas PDF pendientes de revisión.",
-        "ficha_ver_pdf": "Abrir PDF para revisar",
-        "ficha_aprobar": "Aprobar y publicar",
-        "ficha_rechazar": "Rechazar ficha",
-        "ficha_aprobada_ok": "Ficha aprobada. Ya puede mostrarse a los candidatos.",
-        "ficha_rechazada_ok": "Ficha rechazada. No será visible para los candidatos.",
-        "ficha_candidatos_pdf": "Ver ficha del curso (PDF)",
-        "ficha_estado_pendiente": "Pendiente de revisión",
-        "ficha_estado_rechazada": "Rechazada",
-        "ficha_estado_aprobada": "Aprobada y publicada",
-        "grupo": "Grupo",
-        "estado_cerrado_curso": "Cerrado",
-        "estado_activo_curso": "Activo",
-        "selecciona_curso_valido": "Selecciona un curso válido",
-        "ver_rubrica": "Ver rúbrica",
-        "aviso_puntuaciones_evaluacion": "Debes seleccionar una puntuación del 1 al 5 en los 13 criterios antes de guardar.",
-        "aviso_selecciona_alumno": "Debes seleccionar un alumno antes de guardar.",
-        "aviso_faltan_evaluaciones": "No se puede cerrar el curso todavía. Faltan por evaluar: {alumnos}",
-        "documento_convertido": "Documento convertido. Revisa el texto de abajo y pulsa Guardar.",
-        "guardado_google_local": "Guardado en Google y localmente",
-        "guardado_solo_local": "Guardado solo localmente (Error en Sheets)",
-        "aviso_instalar_supabase": "Añade 'supabase' a requirements.txt para poder acceder a Evaluaciones.",
         "guardar_sector_curso": "Guardar sector/subsector",
         "sector_curso_actualizado": "Sector y subsector actualizados correctamente.",
         "campo_nombre_candidato": "Nombre",
@@ -448,7 +417,7 @@ TEXTOS = {
         "estado_activo": "activo",
         "plan_basic": "BASIC",
         "plan_standard": "STANDARD",
-        "plan_basic_precio": "50 €/curso",
+        "plan_basic_precio": "70 €/curso",
         "plan_standard_precio": "38 €/mes",
         "plan_promocion": "PROMOCIÓN (Uso gratuito)",
         "plan_uso_app": "Uso indefinido de la app",
@@ -549,33 +518,6 @@ TEXTOS = {
         "legal_cookies_texto": "Esta aplicación utiliza únicamente las tecnologías de almacenamiento o cookies necesarias para su funcionamiento, mantenimiento de la sesión y prestación de las funcionalidades solicitadas. No se utilizarán cookies no necesarias para publicidad comportamental o seguimiento comercial sin obtener previamente el consentimiento exigible. Si en el futuro se incorporan cookies o tecnologías de terceros que requieran consentimiento, se informará de forma específica y se ofrecerán opciones equivalentes para aceptar o rechazar dicho uso.",
         "legal_actualizacion": "Esta información podrá actualizarse cuando cambien la aplicación, los tratamientos de datos o la normativa aplicable.",
         "instagram_texto": "Síguenos en Instagram",
-        "acceso_subtitulo_asociados": "Acceso y gestión para Asociados",
-        "acceso_subtitulo_colaboradores": "Acceso y gestión para Colaboradores",
-        "acceso_subtitulo_candidatos": "Área de acceso para Candidatos",
-        "tarjeta_desc_asociado": "Perfiles ya validados, filtrando por sector y subsector.",
-        "tarjeta_desc_colaborador": "Da de alta tus cursos y forma parte de la red del sello M0.",
-        "tarjeta_desc_candidato": "Fórmate, consigue el sello M0 y solicita participar en cursos.",
-        "hero_titulo": "La plataforma que une empresas, centros formativos y candidatos",
-        "hero_sello_tag": "SELLO M-ZERO",
-        "hero_solucion": "La solución a la falta de mano de obra cualificada",
-        "banner_asoc_tag": "PARA ASOCIADOS · EMPRESAS",
-        "banner_asoc_titulo": "Encuentra el talento y la formación que tu empresa necesita",
-        "banner_asoc_texto": "Pide las características de los candidatos que buscas y solicita formación adaptada, con una etiqueta publicitaria que lleva directamente a tu web.",
-        "banner_colab_tag": "PARA COLABORADORES · CENTROS",
-        "banner_colab_titulo": "Tus cursos, delante de quienes la industria necesita",
-        "banner_colab_texto": "Sube tus cursos y recibe peticiones de candidatos y de empresas asociadas, con una etiqueta publicitaria que lleva directamente a tu web.",
-        "banner_cand_tag": "PARA CANDIDATOS",
-        "banner_cand_titulo": "Encuentra el curso que te abre las puertas de la industria",
-        "banner_cand_texto": "Explora los cursos disponibles por sector y localidad y envía tu solicitud para participar en el que te interese.",
-        "flow_paso_label": "PASO",
-        "nav_acceso_docente": "acceso docente",
-        "banner_gratis": "Registro gratuito, sin cuotas",
-        "sectores_industriales_cubiertos": "Sectores industriales cubiertos",
-        "formas_acceso": "Formas de acceso: asociados, colaboradores, candidatos",
-        "un_sello_nivel_minimo": "Un sello, un nivel mínimo exigido",
-        "sello_nivel_corto": "SELLO&nbsp;DE&nbsp;NIVEL",
-        "volver_documentacion": "← Volver a Documentación",
-        "btn_acceder_tarjeta": "Acceder",
 
     },
     "ca": {
@@ -634,7 +576,7 @@ TEXTOS = {
         "flow_titulo": "Com troba un candidat el seu curs",
         "flow_subtitulo": "El mateix recorregut que ja fa servir l'app, mostrat com el que és: un procés de filtratge, no una llista sense ordre.",
         "flow_paso1_t": "Sector",
-        "flow_paso1_d": "Tria el sector industrial que t'interessa.",
+        "flow_paso1_d": "Tria entre els 10 sectors industrials.",
         "flow_paso2_t": "Subsector",
         "flow_paso2_d": "Afina dins del sector triat.",
         "flow_paso3_t": "Localitat",
@@ -701,48 +643,16 @@ TEXTOS = {
         "ayuda_sello_m0": "Desmarca-ho si és un curs fora de la metodologia M0 (igualment quedarà visible a l'app, identificat com a tal).",
         "sello_m0_badge": "🏅 Segell M0",
         "sin_sello_m0_badge": "Sense Segell M0",
+        "aviso_curso_sin_sello": "Aquest curs no porta el Segell M0. Es publicarà només perquè els candidats el puguin veure: sense edicions, docents ni alumnes, i sense possibilitat d'avaluació al sistema.",
+        "curso_existente_sin_sello": "Aquest curs ja és al catàleg sense Segell M0, així que no admet edicions ni avaluació al sistema.",
+        "publicar_curso_sin_sello_btn": "Publicar curs (sense avaluació)",
+        "aviso_cursos_sin_sello": "Alguns dels teus cursos no porten Segell M0 i no apareixen aquí: només els cursos amb Segell M0 es poden avaluar al sistema.",
+        "ficha_centro": "Centre",
+        "ficha_horas": "Hores",
+        "ficha_estado": "Estat",
         "guardar_sello_m0": "Desar",
         "editar_sector_cursos": "Sector / subsector dels meus cursos",
         "sin_cursos_para_editar": "Encara no tens cursos al catàleg.",
-        "directorio_sin_datos": "Encara no hi ha dades carregades per a aquesta categoria.",
-        "directorio_sin_provincias": "Encara no hi ha províncies registrades per a aquesta categoria.",
-        "directorio_sin_poblaciones": "No hi ha poblacions registrades per a aquesta província.",
-        "directorio_sin_empresas": "No hi ha empreses registrades en aquesta població.",
-        "directorio_provincia": "Província",
-        "directorio_poblacion": "Població",
-        "directorio_visitar_web": "Visitar el web",
-        "directorio_sin_nombre": "(Sense nom)",
-        "curso_sin_sello_aviso": "Curs informatiu/publicitari sense avaluació ni certificació M0.",
-        "aviso_sin_cursos_evaluables": "No tens cursos amb el Segell M0 disponibles per avaluar. Els cursos sense segell només es mostren al catàleg com a informació/publicitat.",
-        "aviso_solo_cursos_m0_evaluables": "Important: només es poden avaluar els cursos que tinguin el Segell M0. Els cursos sense aquest segell són únicament informatius/publicitaris i no permeten fer avaluacions ni obtenir la certificació M0.",
-        "ficha_pdf_label": "Fitxa del curs en PDF (opcional)",
-        "ficha_pdf_help": "Adjunta el PDF del curs. No serà visible per als candidats fins que l'administrador el revisi i l'aprovi. Màxim 10 MB.",
-        "ficha_pdf_pendiente": "La fitxa PDF s'ha enviat i queda pendent de revisió. Els candidats encara no la poden veure.",
-        "ficha_pdf_error": "No s'ha pogut desar la fitxa PDF: {error}",
-        "fichas_admin_titulo": "Revisió de fitxes PDF dels cursos",
-        "fichas_admin_desc": "Les fitxes pendents només es publicaran després de la teva aprovació.",
-        "fichas_sin_pendientes": "No hi ha fitxes PDF pendents de revisió.",
-        "ficha_ver_pdf": "Obrir PDF per revisar",
-        "ficha_aprobar": "Aprovar i publicar",
-        "ficha_rechazar": "Rebutjar fitxa",
-        "ficha_aprobada_ok": "Fitxa aprovada. Ja es pot mostrar als candidats.",
-        "ficha_rechazada_ok": "Fitxa rebutjada. No serà visible per als candidats.",
-        "ficha_candidatos_pdf": "Veure fitxa del curs (PDF)",
-        "ficha_estado_pendiente": "Pendent de revisió",
-        "ficha_estado_rechazada": "Rebutjada",
-        "ficha_estado_aprobada": "Aprovada i publicada",
-        "grupo": "Grup",
-        "estado_cerrado_curso": "Tancat",
-        "estado_activo_curso": "Actiu",
-        "selecciona_curso_valido": "Selecciona un curs vàlid",
-        "ver_rubrica": "Veure la rúbrica",
-        "aviso_puntuaciones_evaluacion": "Has de seleccionar una puntuació de l'1 al 5 en els 13 criteris abans de desar.",
-        "aviso_selecciona_alumno": "Has de seleccionar un alumne abans de desar.",
-        "aviso_faltan_evaluaciones": "Encara no es pot tancar el curs. Falta avaluar: {alumnos}",
-        "documento_convertido": "Document convertit. Revisa el text de sota i prem Desa.",
-        "guardado_google_local": "Desat a Google i localment",
-        "guardado_solo_local": "Desat només localment (error a Sheets)",
-        "aviso_instalar_supabase": "Afegeix 'supabase' a requirements.txt per poder accedir a Avaluacions.",
         "guardar_sector_curso": "Desar sector/subsector",
         "sector_curso_actualizado": "Sector i subsector actualitzats correctament.",
         "campo_nombre_candidato": "Nom",
@@ -781,7 +691,7 @@ TEXTOS = {
         "estado_activo": "actiu",
         "plan_basic": "BASIC",
         "plan_standard": "STANDARD",
-        "plan_basic_precio": "50 €/curs",
+        "plan_basic_precio": "70 €/curs",
         "plan_standard_precio": "38 €/mes",
         "plan_promocion": "PROMOCIÓ (Ús gratuït)",
         "plan_uso_app": "Ús indefinit de l'app",
@@ -879,33 +789,6 @@ TEXTOS = {
         "legal_cookies_texto": "Aquesta aplicació utilitza únicament les tecnologies d’emmagatzematge o cookies necessàries per al seu funcionament, manteniment de la sessió i prestació de les funcionalitats sol·licitades. No s’utilitzaran cookies no necessàries per a publicitat comportamental o seguiment comercial sense obtenir prèviament el consentiment exigible. Si en el futur s’incorporen cookies o tecnologies de tercers que requereixin consentiment, s’informarà de manera específica i s’oferiran opcions equivalents per acceptar o rebutjar aquest ús.",
         "legal_actualizacion": "Aquesta informació podrà actualitzar-se quan canviïn l’aplicació, els tractaments de dades o la normativa aplicable.",
         "instagram_texto": "Segueix-nos a Instagram",
-        "acceso_subtitulo_asociados": "Accés i gestió per a Associats",
-        "acceso_subtitulo_colaboradores": "Accés i gestió per a Col·laboradors",
-        "acceso_subtitulo_candidatos": "Àrea d'accés per a Candidats",
-        "tarjeta_desc_asociado": "Perfils ja validats, filtrant per sector i subsector.",
-        "tarjeta_desc_colaborador": "Dona d'alta els teus cursos i forma part de la xarxa del segell M0.",
-        "tarjeta_desc_candidato": "Forma't, aconsegueix el segell M0 i sol·licita participar en cursos.",
-        "hero_titulo": "La plataforma que uneix empreses, centres formatius i candidats",
-        "hero_sello_tag": "SEGELL M-ZERO",
-        "hero_solucion": "La solució a la manca de mà d'obra qualificada",
-        "banner_asoc_tag": "PER A ASSOCIATS · EMPRESES",
-        "banner_asoc_titulo": "Troba el talent i la formació que la teva empresa necessita",
-        "banner_asoc_texto": "Demana les característiques dels candidats que busques i sol·licita formació adaptada, amb una etiqueta publicitària que du directament al teu web.",
-        "banner_colab_tag": "PER A COL·LABORADORS · CENTRES",
-        "banner_colab_titulo": "Els teus cursos, davant de qui necessita la indústria",
-        "banner_colab_texto": "Puja els teus cursos i rep peticions de candidats i d'empreses associades, amb una etiqueta publicitària que du directament al teu web.",
-        "banner_cand_tag": "PER A CANDIDATS",
-        "banner_cand_titulo": "Troba el curs que t'obre les portes de la indústria",
-        "banner_cand_texto": "Explora els cursos disponibles per sector i localitat i envia la teva sol·licitud per participar en el que t'interessi.",
-        "flow_paso_label": "PAS",
-        "nav_acceso_docente": "accés docent",
-        "banner_gratis": "Registre gratuït, sense quotes",
-        "sectores_industriales_cubiertos": "Sectors industrials coberts",
-        "formas_acceso": "Formes d'accés: associats, col·laboradors, candidats",
-        "un_sello_nivel_minimo": "Un segell, un nivell mínim exigit",
-        "sello_nivel_corto": "SEGELL&nbsp;DE&nbsp;NIVELL",
-        "volver_documentacion": "← Tornar a Documentació",
-        "btn_acceder_tarjeta": "Accedir",
 
     }
 }
@@ -953,85 +836,6 @@ SECTORES_INDUSTRIALES = [
         "subsectores": ["Mantenimiento mecánico", "Mantenimiento eléctrico", "Mantenimiento electromecánico", "Mantenimiento preventivo", "Mantenimiento predictivo"],
     },
 ]
-
-# Traducción visual de sectores y subsectores al catalán.
-# Se conservan los textos originales en castellano como valores internos para
-# no modificar los datos guardados en Supabase ni los filtros existentes.
-TRADUCCIONES_SECTORES_CA = {
-    "1. Metalurgia y fabricación mecánica": "1. Metal·lúrgia i fabricació mecànica",
-    "2. Electricidad y electrónica": "2. Electricitat i electrònica",
-    "3. Automatización y robótica": "3. Automatització i robòtica",
-    "4. Energía": "4. Energia",
-    "5. Climatización e instalaciones": "5. Climatització i instal·lacions",
-    "6. Plásticos y caucho": "6. Plàstics i cautxú",
-    "7. Madera y mobiliario": "7. Fusta i mobiliari",
-    "8. Construcción y materiales": "8. Construcció i materials",
-    "9. Agua, residuos y medio ambiente": "9. Aigua, residus i medi ambient",
-    "10. Mantenimiento industrial": "10. Manteniment industrial",
-    "Siderurgia": "Siderúrgia",
-    "Fundición": "Fosa",
-    "Forja": "Forja",
-    "Mecanizado": "Mecanització",
-    "Soldadura": "Soldadura",
-    "Estructuras metálicas": "Estructures metàl·liques",
-    "Fabricación de maquinaria": "Fabricació de maquinària",
-    "Instalaciones eléctricas": "Instal·lacions elèctriques",
-    "Electrónica": "Electrònica",
-    "Cuadros eléctricos": "Quadres elèctrics",
-    "Equipos eléctricos": "Equips elèctrics",
-    "Telecomunicaciones": "Telecomunicacions",
-    "Automatización industrial": "Automatització industrial",
-    "PLC": "PLC",
-    "Robótica": "Robòtica",
-    "Control industrial": "Control industrial",
-    "Industria 4.0": "Indústria 4.0",
-    "Generación eléctrica": "Generació elèctrica",
-    "Distribución eléctrica": "Distribució elèctrica",
-    "Energías renovables": "Energies renovables",
-    "Solar": "Solar",
-    "Eólica": "Eòlica",
-    "Biomasa": "Biomassa",
-    "Petróleo y gas": "Petroli i gas",
-    "Fontanería": "Lampisteria",
-    "Calefacción": "Calefacció",
-    "Climatización": "Climatització",
-    "Refrigeración": "Refrigeració",
-    "Instalaciones térmicas": "Instal·lacions tèrmiques",
-    "Eficiencia energética": "Eficiència energètica",
-    "Transformación de plásticos": "Transformació de plàstics",
-    "Inyección": "Injecció",
-    "Extrusión": "Extrusió",
-    "Caucho": "Cautxú",
-    "Composites": "Materials compostos",
-    "Madera": "Fusta",
-    "Carpintería industrial": "Fusteria industrial",
-    "Muebles": "Mobles",
-    "Tablero": "Tauler",
-    "Corcho": "Suro",
-    "Construcción": "Construcció",
-    "Cemento": "Ciment",
-    "Hormigón": "Formigó",
-    "Cerámica": "Ceràmica",
-    "Vidrio": "Vidre",
-    "Piedra": "Pedra",
-    "Materiales de construcción": "Materials de construcció",
-    "Tratamiento de aguas": "Tractament d'aigües",
-    "Depuración": "Depuració",
-    "Gestión de residuos": "Gestió de residus",
-    "Reciclaje": "Reciclatge",
-    "Recuperación de materiales": "Recuperació de materials",
-    "Mantenimiento mecánico": "Manteniment mecànic",
-    "Mantenimiento eléctrico": "Manteniment elèctric",
-    "Mantenimiento electromecánico": "Manteniment electromecànic",
-    "Mantenimiento preventivo": "Manteniment preventiu",
-    "Mantenimiento predictivo": "Manteniment predictiu",
-}
-
-def traducir_sector_subsector(texto, idioma):
-    """Traduce solo la etiqueta visible, manteniendo el valor original."""
-    if idioma == "ca":
-        return TRADUCCIONES_SECTORES_CA.get(texto, texto)
-    return texto
 
 # --- SECTORES/CATEGORÍAS DEL DIRECTORIO DE ASOCIADOS ---
 # Mismo listado que se usa para pintar las pestañas del directorio público
@@ -1100,44 +904,6 @@ TRADUCCION_CATEGORIAS_CA = {
     "Gremios": "Gremis",
     "Asociaciones": "Associacions"
 }
-
-# Traducció visual de noms de província; els valors originals es conserven
-# per mantenir els filtres i les dades de Google Sheets/Supabase.
-TRADUCCION_PROVINCIAS_CA = {
-    "Lérida": "Lleida", "Lleida": "Lleida",
-    "Gerona": "Girona", "Girona": "Girona",
-    "Castellón": "Castelló", "Castelló": "Castelló",
-    "Valencia": "València", "València": "València",
-    "Alicante": "Alacant", "Alacant": "Alacant",
-    "La Coruña": "A Coruña", "A Coruña": "A Coruña",
-    "Orense": "Ourense", "Ourense": "Ourense",
-    "Islas Baleares": "Illes Balears", "Illes Balears": "Illes Balears",
-    "Álava": "Àlaba", "Araba": "Araba",
-    "Vizcaya": "Biscaia", "Bizkaia": "Bizkaia",
-    "Guipúzcoa": "Guipúscoa", "Gipuzkoa": "Gipuzkoa"
-}
-
-def traducir_provincia(texto, idioma):
-    if idioma == "ca":
-        return TRADUCCION_PROVINCIAS_CA.get(str(texto).strip(), texto)
-    return texto
-
-
-def curso_tiene_sello_m0(curso):
-    """Determina si un curso puede evaluarse con la metodología M0.
-
-    Los registros antiguos sin el campo sello_m0 se consideran M0 para mantener
-    la compatibilidad. Los valores explícitamente falsos (incluidos valores de
-    texto que pueden proceder de importaciones) no se pueden evaluar.
-    """
-    valor = curso.get("sello_m0", True) if isinstance(curso, dict) else True
-    if valor is False or valor is None:
-        return False
-    if isinstance(valor, (int, float)) and valor == 0:
-        return False
-    if isinstance(valor, str) and valor.strip().lower() in {"false", "0", "no", "n", "f"}:
-        return False
-    return True
 
 # --- LECTURA DE DATOS Y SINCRONIZACIÓN ---
 @st.cache_data(ttl=120)
@@ -1378,34 +1144,28 @@ def mostrar_olvide_contrasena(tipo_texto, key_prefix):
                 st.warning(T["olvide_contrasena_vacio"])
 
 
-def mostrar_pestanas_principales(opcion_actual, columnas=None):
+def mostrar_pestanas_principales(opcion_actual):
     """Pestañas destacadas de navegación en la pantalla principal
     (Documentación / Evaluaciones), sustituyen al antiguo selector del
     sidebar. 'Evaluaciones' se resalta como acceso directo para docentes."""
     st.markdown(
         """<style>
-        .st-key-mz_navpill_doc button, .st-key-mz_navpill_doc button p {
-            background: #FFB020 !important;
-            color: #0B1016 !important;
-            border: 2px solid #FFB020 !important;
-            border-radius: 8px !important;
+        .st-key-mz_navpill_doc button {
+            background: var(--mz-graphite) !important;
+            color: #ffffff !important;
+            border: none !important;
             font-weight: 600 !important;
         }
-        .st-key-mz_navpill_eval button, .st-key-mz_navpill_eval button p {
-            background: transparent !important;
-            color: #EDEEF0 !important;
-            border: 2px solid #3DDC84 !important;
-            border-radius: 999px !important;
+        .st-key-mz_navpill_eval button {
+            background: var(--mz-offwhite) !important;
+            color: var(--mz-ink) !important;
+            border: 1px solid #D9DAD6 !important;
             font-weight: 600 !important;
         }
-        .st-key-mz_navpill_doc button:hover, .st-key-mz_navpill_eval button:hover { filter: brightness(1.2); }
         </style>""",
         unsafe_allow_html=True,
     )
-    if columnas:
-        col_doc, col_eval = columnas
-    else:
-        col_doc, col_eval, col_resto = st.columns([1.3, 1.9, 5])
+    col_doc, col_eval, col_resto = st.columns([1.3, 1.9, 5])
     with col_doc:
         with st.container(key="mz_navpill_doc"):
             if st.button(f"📄 {T['menu_docs']}", key="nav_pill_doc", use_container_width=True):
@@ -1414,7 +1174,7 @@ def mostrar_pestanas_principales(opcion_actual, columnas=None):
                 st.rerun()
     with col_eval:
         with st.container(key="mz_navpill_eval"):
-            if st.button(f"🟢 {T['menu_eval']} · {T['nav_acceso_docente']}", key="nav_pill_eval", use_container_width=True):
+            if st.button(f"🟢 {T['menu_eval']} · acceso docente", key="nav_pill_eval", use_container_width=True):
                 st.session_state["navegacion"] = "eval"
                 st.session_state["acceso_panel"] = None
                 st.rerun()
@@ -1576,7 +1336,7 @@ def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
             estado_visible = "cursado" if estados and all(e == "cerrado" for e in estados) else "en_curso"
 
             modulos = (
-                cliente.table("modulos").select("descripcion_es, nivel_bloque")
+                cliente.table("modulos").select("*")
                 .eq("codigo_curso", codigo)
                 .execute().data
             )
@@ -1584,6 +1344,9 @@ def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
             resultado.append({
                 "nombre_centro": mapa_empresas.get(curso.get("empresa_id"), ""),
                 "nombre_curso": curso.get("nombre_es") or codigo,
+                "nombre_curso_ca": curso.get("nombre_ca") or "",
+                "sector": curso.get("sector") or "",
+                "subsector": curso.get("subsector") or "",
                 "codigo_curso": codigo,
                 "horas_totales": curso.get("horas_totales"),
                 "competencias": curso.get("competencias"),
@@ -1594,183 +1357,6 @@ def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
         return resultado
     except Exception:
         return []
-
-
-# --- FICHAS PDF DE CURSOS: ALMACENAMIENTO PRIVADO Y MODERACIÓN ---
-BUCKET_FICHAS_CURSOS = "mzero-fichas-cursos"
-TABLA_FICHAS_CURSOS = "mzero_fichas_cursos"
-
-
-def guardar_ficha_pdf_curso(codigo_curso, empresa_id, nombre_empresa, archivo_pdf):
-    """Sube una ficha PDF privada y la registra como pendiente de revisión."""
-    if not SUPABASE_DISPONIBLE:
-        raise RuntimeError("Supabase no está disponible.")
-    if archivo_pdf is None:
-        return None
-    if archivo_pdf.type != "application/pdf" and not archivo_pdf.name.lower().endswith(".pdf"):
-        raise ValueError("El archivo debe ser un PDF.")
-    contenido = archivo_pdf.getvalue()
-    if not contenido.startswith(b"%PDF"):
-        raise ValueError("El archivo seleccionado no parece ser un PDF válido.")
-    if len(contenido) > 10 * 1024 * 1024:
-        raise ValueError("El PDF supera el límite de 10 MB.")
-
-    import uuid
-    from datetime import datetime, timezone
-    codigo_seguro = re.sub(r"[^A-Za-z0-9_-]", "_", str(codigo_curso).strip())[:80] or "curso"
-    ruta = f"{codigo_seguro}/{uuid.uuid4().hex}.pdf"
-    cliente = obtener_cliente_supabase()
-    cliente.storage.from_(BUCKET_FICHAS_CURSOS).upload(
-        ruta,
-        contenido,
-        file_options={"content-type": "application/pdf", "upsert": "false"},
-    )
-    try:
-        cliente.table(TABLA_FICHAS_CURSOS).insert({
-            "codigo_curso": str(codigo_curso).strip(),
-            "empresa_id": empresa_id,
-            "nombre_empresa": str(nombre_empresa or "").strip(),
-            "nombre_archivo": str(archivo_pdf.name or "ficha.pdf")[:255],
-            "ruta_storage": ruta,
-            "estado": "pendiente",
-            "subido_en": datetime.now(timezone.utc).isoformat(),
-        }).execute()
-    except Exception:
-        try:
-            cliente.storage.from_(BUCKET_FICHAS_CURSOS).remove([ruta])
-        except Exception:
-            pass
-        raise
-    return ruta
-
-
-def obtener_url_firmada_ficha(ruta, segundos=3600):
-    """Devuelve una URL temporal para abrir un PDF del bucket privado."""
-    if not ruta or not SUPABASE_DISPONIBLE:
-        return None
-    try:
-        respuesta = obtener_cliente_supabase().storage.from_(BUCKET_FICHAS_CURSOS).create_signed_url(ruta, segundos)
-        datos = getattr(respuesta, "data", None) or respuesta
-        if isinstance(datos, dict):
-            return datos.get("signedURL") or datos.get("signedUrl") or datos.get("signed_url") or datos.get("url")
-    except Exception:
-        return None
-    return None
-
-
-def obtener_ficha_aprobada_curso(codigo_curso):
-    """Solo devuelve fichas aprobadas; pendientes/rechazadas nunca se publican."""
-    if not SUPABASE_DISPONIBLE or not codigo_curso:
-        return None
-    try:
-        filas = (obtener_cliente_supabase().table(TABLA_FICHAS_CURSOS).select("*")
-                 .eq("codigo_curso", str(codigo_curso).strip())
-                 .eq("estado", "aprobada").order("subido_en", desc=True).limit(1).execute().data)
-        return filas[0] if filas else None
-    except Exception:
-        return None
-
-
-def _completar_url_storage(url):
-    """Algunas versiones de supabase-py devuelven la URL firmada relativa."""
-    if url and url.startswith("/"):
-        return st.secrets["SUPABASE_URL"].rstrip("/") + "/storage/v1" + url
-    return url
-
-
-@st.cache_data(ttl=600, show_spinner=False)
-def obtener_urls_fichas_aprobadas(codigos):
-    """{codigo_curso: url_firmada} solo de fichas aprobadas (la más reciente de cada código)."""
-    codigos = [str(c).strip() for c in codigos if c]
-    if not SUPABASE_DISPONIBLE or not codigos:
-        return {}
-    try:
-        cliente = obtener_cliente_supabase()
-        filas = (cliente.table(TABLA_FICHAS_CURSOS)
-                 .select("codigo_curso, ruta_storage")
-                 .in_("codigo_curso", codigos)
-                 .eq("estado", "aprobada")
-                 .order("subido_en", desc=True)
-                 .execute().data)
-        ruta_por_codigo = {}
-        for f in filas:
-            ruta_por_codigo.setdefault(f["codigo_curso"], f["ruta_storage"])
-        if not ruta_por_codigo:
-            return {}
-
-        firmadas = cliente.storage.from_(BUCKET_FICHAS_CURSOS).create_signed_urls(
-            list(ruta_por_codigo.values()), 3600
-        )
-        url_por_ruta = {}
-        for item in firmadas or []:
-            ruta = item.get("path")
-            url = item.get("signedURL") or item.get("signedUrl") or item.get("signed_url")
-            if ruta and url and not item.get("error"):
-                url_por_ruta[ruta] = _completar_url_storage(url)
-
-        return {c: url_por_ruta[r] for c, r in ruta_por_codigo.items() if r in url_por_ruta}
-    except Exception:
-        return {}
-
-
-def mostrar_revision_fichas_pdf():
-    """Panel privado de revisión para el administrador autenticado."""
-    if not st.session_state.get("autenticado"):
-        return
-    with st.expander(f"📄 {T['fichas_admin_titulo']}", expanded=False):
-        st.caption(T["fichas_admin_desc"])
-        try:
-            pendientes = (obtener_cliente_supabase().table(TABLA_FICHAS_CURSOS).select("*")
-                          .eq("estado", "pendiente").order("subido_en", desc=False).execute().data)
-        except Exception as e:
-            st.error(f"No se pueden cargar las fichas. Comprueba que has ejecutado el SQL de instalación: {e}")
-            return
-        if not pendientes:
-            st.info(T["fichas_sin_pendientes"])
-            return
-        for ficha in pendientes:
-            codigo = ficha.get("codigo_curso", "")
-            nombre_archivo = ficha.get("nombre_archivo") or "ficha.pdf"
-            with st.container(border=True):
-                st.markdown(f"**{codigo}** · {nombre_archivo}")
-                st.caption(f"{ficha.get('nombre_empresa') or 'Colaborador'} · {ficha.get('subido_en') or ''}")
-                url_pdf = obtener_url_firmada_ficha(ficha.get("ruta_storage"))
-                if url_pdf:
-                    st.link_button(T["ficha_ver_pdf"], url_pdf, use_container_width=False)
-                else:
-                    st.warning("No se pudo generar el enlace temporal al PDF. Comprueba el bucket privado y sus permisos.")
-                col_aprobar, col_rechazar = st.columns(2)
-                id_ficha = ficha.get("id")
-                if col_aprobar.button(T["ficha_aprobar"], key=f"ficha_aprobar_{id_ficha}", type="primary"):
-                    try:
-                        from datetime import datetime, timezone
-                        (obtener_cliente_supabase().table(TABLA_FICHAS_CURSOS).update({
-                            "estado": "aprobada", "revisado_por": st.session_state.get("usuario_actual", "admin"),
-                            "revisado_en": datetime.now(timezone.utc).isoformat(), "motivo_rechazo": None,
-                        }).eq("id", id_ficha).execute())
-                        st.success(T["ficha_aprobada_ok"])
-                        obtener_urls_fichas_aprobadas.clear()
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"No se pudo aprobar la ficha: {e}")
-                if col_rechazar.button(T["ficha_rechazar"], key=f"ficha_rechazar_{id_ficha}"):
-                    st.session_state[f"ficha_rechazo_id_{id_ficha}"] = True
-                    st.rerun()
-                if st.session_state.get(f"ficha_rechazo_id_{id_ficha}"):
-                    motivo = st.text_input("Motivo del rechazo (opcional)", key=f"ficha_motivo_{id_ficha}")
-                    if st.button("Confirmar rechazo", key=f"ficha_confirmar_rechazo_{id_ficha}"):
-                        try:
-                            from datetime import datetime, timezone
-                            (obtener_cliente_supabase().table(TABLA_FICHAS_CURSOS).update({
-                                "estado": "rechazada", "revisado_por": st.session_state.get("usuario_actual", "admin"),
-                                "revisado_en": datetime.now(timezone.utc).isoformat(), "motivo_rechazo": motivo.strip() or None,
-                            }).eq("id", id_ficha).execute())
-                            st.session_state[f"ficha_rechazo_id_{id_ficha}"] = False
-                            st.success(T["ficha_rechazada_ok"])
-                            obtener_urls_fichas_aprobadas.clear()
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"No se pudo rechazar la ficha: {e}")
 
 
 # --- NUEVO: EL COLABORADOR PROPONE CURSO+MÓDULO Y DOCENTE ---
@@ -2042,71 +1628,115 @@ def guardar_en_sheets(titulo, nuevo_contenido, idioma=None):
     except Exception:
         return False
 
-# --- BARRA SUPERIOR: LOGO, NAVEGACIÓN E IDIOMA (sustituye a la antigua barra lateral) ---
-st.markdown(
-    """<style>
-    .st-key-mz_topbar {
-        background: #0B1016;
-        border-radius: 8px;
-        padding: 14px 24px !important;
-        margin-bottom: 24px;
-    }
-    .st-key-mz_topbar [data-testid="stImage"] {
-        background: #EDEEF0;
-        border-radius: 6px;
-        padding: 18px 12px;
-        width: fit-content;
-    }
-    .st-key-mz_topbar div[role="radiogroup"] {
-        display: inline-flex !important;
-        border: 1px solid #2A3340;
-        border-radius: 8px;
-        overflow: hidden;
-        gap: 0 !important;
-    }
-    .st-key-mz_topbar div[role="radiogroup"] label {
-        padding: 6px 14px !important;
-        margin: 0 !important;
-        background: transparent;
-    }
-    .st-key-mz_topbar div[role="radiogroup"] label > div:first-child {
-        display: none !important;
-    }
-    .st-key-mz_topbar div[role="radiogroup"] label p {
-        color: #EDEEF0 !important;
-    }
-    .st-key-mz_topbar div[role="radiogroup"] label:has(input:checked) {
-        background: #EDEEF0 !important;
-    }
-    .st-key-mz_topbar div[role="radiogroup"] label:has(input:checked) p {
-        color: #151B23 !important;
-        font-weight: 600 !important;
-    }
-    </style>""",
-    unsafe_allow_html=True,
-)
-if "navegacion" not in st.session_state:
-    st.session_state["navegacion"] = "docs"
-with st.container(key="mz_topbar"):
-    barra_logo, barra_doc, barra_eval, barra_idioma = st.columns([1.8, 1.2, 2.3, 1.5], vertical_alignment="center")
-    with barra_logo:
-        st.image("logo_mzero.png", width=188)
-    with barra_idioma:
-        idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
+# --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
+with st.sidebar:
+    st.markdown(
+        """<style>
+        section[data-testid="stSidebar"] {
+            background-color: var(--mz-graphite) !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
+        section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] *,
+        section[data-testid="stSidebar"] label,
+        section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+        section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+            color: var(--mz-offwhite) !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stAlert"],
+        section[data-testid="stSidebar"] [data-testid="stAlert"] * {
+            color: inherit !important;
+        }
+        section[data-testid="stSidebar"] hr {
+            border-color: #2A3340 !important;
+        }
+        section[data-testid="stSidebar"] [data-testid="stImage"] {
+            background: var(--mz-offwhite);
+            border-radius: 6px;
+            padding: 10px;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    st.image("logo_mzero.png")
+    st.markdown(
+        '<div style="font-size:22px; font-weight:700; letter-spacing:0.3px; margin: 6px 0 4px;">'
+        'M<span style="color: var(--mz-brass-light);">-Zero</span> '
+        '<span style="font-weight:400; color:#8B93A0; font-size:16px;">Pro</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """<style>
+        section[data-testid="stSidebar"] div[role="radiogroup"] {
+            display: inline-flex !important;
+            border: 1px solid #3C4552;
+            border-radius: 4px;
+            overflow: hidden;
+            gap: 0 !important;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label {
+            padding: 5px 14px !important;
+            margin: 0 !important;
+            background: transparent;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
+            display: none !important;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
+            background: var(--mz-brass) !important;
+        }
+        section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p {
+            color: var(--mz-graphite) !important;
+            font-weight: 600 !important;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     T = TEXTOS[lang]
+    
     def _abrir_acceso(tipo):
         # Callback ejecutado antes de que se creen los widgets del siguiente rerun.
         # Así evitamos modificar la session_state de un radio ya instanciado.
         st.session_state["navegacion"] = "docs"
         st.session_state["acceso_panel"] = tipo
+
     def _cambiar_navegacion():
         # Al navegar manualmente entre Documentación/Evaluaciones se cierra
         # cualquier pantalla de acceso independiente.
         st.session_state["acceso_panel"] = None
+
+    # La navegación Documentación/Evaluaciones ya no vive en el sidebar:
+    # se controla con las pestañas destacadas de la pantalla principal.
+    if "navegacion" not in st.session_state:
+        st.session_state["navegacion"] = "docs"
     opcion = st.session_state["navegacion"]
-    # Documentación / Evaluaciones (acceso docente) viven en la barra superior.
-    mostrar_pestanas_principales(opcion, columnas=(barra_doc, barra_eval))
+
+    st.divider()
+    st.markdown(
+        """<style>
+        section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
+            min-height: 46px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: left;
+            padding-left: 16px;
+            margin-bottom: 8px;
+            background-color: var(--mz-graphite-2);
+            border: 1px solid #2A3340;
+            color: var(--mz-offwhite);
+        }
+        section[data-testid="stSidebar"] div[data-testid="stButton"] > button:hover {
+            border-color: var(--mz-brass);
+            color: var(--mz-brass-light);
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+
+
 
 # --- AVISO LEGAL: CUADRO FLOTANTE AL INICIO (una vez por sesión de navegador) ---
 if "legal_modal_mostrado" not in st.session_state:
@@ -2143,23 +1773,10 @@ if not st.session_state["legal_modal_mostrado"]:
     _mostrar_aviso_legal()
 
 # Botón fijo y siempre visible para volver a consultar el aviso legal
-def mostrar_pie_pagina():
-    """Pie de página: información legal, Instagram y acceso de administración
-    (antes vivían en la barra lateral)."""
+with st.sidebar:
+    st.divider()
     st.markdown(
         """<style>
-        .st-key-mz_pie {
-            background: #0B1016;
-            border-radius: 8px;
-            padding: 24px 28px !important;
-            margin-top: 48px;
-        }
-        .st-key-mz_pie label p, .st-key-mz_pie [data-testid="stWidgetLabel"] p {
-            color: #EDEEF0 !important;
-        }
-        [data-testid="stAppViewContainer"] .mz-display.mz-display.mz-display {
-            font-family: 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif !important;
-        }
         .st-key-legal_btn_wrapper button {
             background-color: #172033 !important;
             color: #ffffff !important;
@@ -2188,41 +1805,23 @@ def mostrar_pie_pagina():
             color: #ffffff !important;
         }
         .mzero-instagram-btn svg { flex-shrink: 0; }
-        .st-key-mz_pie a.mzero-instagram-btn {
-            background-color: transparent !important;
-            border: 2px solid #FFB020 !important;
-            color: #FFB020 !important;
-        }
-        .st-key-mz_pie a.mzero-instagram-btn:hover {
-            background-color: #FFB020 !important;
-            color: #0B1016 !important;
-        }
         </style>""",
         unsafe_allow_html=True,
     )
-    pie_m0, pie_legal, pie_instagram, pie_espacio, pie_admin = st.columns([1.1, 2.6, 2.1, 1.2, 0.9], vertical_alignment="center")
-    with pie_m0:
-        st.markdown(
-            "<div class='mz-display' style='font-weight:800; font-size:44px; line-height:1; "
-            "color:transparent; -webkit-text-stroke:2px #FFB020;'>M0</div>",
-            unsafe_allow_html=True,
-        )
-    with pie_legal:
-        with st.container(key="legal_btn_wrapper"):
-            if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
-                _mostrar_aviso_legal()
-    with pie_instagram:
-        st.markdown(
-            f'<a class="mzero-instagram-btn" href="https://www.instagram.com/mzero.pro/" '
-            f'target="_blank" rel="noopener noreferrer">'
-            f'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">'
-            f'<rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/>'
-            f'<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>'
-            f'<circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/>'
-            f'</svg>'
-            f'{T["instagram_texto"]}</a>',
-            unsafe_allow_html=True,
-        )
+    with st.container(key="legal_btn_wrapper"):
+        if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
+            _mostrar_aviso_legal()
+    st.markdown(
+        f'<a class="mzero-instagram-btn" href="https://www.instagram.com/mzero.pro/" '
+        f'target="_blank" rel="noopener noreferrer">'
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">'
+        f'<rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/>'
+        f'<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>'
+        f'<circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/>'
+        f'</svg>'
+        f'{T["instagram_texto"]}</a>',
+        unsafe_allow_html=True,
+    )
 
     # Acceso de administración: discreto a propósito, para que pase
     # desapercibido para el resto de usuarios. Valida contra la tabla
@@ -2234,30 +1833,25 @@ def mostrar_pie_pagina():
 
     st.markdown(
         """<style>
-        .st-key-mz_admin_toggle button, .st-key-mz_admin_toggle button p {
-            background: transparent !important;
-            color: #8B93A0 !important;
-            font-size: 18px !important;
-        }
         .st-key-mz_admin_toggle button {
-            border: 1px solid #2A3340 !important;
-            border-radius: 8px !important;
-            padding: 2px 12px !important;
+            background: var(--mz-graphite) !important;
+            color: #4A5262 !important;
+            border: none !important;
+            font-size: 11px !important;
+            padding: 2px 10px !important;
             min-height: 0 !important;
-            height: 36px !important;
+            height: 22px !important;
             box-shadow: none !important;
         }
-        .st-key-mz_admin_toggle button:hover, .st-key-mz_admin_toggle button:hover p {
-            color: #FFB020 !important;
-            border-color: #FFB020 !important;
+        .st-key-mz_admin_toggle button:hover {
+            color: #8B93A0 !important;
         }
         </style>""",
         unsafe_allow_html=True,
     )
-    with pie_admin:
-        with st.container(key="mz_admin_toggle"):
-            if st.button("⚙", key="admin_toggle_btn"):
-                st.session_state["mz_admin_abierto"] = not st.session_state["mz_admin_abierto"]
+    with st.container(key="mz_admin_toggle"):
+        if st.button("⚙", key="admin_toggle_btn"):
+            st.session_state["mz_admin_abierto"] = not st.session_state["mz_admin_abierto"]
 
     if st.session_state["mz_admin_abierto"]:
         if st.session_state.autenticado:
@@ -2288,11 +1882,6 @@ def mostrar_pie_pagina():
                             st.error(T["error_login"])
                     except Exception as e:
                         st.error(f"Error de acceso: {e}")
-
-
-def renderizar_pie_pagina():
-    with st.container(key="mz_pie"):
-        mostrar_pie_pagina()
 
 
 # --- LÓGICA DE PANTALLAS ---
@@ -2732,13 +2321,13 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
         st.info(T["campo_migracion_cursos"])
         return
 
-    tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])# ---------------------------------------------------------------
+    tab_crear, tab_mis = st.tabs([T["crear_nuevo_curso"], T["mis_cursos"]])
+
+# ---------------------------------------------------------------
     # CREAR NUEVA EDICIÓN
     # ---------------------------------------------------------------
     with tab_crear:
         st.markdown(f"### {T['selecciona_curso']}")
-        # Aviso visible también al crear/añadir cursos, no solo en Evaluaciones.
-        st.info(T["aviso_solo_cursos_m0_evaluables"])
         cv = st.session_state.get(f"{key_prefix}_nuevo_version", 0)
 
         referencia = st.text_input(
@@ -2771,226 +2360,242 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
 
             c5, c6 = st.columns(2)
             nombres_sectores_curso = [d["sector"] for d in SECTORES_INDUSTRIALES]
-            sector_curso = c5.selectbox(
-                T["campo_sector_curso"], nombres_sectores_curso,
-                key=f"{key_prefix}_nuevo_sector_{cv}",
-                format_func=lambda texto: traducir_sector_subsector(texto, lang)
-            )
+            sector_curso = c5.selectbox(T["campo_sector_curso"], nombres_sectores_curso, key=f"{key_prefix}_nuevo_sector_{cv}")
             subsectores_curso_opts = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_curso)
-            subsector_curso = c6.selectbox(
-                T["campo_subsector_curso"], subsectores_curso_opts,
-                key=f"{key_prefix}_nuevo_subsector_{cv}",
-                format_func=lambda texto: traducir_sector_subsector(texto, lang)
-            )
+            subsector_curso = c6.selectbox(T["campo_subsector_curso"], subsectores_curso_opts, key=f"{key_prefix}_nuevo_subsector_{cv}")
 
             sello_m0_curso = st.checkbox(T["campo_sello_m0"], value=True, key=f"{key_prefix}_nuevo_sellom0_{cv}")
             st.caption(T["ayuda_sello_m0"])
 
-        ficha_pdf_curso = st.file_uploader(
-            T["ficha_pdf_label"],
-            type=["pdf"],
-            accept_multiple_files=False,
-            help=T["ficha_pdf_help"],
-            key=f"{key_prefix}_ficha_pdf_{cv}",
-        )
-        st.caption(T["ficha_pdf_help"])
-        aviso_ficha_pdf_persistente = st.session_state.pop(f"{key_prefix}_ficha_pdf_aviso", None)
-        error_ficha_pdf_persistente = st.session_state.pop(f"{key_prefix}_ficha_pdf_error", None)
-        if aviso_ficha_pdf_persistente:
-            st.info(aviso_ficha_pdf_persistente)
-        if error_ficha_pdf_persistente:
-            st.warning(error_ficha_pdf_persistente)
+        if curso_existente:
+            curso_sin_sello = curso_existente.get("sello_m0", True) is False
+        else:
+            curso_sin_sello = sello_m0_curso is False
 
-        # -----------------------------------------------------------
-        # DOCENTES
-        # -----------------------------------------------------------
-        st.markdown(f"### {T['docentes_edicion']}")
-
-        docentes_existentes = _cargar_docentes_curso(referencia.strip()) if curso_existente else []
-        docentes_seleccionados = []
-
-        if curso_existente and docentes_existentes:
-            st.caption(
-                T["docentes_reutilizables"]
-            )
-            for i, d in enumerate(docentes_existentes):
-                nombre_d = d.get("nombre") or d.get("usuario") or T["nombre_docente"]
-                usuario_d = d.get("usuario") or ""
-                email_d = d.get("email") or ""
-                marcado = st.checkbox(
-                    f"{nombre_d} · {usuario_d} · {email_d}",
-                    value=True,
-                    key=f"{key_prefix}_reuse_doc_{referencia.strip()}_{d.get('id_docente', i)}_{cv}"
-                )
-                if marcado:
-                    docentes_seleccionados.append({
-                        "id_docente": d.get("id_docente"),
-                        "nombre": nombre_d,
-                        "usuario": usuario_d,
-                        "email": email_d,
-                        "existente": True,
-                    })
-        elif curso_existente:
-            st.info(T["sin_docentes_curso"])
-
-        st.markdown(f"#### {T['anadir_docentes_nuevos']}")
-        if f"{key_prefix}_draft_docentes" not in st.session_state:
-            st.session_state[f"{key_prefix}_draft_docentes"] = []
-        docentes_draft = st.session_state[f"{key_prefix}_draft_docentes"]
-        dv = st.session_state.get(f"{key_prefix}_docente_draft_version", 0)
-
-        d1, d2, d3 = st.columns(3)
-        dn = d1.text_input(T["nombre_docente"], key=f"{key_prefix}_draft_doc_nombre_{dv}")
-        du = d2.text_input(T["usuario_docente"], key=f"{key_prefix}_draft_doc_usuario_{dv}")
-        de = d3.text_input(T["email_docente"], key=f"{key_prefix}_draft_doc_email_{dv}")
-        if st.button(T["anadir_docente_nuevo"], key=f"{key_prefix}_draft_doc_btn_{dv}"):
-            if dn.strip() and du.strip() and de.strip():
-                docentes_draft.append({"nombre": dn.strip(), "usuario": du.strip(), "email": de.strip()})
-                st.session_state[f"{key_prefix}_docente_draft_version"] = dv + 1
-                st.rerun()
+        if curso_sin_sello:
+            # Curso fuera de la metodología M0: solo se publica para que lo vean
+            # los candidatos. Sin ediciones, docentes ni alumnos => sin evaluación.
+            if curso_existente:
+                st.info(T["curso_existente_sin_sello"])
             else:
-                st.warning(T["rellena_docente"])
-
-        for i, d in enumerate(docentes_draft):
-            cc1, cc2 = st.columns([0.9, 0.1])
-            cc1.write(f"**{d['nombre']}** · {d['usuario']} · {d['email']}")
-            if cc2.button("🗑️", key=f"{key_prefix}_draft_doc_del_{i}"):
-                docentes_draft.pop(i)
-                st.rerun()
-
-        total_docentes = len(docentes_seleccionados) + len(docentes_draft)
-        st.caption(T["docentes_tendra"].format(total=total_docentes))
-
-        # -----------------------------------------------------------
-        # ALUMNOS: SIEMPRE NUEVOS PARA CADA EDICIÓN
-        # -----------------------------------------------------------
-        st.markdown(f"### {T['alumnos_edicion']}")
-        st.info(
-            T["alumnos_info"]
-        )
-
-        if f"{key_prefix}_draft_alumnos" not in st.session_state:
-            st.session_state[f"{key_prefix}_draft_alumnos"] = []
-        alumnos_draft = st.session_state[f"{key_prefix}_draft_alumnos"]
-        av = st.session_state.get(f"{key_prefix}_alumno_draft_version", 0)
-        datos_alumno = _render_formulario_alumno(f"{key_prefix}_draft_alumno", av)
-
-        if st.button(T["anadir_alumno_edicion"], key=f"{key_prefix}_draft_alu_btn_{av}"):
-            if _alumno_valido(datos_alumno):
-                alumnos_draft.append({k: v.strip() for k, v in datos_alumno.items()})
-                st.session_state[f"{key_prefix}_alumno_draft_version"] = av + 1
-                st.rerun()
-            else:
-                st.warning(T["todos_campos_alumno"])
-
-        for i, a in enumerate(alumnos_draft):
-            cc1, cc2 = st.columns([0.9, 0.1])
-            cc1.write(
-                f"**{a['nombre']} {a['apellidos']}** · "
-                f"{a['provincia']} / {a['localidad']} · {a['telefono']} · {a['email']}"
-            )
-            if cc2.button("🗑️", key=f"{key_prefix}_draft_alu_del_{i}"):
-                alumnos_draft.pop(i)
-                st.rerun()
- # -----------------------------------------------------------
-        # ENVIAR NUEVA EDICIÓN
-        # -----------------------------------------------------------
-        st.markdown(f"### {T['enviar_peticion_curso']}")
-        if st.button(
-            T["enviar_peticion_curso_btn"],
-            type="primary",
-            key=f"{key_prefix}_crear_edicion_btn"
-        ):
-            if not referencia.strip():
-                st.warning(T["indica_codigo"])
-            elif not curso_existente and not nombre_curso.strip():
-                st.warning(T["codigo_nuevo_nombre"])
-            elif total_docentes == 0:
-                st.warning(T["al_menos_docente"])
-            elif not alumnos_draft:
-                st.warning(T["al_menos_alumno"])
-            else:
-                try:
-                    if curso_existente:
-                        # Reutilización real: no se vuelve a crear ni modificar el catálogo.
-                        curso = curso_existente
-                        nombre_edicion = (
-                            curso.get("nombre_es")
-                            or curso.get("nombre_ca")
-                            or referencia.strip()
-                        )
+                st.info(T["aviso_curso_sin_sello"])
+                if st.button(
+                    T["publicar_curso_sin_sello_btn"],
+                    type="primary",
+                    key=f"{key_prefix}_publicar_sin_sello_btn"
+                ):
+                    if not referencia.strip():
+                        st.warning(T["indica_codigo"])
+                    elif not nombre_curso.strip():
+                        st.warning(T["codigo_nuevo_nombre"])
                     else:
-                        curso = _crear_o_reutilizar_curso(
-                            empresa_id,
-                            referencia.strip(),
-                            nombre_curso.strip(),
-                            nombre_modulo.strip(),
-                            nivel.strip(),
-                            horas.strip(),
-                            competencias.strip(),
-                            nombre_empresa,
-                            sector_curso,
-                            subsector_curso,
-                            sello_m0_curso,
-                        )
-                        if not curso:
-                            raise RuntimeError("No se pudo crear el curso." if lang == "es" else "No s’ha pogut crear el curs.")
-                        nombre_edicion = nombre_curso.strip()
-
-                    if ficha_pdf_curso is not None:
                         try:
-                            guardar_ficha_pdf_curso(
-                                referencia.strip(), empresa_id, nombre_empresa, ficha_pdf_curso
+                            curso = _crear_o_reutilizar_curso(
+                                empresa_id,
+                                referencia.strip(),
+                                nombre_curso.strip(),
+                                nombre_modulo.strip(),
+                                nivel.strip(),
+                                horas.strip(),
+                                competencias.strip(),
+                                nombre_empresa,
+                                sector_curso,
+                                subsector_curso,
+                                False,
                             )
-                            st.session_state[f"{key_prefix}_ficha_pdf_aviso"] = T["ficha_pdf_pendiente"]
-                        except Exception as e_ficha:
-                            st.session_state[f"{key_prefix}_ficha_pdf_error"] = T["ficha_pdf_error"].format(error=e_ficha)
+                            if not curso:
+                                raise RuntimeError("No se pudo crear el curso." if lang == "es" else "No s’ha pogut crear el curs.")
+                            crear_notificacion(
+                                "curso",
+                                f"Nuevo curso SIN Sello M0 propuesto por {nombre_empresa}: {referencia.strip()}"
+                            )
+                            st.success(T["curso_enviado"])
+                            st.session_state[f"{key_prefix}_nuevo_version"] = cv + 1
+                            st.rerun()
+                        except Exception as e:
+                            st.error(T["error_peticion_curso"].format(error=e))
+        else:
+            # -----------------------------------------------------------
+            # DOCENTES
+            # -----------------------------------------------------------
+            st.markdown(f"### {T['docentes_edicion']}")
 
-                    edicion = _crear_edicion_curso(
-                        empresa_id,
-                        referencia.strip(),
-                        nombre_edicion,
+            docentes_existentes = _cargar_docentes_curso(referencia.strip()) if curso_existente else []
+            docentes_seleccionados = []
+
+            if curso_existente and docentes_existentes:
+                st.caption(
+                    T["docentes_reutilizables"]
+                )
+                for i, d in enumerate(docentes_existentes):
+                    nombre_d = d.get("nombre") or d.get("usuario") or T["nombre_docente"]
+                    usuario_d = d.get("usuario") or ""
+                    email_d = d.get("email") or ""
+                    marcado = st.checkbox(
+                        f"{nombre_d} · {usuario_d} · {email_d}",
+                        value=True,
+                        key=f"{key_prefix}_reuse_doc_{referencia.strip()}_{d.get('id_docente', i)}_{cv}"
                     )
+                    if marcado:
+                        docentes_seleccionados.append({
+                            "id_docente": d.get("id_docente"),
+                            "nombre": nombre_d,
+                            "usuario": usuario_d,
+                            "email": email_d,
+                            "existente": True,
+                        })
+            elif curso_existente:
+                st.info(T["sin_docentes_curso"])
 
-                    # Docentes ya existentes del mismo código: se reutilizan.
-                    for d in docentes_seleccionados:
-                        if not d.get("id_docente"):
-                            continue
-                        _vincular_docente_edicion(edicion["id"], d["id_docente"])
+            st.markdown(f"#### {T['anadir_docentes_nuevos']}")
+            if f"{key_prefix}_draft_docentes" not in st.session_state:
+                st.session_state[f"{key_prefix}_draft_docentes"] = []
+            docentes_draft = st.session_state[f"{key_prefix}_draft_docentes"]
+            dv = st.session_state.get(f"{key_prefix}_docente_draft_version", 0)
 
-                    # Docentes nuevos: se crean/reutilizan en la tabla de docentes
-                    # y se relacionan tanto con el curso catálogo como con la edición.
-                    for d in docentes_draft:
-                        docente = _crear_o_reutilizar_docente(
-                            empresa_id,
-                            d["nombre"],
-                            d["usuario"],
-                            d["email"],
-                            referencia.strip(),
-                        )
-                        _vincular_docente_edicion(edicion["id"], docente["id_docente"])
-
-                    # Los alumnos siempre son propios de esta nueva edición.
-                    for a in alumnos_draft:
-                        _anadir_alumno_edicion(edicion["id"], a)
-
-                    crear_notificacion(
-                        "curso",
-                        f"Nueva edición de curso propuesta por {nombre_empresa}: "
-                        f"{referencia.strip()} ({len(alumnos_draft)} alumnos, {total_docentes} docentes)"
-                    )
-
-                    st.success(
-                        T["peticion_curso_ok"]
-                    )
-                    st.session_state[f"{key_prefix}_draft_docentes"] = []
-                    st.session_state[f"{key_prefix}_draft_alumnos"] = []
-                    st.session_state[f"{key_prefix}_nuevo_version"] = cv + 1
-                    st.session_state[f"{key_prefix}_docente_draft_version"] = 0
-                    st.session_state[f"{key_prefix}_alumno_draft_version"] = 0
+            d1, d2, d3 = st.columns(3)
+            dn = d1.text_input(T["nombre_docente"], key=f"{key_prefix}_draft_doc_nombre_{dv}")
+            du = d2.text_input(T["usuario_docente"], key=f"{key_prefix}_draft_doc_usuario_{dv}")
+            de = d3.text_input(T["email_docente"], key=f"{key_prefix}_draft_doc_email_{dv}")
+            if st.button(T["anadir_docente_nuevo"], key=f"{key_prefix}_draft_doc_btn_{dv}"):
+                if dn.strip() and du.strip() and de.strip():
+                    docentes_draft.append({"nombre": dn.strip(), "usuario": du.strip(), "email": de.strip()})
+                    st.session_state[f"{key_prefix}_docente_draft_version"] = dv + 1
                     st.rerun()
-                except Exception as e:
-                    st.error(T["error_peticion_curso"].format(error=e))
+                else:
+                    st.warning(T["rellena_docente"])
+
+            for i, d in enumerate(docentes_draft):
+                cc1, cc2 = st.columns([0.9, 0.1])
+                cc1.write(f"**{d['nombre']}** · {d['usuario']} · {d['email']}")
+                if cc2.button("🗑️", key=f"{key_prefix}_draft_doc_del_{i}"):
+                    docentes_draft.pop(i)
+                    st.rerun()
+
+            total_docentes = len(docentes_seleccionados) + len(docentes_draft)
+            st.caption(T["docentes_tendra"].format(total=total_docentes))
+
+            # -----------------------------------------------------------
+            # ALUMNOS: SIEMPRE NUEVOS PARA CADA EDICIÓN
+            # -----------------------------------------------------------
+            st.markdown(f"### {T['alumnos_edicion']}")
+            st.info(
+                T["alumnos_info"]
+            )
+
+            if f"{key_prefix}_draft_alumnos" not in st.session_state:
+                st.session_state[f"{key_prefix}_draft_alumnos"] = []
+            alumnos_draft = st.session_state[f"{key_prefix}_draft_alumnos"]
+            av = st.session_state.get(f"{key_prefix}_alumno_draft_version", 0)
+            datos_alumno = _render_formulario_alumno(f"{key_prefix}_draft_alumno", av)
+
+            if st.button(T["anadir_alumno_edicion"], key=f"{key_prefix}_draft_alu_btn_{av}"):
+                if _alumno_valido(datos_alumno):
+                    alumnos_draft.append({k: v.strip() for k, v in datos_alumno.items()})
+                    st.session_state[f"{key_prefix}_alumno_draft_version"] = av + 1
+                    st.rerun()
+                else:
+                    st.warning(T["todos_campos_alumno"])
+
+            for i, a in enumerate(alumnos_draft):
+                cc1, cc2 = st.columns([0.9, 0.1])
+                cc1.write(
+                    f"**{a['nombre']} {a['apellidos']}** · "
+                    f"{a['provincia']} / {a['localidad']} · {a['telefono']} · {a['email']}"
+                )
+                if cc2.button("🗑️", key=f"{key_prefix}_draft_alu_del_{i}"):
+                    alumnos_draft.pop(i)
+                    st.rerun()
+     # -----------------------------------------------------------
+            # ENVIAR NUEVA EDICIÓN
+            # -----------------------------------------------------------
+            st.markdown(f"### {T['enviar_peticion_curso']}")
+            if st.button(
+                T["enviar_peticion_curso_btn"],
+                type="primary",
+                key=f"{key_prefix}_crear_edicion_btn"
+            ):
+                if not referencia.strip():
+                    st.warning(T["indica_codigo"])
+                elif not curso_existente and not nombre_curso.strip():
+                    st.warning(T["codigo_nuevo_nombre"])
+                elif total_docentes == 0:
+                    st.warning(T["al_menos_docente"])
+                elif not alumnos_draft:
+                    st.warning(T["al_menos_alumno"])
+                else:
+                    try:
+                        if curso_existente:
+                            # Reutilización real: no se vuelve a crear ni modificar el catálogo.
+                            curso = curso_existente
+                            nombre_edicion = (
+                                curso.get("nombre_es")
+                                or curso.get("nombre_ca")
+                                or referencia.strip()
+                            )
+                        else:
+                            curso = _crear_o_reutilizar_curso(
+                                empresa_id,
+                                referencia.strip(),
+                                nombre_curso.strip(),
+                                nombre_modulo.strip(),
+                                nivel.strip(),
+                                horas.strip(),
+                                competencias.strip(),
+                                nombre_empresa,
+                                sector_curso,
+                                subsector_curso,
+                                sello_m0_curso,
+                            )
+                            if not curso:
+                                raise RuntimeError("No se pudo crear el curso." if lang == "es" else "No s’ha pogut crear el curs.")
+                            nombre_edicion = nombre_curso.strip()
+
+                        edicion = _crear_edicion_curso(
+                            empresa_id,
+                            referencia.strip(),
+                            nombre_edicion,
+                        )
+
+                        # Docentes ya existentes del mismo código: se reutilizan.
+                        for d in docentes_seleccionados:
+                            if not d.get("id_docente"):
+                                continue
+                            _vincular_docente_edicion(edicion["id"], d["id_docente"])
+
+                        # Docentes nuevos: se crean/reutilizan en la tabla de docentes
+                        # y se relacionan tanto con el curso catálogo como con la edición.
+                        for d in docentes_draft:
+                            docente = _crear_o_reutilizar_docente(
+                                empresa_id,
+                                d["nombre"],
+                                d["usuario"],
+                                d["email"],
+                                referencia.strip(),
+                            )
+                            _vincular_docente_edicion(edicion["id"], docente["id_docente"])
+
+                        # Los alumnos siempre son propios de esta nueva edición.
+                        for a in alumnos_draft:
+                            _anadir_alumno_edicion(edicion["id"], a)
+
+                        crear_notificacion(
+                            "curso",
+                            f"Nueva edición de curso propuesta por {nombre_empresa}: "
+                            f"{referencia.strip()} ({len(alumnos_draft)} alumnos, {total_docentes} docentes)"
+                        )
+
+                        st.success(
+                            T["peticion_curso_ok"]
+                        )
+                        st.session_state[f"{key_prefix}_draft_docentes"] = []
+                        st.session_state[f"{key_prefix}_draft_alumnos"] = []
+                        st.session_state[f"{key_prefix}_nuevo_version"] = cv + 1
+                        st.session_state[f"{key_prefix}_docente_draft_version"] = 0
+                        st.session_state[f"{key_prefix}_alumno_draft_version"] = 0
+                        st.rerun()
+                    except Exception as e:
+                        st.error(T["error_peticion_curso"].format(error=e))
 
     # ---------------------------------------------------------------
     # MIS CURSOS
@@ -3021,16 +2626,14 @@ def _render_colaborador_logueado(empresa_id, nombre_empresa, key_prefix):
                     ce1, ce2 = st.columns(2)
                     sector_edit = ce1.selectbox(
                         T["campo_sector_curso"], nombres_sectores_edit, index=idx_sector,
-                        key=f"{key_prefix}_edit_sector_{codigo_e}",
-                        format_func=lambda texto: traducir_sector_subsector(texto, lang)
+                        key=f"{key_prefix}_edit_sector_{codigo_e}"
                     )
                     subsectores_edit_opts = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_edit)
                     subsector_actual_e = curso_e.get("subsector")
                     idx_subsector = subsectores_edit_opts.index(subsector_actual_e) if subsector_actual_e in subsectores_edit_opts else 0
                     subsector_edit = ce2.selectbox(
                         T["campo_subsector_curso"], subsectores_edit_opts, index=idx_subsector,
-                        key=f"{key_prefix}_edit_subsector_{codigo_e}",
-                        format_func=lambda texto: traducir_sector_subsector(texto, lang)
+                        key=f"{key_prefix}_edit_subsector_{codigo_e}"
                     )
                     sello_m0_edit = st.checkbox(
                         T["campo_sello_m0"], value=curso_e.get("sello_m0", True),
@@ -3204,15 +2807,15 @@ def bloque_seleccion_plan_asociado(key_prefix):
 
     st.markdown(
         """<style>
-        .asoc-plan-card { border:2px solid #4F8CC4; border-radius:8px; overflow:hidden; background:#0B1016; color:#E8EDF3; min-height:355px; }
-        .asoc-plan-head-basic { background:#4F8CC4; color:#0B1016; padding:12px; text-align:center; font-weight:700; letter-spacing:2px; }
-        .asoc-plan-head-standard { background:#1E2936; color:#9AA7B6; padding:12px; text-align:center; font-weight:700; letter-spacing:2px; }
-        .asoc-plan-price { font-size:clamp(30px,4.5vw,42px); font-weight:800; text-align:center; padding:18px 8px 8px; color:#E8EDF3; }
-        .asoc-plan-divider { border-top:1px solid #1E2936; margin:8px 20px 12px; }
-        .asoc-plan-promo { text-align:center; color:#4F8CC4; font-weight:700; font-size:14px; padding:0 8px 4px; }
-        .asoc-plan-list { padding:4px 20px 16px 34px; color:#E8EDF3; line-height:1.55; }
+        .asoc-plan-card { border:1px solid #d0d5dd; border-radius:12px; overflow:hidden; background:white; min-height:355px; box-shadow:0 2px 8px rgba(16,24,40,.08); }
+        .asoc-plan-head-basic { background:#252525; color:white; padding:10px; text-align:center; font-weight:700; }
+        .asoc-plan-head-standard { background:#e6b800; color:white; padding:10px; text-align:center; font-weight:700; }
+        .asoc-plan-price { font-size:26px; font-weight:800; text-align:center; padding:14px 8px 8px; color:#111827; }
+        .asoc-plan-divider { border-top:2px solid #d0d5dd; margin:4px 20px 10px; }
+        .asoc-plan-promo { text-align:center; color:red; font-weight:700; font-size:14px; padding:0 8px 4px; }
+        .asoc-plan-list { padding:4px 20px 14px 34px; color:#111827; line-height:1.55; }
         .asoc-plan-list li { margin-bottom:6px; }
-        .asoc-plan-disabled { opacity:.75; border-color:#1E2936; }
+        .asoc-plan-disabled { opacity:.78; }
         </style>""", unsafe_allow_html=True,
     )
 
@@ -3263,15 +2866,15 @@ def bloque_seleccion_plan_colaborador(key_prefix):
 
     st.markdown(
         """<style>
-        .plan-card { border:2px solid #FFB020; border-radius:8px; overflow:hidden; background:#0B1016; color:#E8EDF3; min-height:315px; }
-        .plan-head-basic { background:#FFB020; color:#0B1016; padding:12px; text-align:center; font-weight:700; letter-spacing:2px; }
-        .plan-head-standard { background:#1E2936; color:#9AA7B6; padding:12px; text-align:center; font-weight:700; letter-spacing:2px; }
-        .plan-price { font-size:clamp(30px,4.5vw,42px); font-weight:800; text-align:center; padding:18px 8px 6px; color:#E8EDF3; }
-        .plan-divider { border-top:1px solid #1E2936; margin:8px 20px 12px; }
-        .plan-promo { text-align:center; color:#FFB020; font-weight:700; font-size:14px; padding-bottom:6px; }
-        .plan-list { padding:4px 20px 16px 34px; color:#E8EDF3; line-height:1.6; }
+        .plan-card { border:1px solid #d0d5dd; border-radius:12px; overflow:hidden; background:white; min-height:315px; box-shadow:0 2px 8px rgba(16,24,40,.08); }
+        .plan-head-basic { background:#252525; color:white; padding:10px; text-align:center; font-weight:700; }
+        .plan-head-standard { background:#e6b800; color:white; padding:10px; text-align:center; font-weight:700; }
+        .plan-price { font-size:26px; font-weight:800; text-align:center; padding:14px 8px 4px; color:#111827; }
+        .plan-divider { border-top:2px solid #d0d5dd; margin:4px 20px 10px; }
+        .plan-promo { text-align:center; color:red; font-weight:700; font-size:14px; padding-bottom:6px; }
+        .plan-list { padding:4px 20px 14px 34px; color:#111827; line-height:1.6; }
         .plan-list li { margin-bottom:5px; }
-        .plan-disabled { opacity:.75; border-color:#1E2936; }
+        .plan-disabled { opacity:.78; }
         </style>""", unsafe_allow_html=True,
     )
 
@@ -3388,19 +2991,19 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
                     cols_sectores = st.columns(3)
                     for col, datos_sector in zip(cols_sectores, fila_sectores):
                         with col:
-                            if st.button(traducir_sector_subsector(datos_sector["sector"], lang), key=f"{key_prefix}_sector_btn_{datos_sector['sector']}", use_container_width=True):
+                            if st.button(datos_sector["sector"], key=f"{key_prefix}_sector_btn_{datos_sector['sector']}", use_container_width=True):
                                 st.session_state[sector_key] = datos_sector["sector"]
                                 st.rerun()
 
             elif not subsector_actual:
-                st.markdown(f"**{traducir_sector_subsector(sector_actual, lang)}**")
+                st.markdown(f"**{sector_actual}**")
                 subsectores_sector = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == sector_actual)
                 for i in range(0, len(subsectores_sector), 3):
                     fila_subsectores = subsectores_sector[i:i + 3]
                     cols_subsectores = st.columns(3)
                     for col, sub in zip(cols_subsectores, fila_subsectores):
                         with col:
-                            if st.button(traducir_sector_subsector(sub, lang), key=f"{key_prefix}_subsector_btn_{sub}", use_container_width=True):
+                            if st.button(sub, key=f"{key_prefix}_subsector_btn_{sub}", use_container_width=True):
                                 st.session_state[subsector_key] = sub
                                 st.rerun()
                 if st.button(T["cambiar_sector"], key=f"{key_prefix}_cambiar_sector_btn"):
@@ -3409,7 +3012,7 @@ def bloque_acceso_y_peticion(tipo, nombre_hoja_credenciales, key_prefix, incluir
 
             else:
                 with st.container(border=True):
-                    st.markdown(f"**{traducir_sector_subsector(sector_actual, lang)}** — {T['subsector_seleccionado']} {traducir_sector_subsector(subsector_actual, lang)}")
+                    st.markdown(f"**{sector_actual}** — {T['subsector_seleccionado']} {subsector_actual}")
                     nivel_candidato = st.text_input(T["campo_nivel_candidato"], key=f"{key_prefix}_nivel_{perfil_version}")
                     trabajos_candidato = st.text_area(T["campo_trabajos_candidato"], key=f"{key_prefix}_trabajos_{perfil_version}")
 
@@ -3489,15 +3092,15 @@ if st.session_state.get("acceso_panel"):
 
     if acceso_panel == "asociado":
         st.markdown(f'<div class="access-title">👥 {T["acceso_asociados"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="access-subtitle">{T["acceso_subtitulo_asociados"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-subtitle">Acceso y gestión para Asociados</div>', unsafe_allow_html=True)
         bloque_acceso_y_peticion("asociado", "Credenciales Asociados", "asoc_part", usar_supabase=True)
-        if st.button(T["volver_documentacion"], key="volver_desde_asociados", use_container_width=False):
+        if st.button("← Volver a Documentación", key="volver_desde_asociados", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     elif acceso_panel == "colaborador":
         st.markdown(f'<div class="access-title">🏢 {T["acceso_colaboradores"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="access-subtitle">{T["acceso_subtitulo_colaboradores"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-subtitle">Acceso y gestión para Colaboradores</div>', unsafe_allow_html=True)
         bloque_acceso_y_peticion(
             "colaborador",
             "Credenciales Colaboradores",
@@ -3505,13 +3108,13 @@ if st.session_state.get("acceso_panel"):
             incluir_centro_registro=True,
             usar_supabase=True
         )
-        if st.button(T["volver_documentacion"], key="volver_desde_colaboradores", use_container_width=False):
+        if st.button("← Volver a Documentación", key="volver_desde_colaboradores", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
     elif acceso_panel == "candidato":
         st.markdown(f'<div class="access-title">🎓 {T["acceso_candidatos"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="access-subtitle">{T["acceso_subtitulo_candidatos"]}</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-subtitle">Área de acceso para Candidatos</div>', unsafe_allow_html=True)
         st.info(T["aviso_candidato_cursos"])
 
         cand_login_key = "cand_login_ok"
@@ -3611,19 +3214,19 @@ if st.session_state.get("acceso_panel"):
                     cols_sectores_cand = st.columns(3)
                     for col, datos_sector in zip(cols_sectores_cand, fila_sectores_cand):
                         with col:
-                            if st.button(traducir_sector_subsector(datos_sector["sector"], lang), key=f"cand_sector_btn_{datos_sector['sector']}", use_container_width=True):
+                            if st.button(datos_sector["sector"], key=f"cand_sector_btn_{datos_sector['sector']}", use_container_width=True):
                                 st.session_state[cand_sector_key] = datos_sector["sector"]
                                 st.rerun()
 
             elif not cand_subsector_actual:
-                st.markdown(f"**{traducir_sector_subsector(cand_sector_actual, lang)}**")
+                st.markdown(f"**{cand_sector_actual}**")
                 subsectores_cand = next(d["subsectores"] for d in SECTORES_INDUSTRIALES if d["sector"] == cand_sector_actual)
                 for i in range(0, len(subsectores_cand), 3):
                     fila_subsectores_cand = subsectores_cand[i:i + 3]
                     cols_subsectores_cand = st.columns(3)
                     for col, sub in zip(cols_subsectores_cand, fila_subsectores_cand):
                         with col:
-                            if st.button(traducir_sector_subsector(sub, lang), key=f"cand_subsector_btn_{sub}", use_container_width=True):
+                            if st.button(sub, key=f"cand_subsector_btn_{sub}", use_container_width=True):
                                 st.session_state[cand_subsector_key] = sub
                                 st.rerun()
                 if st.button(T["cambiar_sector"], key="cand_cambiar_sector_btn"):
@@ -3631,7 +3234,7 @@ if st.session_state.get("acceso_panel"):
                     st.rerun()
 
             elif not cand_ubicacion_actual:
-                st.markdown(f"**{traducir_sector_subsector(cand_sector_actual, lang)}** — {traducir_sector_subsector(cand_subsector_actual, lang)}")
+                st.markdown(f"**{cand_sector_actual}** — {cand_subsector_actual}")
                 ubicaciones_cand = obtener_ubicaciones_cursos_sector(cand_sector_actual, cand_subsector_actual)
                 if not ubicaciones_cand:
                     st.info(T["sin_cursos_ubicacion"])
@@ -3648,49 +3251,76 @@ if st.session_state.get("acceso_panel"):
 
             else:
                 provincia_sel_cand, poblacion_sel_cand = cand_ubicacion_actual
-                st.markdown(f"**{traducir_sector_subsector(cand_sector_actual, lang)}** — {traducir_sector_subsector(cand_subsector_actual, lang)} — {poblacion_sel_cand} ({traducir_provincia(provincia_sel_cand, lang)})")
+                st.markdown(f"**{cand_sector_actual}** — {cand_subsector_actual} — {poblacion_sel_cand} ({provincia_sel_cand})")
                 cursos_encontrados_cand = obtener_cursos_candidato(cand_sector_actual, cand_subsector_actual, provincia_sel_cand, poblacion_sel_cand)
                 if not cursos_encontrados_cand:
                     st.info(T["sin_cursos_ubicacion"])
                 else:
-                    urls_fichas = obtener_urls_fichas_aprobadas(
-                        tuple(c.get("codigo_curso") for c in cursos_encontrados_cand)
-                    )
                     for curso_cand in cursos_encontrados_cand:
-                        tiene_sello_m0 = curso_tiene_sello_m0(curso_cand)
                         with st.container(border=True):
-                            st.markdown(f"**{curso_cand['nombre_curso']}**")
-                            url_ficha_cand = urls_fichas.get(str(curso_cand.get("codigo_curso") or "").strip())
-                            if url_ficha_cand:
-                                st.link_button(T["ficha_candidatos_pdf"], url_ficha_cand, use_container_width=False)
-                            if tiene_sello_m0:
-                                st.markdown(
-                                    f"<span style='background:var(--mz-brass); color:var(--mz-graphite); "
-                                    f"font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px;'>"
-                                    f"{T['sello_m0_badge']}</span>",
-                                    unsafe_allow_html=True,
-                                )
-                            else:
-                                st.markdown(
-                                    f"<span style='background:var(--mz-offwhite); color:var(--mz-ink-soft); "
-                                    f"font-size:11px; font-weight:600; padding:3px 10px; border-radius:12px; "
-                                    f"border:1px solid #D9DAD6;'>{T['sin_sello_m0_badge']}</span>",
-                                    unsafe_allow_html=True,
-                                )
-                                st.caption(T["curso_sin_sello_aviso"])
-                            st.caption(f"{T['campo_nombre_centro']}: {curso_cand['nombre_centro']}")
+                            esc = _html.escape
+                            con_sello_cand = curso_cand.get("sello_m0", True)
+                            nombre_ficha = curso_cand.get("nombre_curso_ca") if (lang == "ca" and curso_cand.get("nombre_curso_ca")) else curso_cand["nombre_curso"]
+                            area_ficha = " › ".join(x for x in [curso_cand.get("sector", ""), curso_cand.get("subsector", "")] if x)
                             estado_txt_cand = T["curso_estado_cursado"] if curso_cand["estado"] == "cursado" else T["curso_estado_en_curso"]
-                            st.write(f"**{T['estado']}** {estado_txt_cand}")
-                            if curso_cand.get("horas_totales"):
-                                st.write(f"**{T['campo_horas_totales']}:** {curso_cand['horas_totales']}")
-                            if curso_cand.get("competencias"):
-                                st.write(f"**{T['campo_competencias']}:** {curso_cand['competencias']}")
-                            if curso_cand.get("modulos"):
-                                st.write(f"**{T['modulos_curso']}:**")
-                                for m in curso_cand["modulos"]:
-                                    desc_m = (m.get("descripcion_ca") if lang == "ca" else m.get("descripcion_es")) or m.get("descripcion_es") or ""
-                                    niv_m = m.get("nivel_bloque") or ""
-                                    st.write(f"- {desc_m}" + (f" ({niv_m})" if niv_m else ""))
+                            if con_sello_cand:
+                                sello_html = f"<span style='background:#B8923A; color:#151B23; font-size:12px; font-weight:700; padding:5px 12px; border-radius:14px; white-space:nowrap;'>{esc(T['sello_m0_badge'])}</span>"
+                            else:
+                                sello_html = f"<span style='background:transparent; color:#B6BEC9; font-size:12px; font-weight:600; padding:5px 12px; border-radius:14px; border:1px solid #5B6472; white-space:nowrap;'>{esc(T['sin_sello_m0_badge'])}</span>"
+
+                            datos_clave = [
+                                (T["ficha_centro"], curso_cand.get("nombre_centro")),
+                                (T["ficha_horas"], curso_cand.get("horas_totales")),
+                                (T["ficha_estado"], estado_txt_cand),
+                            ]
+                            datos_clave_html = "".join(
+                                "<div style='flex:1; min-width:140px;'>"
+                                f"<div style='font-size:11px; color:#5B6472; text-transform:uppercase; letter-spacing:0.5px;'>{esc(str(k))}</div>"
+                                f"<div style='font-size:14.5px; font-weight:600; color:#151B23; margin-top:2px;'>{esc(str(v)) if v not in (None, '') else '—'}</div>"
+                                "</div>"
+                                for k, v in datos_clave
+                            )
+
+                            estilo_titulo_seccion = "color:#8C6A17; font-weight:700; font-size:13.5px; text-transform:uppercase; letter-spacing:0.4px; border-bottom:1px dashed #D6B563; padding-bottom:4px; margin-bottom:8px;"
+                            secciones_html = ""
+                            competencias_txt = curso_cand.get("competencias")
+                            if competencias_txt:
+                                competencias_html = esc(str(competencias_txt)).replace("\n", "<br>")
+                                secciones_html += (
+                                    "<div style='margin-top:18px;'>"
+                                    f"<div style='{estilo_titulo_seccion}'>{esc(T['campo_competencias'])}</div>"
+                                    f"<div style='font-size:14px; line-height:1.6; color:#151B23;'>{competencias_html}</div>"
+                                    "</div>"
+                                )
+                            items_modulos = ""
+                            for m in curso_cand.get("modulos") or []:
+                                desc_m = (m.get("descripcion_ca") if (lang == "ca" and m.get("descripcion_ca")) else m.get("descripcion_es")) or ""
+                                niv_m = m.get("nivel_bloque") or ""
+                                if desc_m or niv_m:
+                                    items_modulos += f"<li>{esc(str(desc_m))}" + (f" <span style='color:#8B93A0;'>({esc(str(niv_m))})</span>" if niv_m else "") + "</li>"
+                            if items_modulos:
+                                secciones_html += (
+                                    "<div style='margin-top:18px;'>"
+                                    f"<div style='{estilo_titulo_seccion}'>{esc(T['modulos_curso'])}</div>"
+                                    f"<ul style='margin:0; padding-left:20px; font-size:14px; line-height:1.7; color:#151B23;'>{items_modulos}</ul>"
+                                    "</div>"
+                                )
+
+                            ficha_html = (
+                                "<div style='border-radius:6px; overflow:hidden; margin-bottom:14px;'>"
+                                "<div style='background:#151B23; border-bottom:4px solid #B8923A; padding:18px 22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;'>"
+                                "<div style='flex:1; min-width:200px;'>"
+                                f"<div style='color:#D6B563; font-weight:700; font-size:12px; letter-spacing:0.7px; text-transform:uppercase; line-height:1.4;'>{esc(area_ficha) if area_ficha else '&nbsp;'}</div>"
+                                f"<div style='color:#EDEEF0; font-size:23px; font-weight:500; line-height:1.2; margin-top:6px;'>{esc(str(nombre_ficha))}</div>"
+                                f"<div style='color:#8B93A0; font-size:11.5px; margin-top:6px; font-family:IBM Plex Mono, monospace;'>{esc(str(curso_cand['codigo_curso']))}</div>"
+                                "</div>"
+                                f"<div>{sello_html}</div>"
+                                "</div>"
+                                f"<div style='background:#EDEEF0; padding:14px 22px; display:flex; gap:22px; flex-wrap:wrap;'>{datos_clave_html}</div>"
+                                f"<div style='padding:4px 22px 16px;'>{secciones_html}</div>"
+                                "</div>"
+                            )
+                            st.markdown(ficha_html, unsafe_allow_html=True)
 
                             if st.button(T["btn_solicitar_curso"], key=f"cand_solicitar_{curso_cand['codigo_curso']}"):
                                 crear_notificacion(
@@ -3717,7 +3347,7 @@ if st.session_state.get("acceso_panel"):
                 st.session_state[cand_ubic_key] = None
                 st.rerun()
 
-        if st.button(T["volver_documentacion"], key="volver_desde_candidatos", use_container_width=False):
+        if st.button("← Volver a Documentación", key="volver_desde_candidatos", use_container_width=False):
             st.session_state["acceso_panel"] = None
             st.rerun()
 
@@ -3725,9 +3355,7 @@ if st.session_state.get("acceso_panel"):
 
 
 elif opcion == "docs":
-
-    # La revisión de fichas PDF solo se muestra a un administrador con sesión iniciada.
-    mostrar_revision_fichas_pdf()
+    mostrar_pestanas_principales(opcion)
 
     # Estos datos solo hacen falta en esta pestaña, así que se cargan aquí
     # (y solo una vez por sesión) en vez de en cada carga de la app, para no
@@ -3752,47 +3380,45 @@ elif opcion == "docs":
         <div style="font-size:13px; letter-spacing:1.5px; color:var(--mz-ink-soft); margin-bottom:10px; text-transform:uppercase;">
             {T['area_docs']}
         </div>
-        <style>
-        [data-testid="stAppViewContainer"] .mz-display.mz-display.mz-display {{
-            font-family: 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif !important;
-        }}
-        [data-testid="stAppViewContainer"] .mz-mono2.mz-mono2.mz-mono2 {{
-            font-family: 'IBM Plex Mono', monospace !important;
-        }}
-        </style>
-        <div style="background:#0B1016;
-                    background-image:linear-gradient(#131C27 1px, transparent 1px),
-                                      linear-gradient(90deg, #131C27 1px, transparent 1px);
-                    background-size:48px 48px;
-                    border:2px solid #FFB020; border-radius:8px;
-                    padding:clamp(24px,5vw,64px); margin:0 0 12px;
-                    display:flex; align-items:center; gap:clamp(24px,4vw,56px); flex-wrap:wrap;">
-            <div class="mz-display" style="flex:none; font-weight:800; font-size:clamp(110px,20vw,220px);
-                        line-height:1; color:transparent; -webkit-text-stroke:3px #FFB020;">M0</div>
-            <div style="flex:1; min-width:240px;">
-                <div class="mz-mono2" style="font-size:13px; color:#FFB020; letter-spacing:3px; margin-bottom:20px;">{T['hero_sello_tag']}</div>
-                <h1 class="mz-display" style="color:#E8EDF3; font-weight:800; font-size:clamp(28px,4.6vw,58px); line-height:1.08; margin:0 0 22px; padding:0; letter-spacing:-1px;">
-                    {T['hero_titulo']}
+        <div style="background:var(--mz-graphite);
+                    background-image:linear-gradient(#1D2530 1px, transparent 1px),
+                                      linear-gradient(90deg, #1D2530 1px, transparent 1px);
+                    background-size:42px 42px; background-position:center;
+                    border-radius:8px; padding:56px 48px 40px;
+                    margin:0 0 4px; display:flex; align-items:center; gap:48px; flex-wrap:wrap;">
+            <div style="flex:2; min-width:280px;">
+                <h1 style="color:var(--mz-offwhite); font-size:38px; font-weight:600; line-height:1.22; margin:0 0 16px; letter-spacing:-0.3px;">
+                    {T['eslogan']}
                 </h1>
-                <div class="mz-display" style="color:#FFB020; font-weight:700; font-size:clamp(19px,2.3vw,28px); line-height:1.25; margin-bottom:14px;">
-                    {T['hero_solucion']}
+                <p style="color:#B6BEC9; font-size:15px; line-height:1.65; max-width:52ch; margin:0;">
+                    {T['asoc_colab']}
+                </p>
+            </div>
+            <div style="flex-shrink:0; margin:0 auto;">
+                <div style="width:170px; height:170px; border-radius:50%; border:2px solid var(--mz-brass);
+                            display:flex; align-items:center; justify-content:center; position:relative;">
+                    <div style="position:absolute; inset:12px; border-radius:50%;
+                                border:1px dashed rgba(214,181,99,0.45);"></div>
+                    <div style="text-align:center;">
+                        <div style="font-size:34px; font-weight:700; color:var(--mz-brass-light);">M0</div>
+                        <div style="font-size:10px; color:#8B93A0; letter-spacing:1.4px; margin-top:5px;">SELLO&nbsp;DE&nbsp;NIVEL</div>
+                    </div>
                 </div>
-                <div style="color:#9AA7B6; font-size:clamp(14px,1.5vw,17px);">{T['eslogan']}</div>
             </div>
         </div>
-        <div style="background:#0B1016; border:1px solid #1E2936; border-radius:8px; margin:0 0 40px;
-                    display:flex; flex-wrap:wrap; gap:16px 0; padding:22px clamp(20px,4vw,48px);">
-            <div style="flex:1; min-width:180px;">
-                <div style="font-size:22px; font-weight:600; color:#FFB020;">{len(SECTORES_ASOCIADOS)}</div>
-                <div style="font-size:12.5px; color:#9AA7B6; margin-top:3px;">{T["sectores_industriales_cubiertos"]}</div>
+        <div style="background:var(--mz-graphite); border-radius:0 0 8px 8px; margin:0 0 40px;
+                    display:flex; border-top:1px solid #2A3340; padding:22px 48px;">
+            <div style="flex:1; border-right:1px solid #2A3340;">
+                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">{len(SECTORES_ASOCIADOS)}</div>
+                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Sectores industriales cubiertos</div>
             </div>
-            <div style="flex:1; min-width:180px;">
-                <div style="font-size:22px; font-weight:600; color:#FFB020;">3</div>
-                <div style="font-size:12.5px; color:#9AA7B6; margin-top:3px;">{T["formas_acceso"]}</div>
+            <div style="flex:1; border-right:1px solid #2A3340; padding-left:28px;">
+                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">3</div>
+                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Formas de acceso: asociados, colaboradores, candidatos</div>
             </div>
-            <div style="flex:1; min-width:180px;">
-                <div style="font-size:22px; font-weight:600; color:#FFB020;">M0</div>
-                <div style="font-size:12.5px; color:#9AA7B6; margin-top:3px;">{T["un_sello_nivel_minimo"]}</div>
+            <div style="flex:1; padding-left:28px;">
+                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">M0</div>
+                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">Un sello, un nivel mínimo exigido</div>
             </div>
         </div>
         """,
@@ -3806,79 +3432,91 @@ elif opcion == "docs":
     st.markdown(
         """<style>
         .st-key-card_asociado, .st-key-card_colaborador, .st-key-card_candidato {
-            border-radius: 8px;
-            padding: clamp(24px, 4vw, 56px) !important;
-            margin-bottom: 24px;
+            background: var(--mz-paper);
+            padding: 0 2px 2px;
+            margin-bottom: 40px;
         }
-        .st-key-card_asociado { background: #4F8CC4; }
-        .st-key-card_colaborador { background: #FFB020; }
-        .st-key-card_candidato { background: #0B1016; }
+        .st-key-card_asociado { border-left: 3px solid var(--mz-steel); }
+        .st-key-card_colaborador { border-left: 3px solid var(--mz-brass); }
+        .st-key-card_candidato { border-left: 3px solid var(--mz-steel); }
         .st-key-card_asociado button, .st-key-card_colaborador button, .st-key-card_candidato button {
+            background: var(--mz-graphite) !important;
+            color: #ffffff !important;
             border: none !important;
             border-radius: 4px !important;
-            min-height: 52px;
-            padding: 0 32px !important;
-            font-weight: 600 !important;
         }
-        .st-key-card_asociado button, .st-key-card_asociado button p { background: #0B1016 !important; color: #E8EDF3 !important; }
-        .st-key-card_colaborador button, .st-key-card_colaborador button p { background: #0B1016 !important; color: #FFB020 !important; }
-        .st-key-card_candidato button, .st-key-card_candidato button p { background: #FFB020 !important; color: #0B1016 !important; }
         .st-key-card_asociado button:hover, .st-key-card_colaborador button:hover, .st-key-card_candidato button:hover {
-            filter: brightness(1.15);
+            background: var(--mz-brass) !important;
+            color: var(--mz-graphite) !important;
         }
         </style>""",
         unsafe_allow_html=True,
     )
 
-    # (tipo, clave del contenedor, clave de textos, color de texto, color de la etiqueta)
     tarjetas_acceso = [
-        ("asociado", "card_asociado", "asoc", "#0B1016", "#0B1016", "acceso_asociados"),
-        ("colaborador", "card_colaborador", "colab", "#0B1016", "#0B1016", "acceso_colaboradores"),
-        ("candidato", "card_candidato", "cand", "#E8EDF3", "#FFB020", "acceso_candidatos"),
+        ("asociado", "🏭", T["acceso_asociados"], "Perfiles ya validados, filtrando por sector y subsector.", "card_asociado"),
+        ("colaborador", "🎓", T["acceso_colaboradores"], "Da de alta tus cursos y forma parte de la red del sello M0.", "card_colaborador"),
+        ("candidato", "👷", T["acceso_candidatos"], "Fórmate, consigue el sello M0 y solicita participar en cursos.", "card_candidato"),
     ]
-    for tipo_acc, key_acc, clave_txt, color_txt, color_tag, clave_boton in tarjetas_acceso:
-        with st.container(key=key_acc):
-            st.markdown(
-                f"""
-                <div class="mz-mono2" style="font-size:13px; color:{color_tag}; letter-spacing:3px; margin-bottom:20px;">{T['banner_' + clave_txt + '_tag']}</div>
-                <div class="mz-display" style="font-weight:800; font-size:clamp(28px,5vw,52px); line-height:1.08; letter-spacing:-1px; color:{color_txt}; margin-bottom:20px;">{T['banner_' + clave_txt + '_titulo']}</div>
-                <div style="font-size:clamp(15px,1.6vw,17px); line-height:1.6; max-width:56ch; color:{color_txt}; margin-bottom:16px;">{T['banner_' + clave_txt + '_texto']}</div>
-                <div style="display:inline-block; border:2px solid {color_tag}; color:{color_tag}; border-radius:999px; padding:6px 16px; font-size:14px; font-weight:600; margin-bottom:16px;">✔ {T['banner_gratis']}</div>
-                """,
-                unsafe_allow_html=True,
-            )
-            st.button(
-                T[clave_boton],
-                key=f"btn_{key_acc}",
-                on_click=_abrir_acceso_directo,
-                args=(tipo_acc,),
-            )
+    cols_acceso = st.columns(3)
+    for col, (tipo_acc, icono_acc, titulo_acc, desc_acc, key_acc) in zip(cols_acceso, tarjetas_acceso):
+        with col:
+            with st.container(key=key_acc):
+                st.markdown(
+                    f"""
+                    <div style="padding:22px 18px 4px;">
+                        <div style="width:34px; height:34px; border-radius:50%; background:var(--mz-offwhite);
+                                    display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px;">{icono_acc}</div>
+                        <div style="font-size:16px; font-weight:600; margin-bottom:8px; color:var(--mz-ink);">{titulo_acc}</div>
+                        <div style="font-size:13.5px; color:var(--mz-ink-soft); line-height:1.55; margin-bottom:14px;">{desc_acc}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                st.button(
+                    f"Acceder",
+                    key=f"btn_{key_acc}",
+                    on_click=_abrir_acceso_directo,
+                    args=(tipo_acc,),
+                    use_container_width=True,
+                )
 
     st.markdown(
         f"""
-        <div style="background:#0B1016; border-radius:8px; padding:clamp(24px,4vw,56px); margin-bottom:40px;">
-            <div class="mz-display" style="font-weight:800; font-size:clamp(26px,3.6vw,44px); color:#E8EDF3; letter-spacing:-1px; margin-bottom:12px;">{T['flow_titulo']}</div>
-            <div style="font-size:15px; color:#9AA7B6; line-height:1.6; max-width:62ch; margin-bottom:36px;">{T['flow_subtitulo']}</div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:28px;">
-                <div style="border-left:3px solid #FFB020; padding:4px 0 4px 22px;">
-                    <div class="mz-mono2" style="font-size:13px; color:#FFB020; margin-bottom:8px;">{T['flow_paso_label']} 01</div>
-                    <div class="mz-display" style="font-weight:700; font-size:clamp(22px,2.4vw,28px); color:#E8EDF3; margin-bottom:8px;">{T['flow_paso1_t']}</div>
-                    <div style="font-size:14.5px; color:#9AA7B6; line-height:1.5;">{T['flow_paso1_d']}</div>
+        <div style="background:var(--mz-offwhite); border-radius:8px; padding:36px 40px; margin-bottom:40px;">
+            <div style="font-size:20px; font-weight:600; color:var(--mz-ink); margin-bottom:8px;">{T['flow_titulo']}</div>
+            <div style="font-size:14px; color:var(--mz-ink-soft); line-height:1.6; max-width:62ch; margin-bottom:28px;">{T['flow_subtitulo']}</div>
+            <div style="display:flex; align-items:stretch; gap:0;">
+                <div style="flex:1; position:relative; padding-right:24px;">
+                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
+                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">01</div>
+                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso1_t']}</div>
+                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso1_d']}</div>
+                    </div>
+                    <div style="position:absolute; top:50%; right:-1px; width:24px; height:0; border-top:1px dashed #B7BCC2;"></div>
                 </div>
-                <div style="border-left:3px solid #FFB020; padding:4px 0 4px 22px;">
-                    <div class="mz-mono2" style="font-size:13px; color:#FFB020; margin-bottom:8px;">{T['flow_paso_label']} 02</div>
-                    <div class="mz-display" style="font-weight:700; font-size:clamp(22px,2.4vw,28px); color:#E8EDF3; margin-bottom:8px;">{T['flow_paso2_t']}</div>
-                    <div style="font-size:14.5px; color:#9AA7B6; line-height:1.5;">{T['flow_paso2_d']}</div>
+                <div style="flex:1; position:relative; padding-right:24px;">
+                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
+                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">02</div>
+                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso2_t']}</div>
+                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso2_d']}</div>
+                    </div>
+                    <div style="position:absolute; top:50%; right:-1px; width:24px; height:0; border-top:1px dashed #B7BCC2;"></div>
                 </div>
-                <div style="border-left:3px solid #FFB020; padding:4px 0 4px 22px;">
-                    <div class="mz-mono2" style="font-size:13px; color:#FFB020; margin-bottom:8px;">{T['flow_paso_label']} 03</div>
-                    <div class="mz-display" style="font-weight:700; font-size:clamp(22px,2.4vw,28px); color:#E8EDF3; margin-bottom:8px;">{T['flow_paso3_t']}</div>
-                    <div style="font-size:14.5px; color:#9AA7B6; line-height:1.5;">{T['flow_paso3_d']}</div>
+                <div style="flex:1; position:relative; padding-right:24px;">
+                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
+                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">03</div>
+                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso3_t']}</div>
+                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso3_d']}</div>
+                    </div>
+                    <div style="position:absolute; top:50%; right:-1px; width:24px; height:0; border-top:1px dashed #B7BCC2;"></div>
                 </div>
-                <div style="border-left:3px solid #FFB020; padding:4px 0 4px 22px;">
-                    <div class="mz-mono2" style="font-size:13px; color:#FFB020; margin-bottom:8px;">{T['flow_paso_label']} 04</div>
-                    <div class="mz-display" style="font-weight:700; font-size:clamp(22px,2.4vw,28px); color:#E8EDF3; margin-bottom:8px;">{T['flow_paso4_t']}</div>
-                    <div style="font-size:14.5px; color:#9AA7B6; line-height:1.5;">{T['flow_paso4_d']}</div>
+                <div style="flex:1;">
+                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
+                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">04</div>
+                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso4_t']}</div>
+                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso4_d']}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3886,72 +3524,8 @@ elif opcion == "docs":
         unsafe_allow_html=True,
     )
 
-    st.markdown(
-        """<style>
-        .st-key-mz_directorio {
-            background: #0B1016;
-            border-radius: 8px;
-            padding: clamp(24px, 4vw, 56px) !important;
-            margin-bottom: 40px;
-        }
-        .st-key-mz_directorio [data-testid="stImage"] {
-            background: #EDEEF0;
-            border-radius: 6px;
-            padding: 8px 12px;
-            width: fit-content;
-        }
-        .st-key-mz_directorio hr { border-color: #1E2936 !important; }
-        .st-key-mz_directorio label p,
-        .st-key-mz_directorio [data-testid="stWidgetLabel"] p { color: #151B23 !important; }
-        .st-key-mz_directorio [data-testid="stExpander"] {
-            border: 1px solid #2A3340 !important;
-            border-radius: 8px !important;
-            background: #EDEEF0 !important;
-            overflow: hidden;
-            margin-bottom: 8px;
-        }
-        .st-key-mz_directorio [data-testid="stExpander"] summary {
-            background: #151B23 !important;
-        }
-        .st-key-mz_directorio [data-testid="stExpander"] summary:hover {
-            background: #1E2936 !important;
-        }
-        .st-key-mz_directorio [data-testid="stExpander"] summary p,
-        .st-key-mz_directorio [data-testid="stExpander"] summary span {
-            color: #E8EDF3 !important;
-            font-weight: 600 !important;
-        }
-        .st-key-mz_directorio [data-testid="stExpander"] summary:hover p {
-            color: #FFB020 !important;
-        }
-        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
-            background: #EDEEF0 !important;
-            border-top: 3px solid #FFB020;
-        }
-        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
-        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
-        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
-        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
-            color: #151B23 !important;
-        }
-        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] [data-testid="stExpander"] {
-            background: #FFFFFF !important;
-            border: 1px solid #D9DAD6 !important;
-        }
-        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] [data-testid="stExpander"] summary {
-            background: #FFFFFF !important;
-        }
-        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] [data-testid="stExpander"] summary:hover {
-            background: #F5F5F5 !important;
-        }
-        </style>""",
-        unsafe_allow_html=True,
-    )
-    with st.container(key="mz_directorio"):
-        st.markdown(
-            f"<div class='mz-display' style='font-weight:800; font-size:clamp(26px,3.6vw,44px); letter-spacing:-1px; color:#E8EDF3; margin:0 0 20px;'>{T['asoc_colab']}</div>",
-            unsafe_allow_html=True,
-        )
+    with st.container(border=True):
+        st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
         st.image("Asociados y colaboradores.png", width=300)
 
         asociados_db, colaboradores_db = cargar_asociados_colaboradores()
@@ -3960,34 +3534,27 @@ elif opcion == "docs":
             """Desplegable en cascada Provincia -> Población -> Empresa,
             ya filtrado de antemano por la categoría que lo llama."""
             if not datos_categoria:
-                st.info(T["directorio_sin_datos"])
+                st.info("Todavía no hay datos cargados para esta categoría.")
                 return
 
             provincias = sorted({
                 d.get("provincia", "").strip() for d in datos_categoria if d.get("provincia", "").strip()
             })
             if not provincias:
-                st.info(T["directorio_sin_provincias"])
+                st.info("No hay provincias registradas todavía para esta categoría.")
                 return
 
-            provincia_sel = st.selectbox(T["directorio_provincia"], provincias, key=f"{key_prefix}_prov", format_func=lambda texto: traducir_provincia(texto, lang))
+            provincia_sel = st.selectbox("Provincia", provincias, key=f"{key_prefix}_prov")
 
             poblaciones = sorted({
                 d.get("poblacion", "").strip() for d in datos_categoria
                 if d.get("provincia", "").strip() == provincia_sel and d.get("poblacion", "").strip()
             })
             if not poblaciones:
-                st.info(T["directorio_sin_poblaciones"])
+                st.info("No hay poblaciones registradas para esta provincia.")
                 return
 
-            poblacion_sel = st.selectbox(
-                T["directorio_poblacion"],
-                poblaciones,
-                key=f"{key_prefix}_pob",
-                # La población se conserva en su forma original para que el
-                # filtro coincida con Google Sheets/Supabase. El rótulo sí se
-                # traduce mediante T["directorio_poblacion"].
-            )
+            poblacion_sel = st.selectbox("Población", poblaciones, key=f"{key_prefix}_pob")
 
             empresas = [
                 d for d in datos_categoria
@@ -3995,7 +3562,7 @@ elif opcion == "docs":
                 and d.get("poblacion", "").strip() == poblacion_sel
             ]
             if not empresas:
-                st.info(T["directorio_sin_empresas"])
+                st.info("No hay empresas registradas en esta población.")
                 return
 
             st.markdown("""
@@ -4008,7 +3575,7 @@ elif opcion == "docs":
             """, unsafe_allow_html=True)
 
             for emp in empresas:
-                nombre = emp.get("empresa", "").strip() or T["directorio_sin_nombre"]
+                nombre = emp.get("empresa", "").strip() or "(Sin nombre)"
                 with st.expander(nombre):
                     logo_url = emp.get("logo", "").strip()
                     if logo_url:
@@ -4026,7 +3593,7 @@ elif opcion == "docs":
                         st.markdown(descripcion, unsafe_allow_html=True)
                     enlace = emp.get("enlace", "").strip()
                     if enlace:
-                        st.markdown(f"🔗 [{T['directorio_visitar_web']}]({enlace})")
+                        st.markdown(f"🔗 [Visitar web]({enlace})")
 
         def mostrar_bloque_categorias(datos, titulos_por_columna, key_prefix):
             """Pinta los títulos de categoría en columnas (como antes) y,
@@ -4072,7 +3639,7 @@ elif opcion == "docs":
             background: #f5f5f5 !important;
         }
         </style>""", unsafe_allow_html=True)
-        st.markdown(f"<div class='mz-display' style='font-weight:800; font-size:clamp(22px,2.6vw,30px); color:#4F8CC4; margin:28px 0 12px;'>{T['asociados']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: var(--mz-ink); margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
 
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
@@ -4094,7 +3661,7 @@ elif opcion == "docs":
                     resumenes.forEach(function (resumen) {
                         var texto = (resumen.textContent || '').trim();
                         if (objetivos.indexOf(texto) === -1) { return; }
-                        resumen.style.setProperty('background', '#1F4E79', 'important');
+                        resumen.style.setProperty('background', '#1d4ed8', 'important');
                         resumen.style.setProperty('color', '#ffffff', 'important');
                     });
                 }
@@ -4109,7 +3676,7 @@ elif opcion == "docs":
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
-        st.markdown(f"<div class='mz-display' style='font-weight:800; font-size:clamp(22px,2.6vw,30px); color:#FFB020; margin:8px 0 12px;'>{T['colaboradores']}</div>", unsafe_allow_html=True)
+        st.markdown(f"<h4 style='color: var(--mz-ink);'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
 
         titulos_colaboradores = [
             ["Centros de formación"],
@@ -4148,47 +3715,7 @@ elif opcion == "docs":
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
-    st.markdown(
-        """<style>
-        .st-key-mz_funcionalidad [data-baseweb="tab-list"] { gap: 6px; }
-        .st-key-mz_funcionalidad button[role="tab"],
-        .st-key-mz_funcionalidad button[role="tab"] p {
-            background: #0B1016 !important;
-            color: #9AA7B6 !important;
-            font-weight: 600 !important;
-        }
-        .st-key-mz_funcionalidad button[role="tab"] {
-            border: 1px solid #1E2936 !important;
-            border-radius: 8px 8px 0 0 !important;
-        }
-        .st-key-mz_funcionalidad button[role="tab"][aria-selected="true"],
-        .st-key-mz_funcionalidad button[role="tab"][aria-selected="true"] p {
-            background: #FFB020 !important;
-            color: #0B1016 !important;
-        }
-        .st-key-mz_funcionalidad button[role="tab"][aria-selected="true"] {
-            border-color: #FFB020 !important;
-        }
-        .st-key-mz_funcionalidad [data-baseweb="tab-highlight"] {
-            background-color: #FFB020 !important;
-            height: 3px !important;
-        }
-        .st-key-mz_funcionalidad [data-baseweb="tab-border"] { background-color: #FFB020 !important; }
-        .st-key-mz_funcionalidad [role="tabpanel"] {
-            background: #FFFFFF;
-            border: 1px solid #D9DAD6;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            padding: clamp(16px, 3vw, 40px) !important;
-            margin-bottom: 40px;
-        }
-        </style>""",
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        f"<div class='mz-display' style='font-weight:800; font-size:clamp(26px,3.6vw,44px); letter-spacing:-1px; color:var(--mz-ink); margin:8px 0 16px;'>{T['funcionalidad']}</div>",
-        unsafe_allow_html=True,
-    )
+    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
     components.html(
         f"""
         <script>
@@ -4209,6 +3736,9 @@ elif opcion == "docs":
                     tab.style.setProperty('border-radius', '6px 6px 0 0', 'important');
                     tab.style.setProperty('padding', '10px 18px', 'important');
                     tab.style.setProperty('margin-right', '6px', 'important');
+                    tab.style.setProperty('border', '1px solid #D9DAD6', 'important');
+                    tab.style.setProperty('background', '#EDEEF0', 'important');
+                    tab.style.setProperty('color', '#5B6472', 'important');
                     tab.style.setProperty('cursor', 'pointer', 'important');
                 }});
             }}
@@ -4221,51 +3751,47 @@ elif opcion == "docs":
     )
     titulos_func = T["titulos_func"]
 
-    with st.container(key="mz_funcionalidad"):
-        pestanas_func = st.tabs(titulos_func)
-        for pestana, titulo in zip(pestanas_func, titulos_func):
-            with pestana:
-                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                    tipos_admitidos = (["docx"] if MAMMOTH_DISPONIBLE else []) + ["odt"]
-                    docx_version_key = f"docx_version_{titulo}"
-                    version_docx = st.session_state.get(docx_version_key, 0)
-                    docx_subido = st.file_uploader(
-                        "📄 O sube un Word (.docx) o un documento de OpenOffice/LibreOffice (.odt) con el texto ya formateado",
-                        type=tipos_admitidos,
-                        key=f"docx_{titulo}_{version_docx}",
-                    )
-                    if docx_subido is not None:
-                        try:
-                            if docx_subido.name.lower().endswith(".odt"):
-                                html_convertido = convertir_odt_a_html(docx_subido)
-                            else:
-                                html_convertido = mammoth.convert_to_html(docx_subido).value
-                            st.session_state[f"input_{titulo}"] = html_convertido
-                            st.session_state[docx_version_key] = version_docx + 1
-                            st.success(T["documento_convertido"])
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"No se pudo leer el documento: {e}")
-
-                    temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
-            
-                    if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
-                        st.session_state.contenido_funcionalidad[titulo] = temp_text
-                
-                        if guardar_en_sheets(titulo, temp_text):
-                            st.success(T["guardado_google_local"])
+    pestanas_func = st.tabs(titulos_func)
+    for pestana, titulo in zip(pestanas_func, titulos_func):
+        with pestana:
+            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                tipos_admitidos = (["docx"] if MAMMOTH_DISPONIBLE else []) + ["odt"]
+                docx_version_key = f"docx_version_{titulo}"
+                version_docx = st.session_state.get(docx_version_key, 0)
+                docx_subido = st.file_uploader(
+                    "📄 O sube un Word (.docx) o un documento de OpenOffice/LibreOffice (.odt) con el texto ya formateado",
+                    type=tipos_admitidos,
+                    key=f"docx_{titulo}_{version_docx}",
+                )
+                if docx_subido is not None:
+                    try:
+                        if docx_subido.name.lower().endswith(".odt"):
+                            html_convertido = convertir_odt_a_html(docx_subido)
                         else:
-                            st.warning(T["guardado_solo_local"])
-                
+                            html_convertido = mammoth.convert_to_html(docx_subido).value
+                        st.session_state[f"input_{titulo}"] = html_convertido
+                        st.session_state[docx_version_key] = version_docx + 1
+                        st.success("Documento convertido. Revisa el texto de abajo y pulsa Guardar.")
                         st.rerun()
+                    except Exception as e:
+                        st.error(f"No se pudo leer el documento: {e}")
 
-                st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
+                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
+            
+                if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                    st.session_state.contenido_funcionalidad[titulo] = temp_text
+                
+                    if guardar_en_sheets(titulo, temp_text):
+                        st.success("Guardado en Google y localmente")
+                    else:
+                        st.warning("Guardado solo localmente (Error en Sheets)")
+                
+                    st.rerun()
+
+            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 3: CONTACTO ---
-    st.markdown(
-        f"<div class='mz-display' style='font-weight:800; font-size:clamp(26px,3.6vw,44px); letter-spacing:-1px; color:var(--mz-ink); margin:8px 0 16px;'>{T['contacto']}</div>",
-        unsafe_allow_html=True,
-    )
+    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
     titulos_cont = ["Móvil / WhatsApp", "Email"]
 
     if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
@@ -4283,7 +3809,7 @@ elif opcion == "docs":
         with col_cont:
             st.markdown(
                 f"""
-                <div style="background:var(--mz-offwhite); border-left:4px solid #FFB020;
+                <div style="background:var(--mz-offwhite); border-left:3px solid var(--mz-brass);
                             border-radius:3px; padding:18px 20px; margin-bottom:28px;">
                     <div style="font-size:12px; color:var(--mz-ink-soft); letter-spacing:0.5px; margin-bottom:6px;">
                         {iconos_cont.get(titulo, '')} {titulo}
@@ -4306,9 +3832,7 @@ elif opcion == "docs":
 
 
 elif opcion == "eval":
-
-    # Aviso visible para docentes y usuarios antes de iniciar sesión.
-    st.info(T["aviso_solo_cursos_m0_evaluables"])
+    mostrar_pestanas_principales(opcion)
 
     if 'envio_resultado' in st.session_state:
         tipo_msg, texto_msg = st.session_state.pop('envio_resultado')
@@ -4318,7 +3842,7 @@ elif opcion == "eval":
             st.error(texto_msg)
 
     if not SUPABASE_DISPONIBLE:
-        st.warning(T["aviso_instalar_supabase"])
+        st.warning("Añade 'supabase' a requirements.txt para poder acceder a Evaluaciones.")
     else:
         cliente_sb = obtener_cliente_supabase()
 
@@ -4361,9 +3885,6 @@ elif opcion == "eval":
                 st.rerun()
 
             # --- Cursos asignados a este docente (vía curso_docente) ---
-            codigos_permitidos = []
-            cursos_asignados_docente = []
-            cursos_permitidos = []
             try:
                 filas_curso_docente = (
                     cliente_sb.table("curso_docente").select("codigo_curso")
@@ -4372,22 +3893,21 @@ elif opcion == "eval":
                 codigos_permitidos = [f["codigo_curso"] for f in filas_curso_docente]
                 cursos_permitidos = []
                 if codigos_permitidos:
-                    cursos_asignados_docente = (
+                    cursos_permitidos = (
                         cliente_sb.table("cursos").select("*")
                         .in_("codigo_curso", codigos_permitidos)
                         .eq("estado", "activo")
                         .execute().data
                     )
-                    # Solo los cursos con Sello M0 pueden entrar en el módulo
-                    # de evaluación. Los cursos sin sello siguen en el catálogo,
-                    # pero no se ofrecen como evaluables al docente.
-                    cursos_permitidos = [
-                        curso for curso in cursos_asignados_docente
-                        if curso_tiene_sello_m0(curso)
-                    ]
             except Exception as e:
                 st.error(f"Error al cargar tus cursos: {e}")
                 cursos_permitidos = []
+
+            # Solo los cursos con Sello M0 se pueden evaluar en el sistema.
+            cursos_sin_sello = [c for c in cursos_permitidos if c.get("sello_m0", True) is False]
+            cursos_permitidos = [c for c in cursos_permitidos if c.get("sello_m0", True) is not False]
+            if cursos_sin_sello:
+                st.info(T["aviso_cursos_sin_sello"])
 
             curso_seleccionado_full = None
             curso_codigo_actual = None
@@ -4400,10 +3920,7 @@ elif opcion == "eval":
             alumnos_edicion = []
 
             if not cursos_permitidos:
-                if codigos_permitidos and 'cursos_asignados_docente' in locals() and cursos_asignados_docente:
-                    st.info(T["aviso_sin_cursos_evaluables"])
-                else:
-                    st.info(T["aviso_sin_cursos_docente"])
+                st.info(T["aviso_sin_cursos_docente"])
             else:
                 c2, c3 = st.columns(2)
 
@@ -4439,13 +3956,13 @@ elif opcion == "eval":
 
                         for indice_ed, ed in enumerate(ediciones_docente, start=1):
                             estado_ed = str(ed.get("estado", "pendiente")).strip().lower()
-                            estado_visible = T["estado_cerrado_curso"] if estado_ed == "cerrado" else T["estado_activo_curso"]
-                            etiqueta = f"{T['grupo']} {indice_ed:02d} · {estado_visible}"
+                            estado_visible = "Cerrado" if estado_ed == "cerrado" else "Activo"
+                            etiqueta = f"Grupo {indice_ed:02d} · {estado_visible}"
                             opciones_ed.append(etiqueta)
                             mapa_ediciones[etiqueta] = ed
 
                         edicion_display = ed1.selectbox(
-                            T["grupo"],
+                            "Grupo",
                             opciones_ed,
                             key=f"f_ed_{st.session_state.reset_todo}"
                         )
@@ -4475,7 +3992,7 @@ elif opcion == "eval":
                     modulos_filtrados = []
 
                 campo_descripcion_modulo = "descripcion_ca" if lang == "ca" else "descripcion_es"
-                opciones_modulos_display = [f"{m['subcodigo']} - {m.get(campo_descripcion_modulo) or m.get('descripcion_es') or ''}" for m in modulos_filtrados] if modulos_filtrados else [T["selecciona_curso_valido"]]
+                opciones_modulos_display = [f"{m['subcodigo']} - {m.get(campo_descripcion_modulo) or m.get('descripcion_es') or ''}" for m in modulos_filtrados] if modulos_filtrados else ["Selecciona un curso válido"]
                 modulo_seleccionado_full = c3.selectbox(T["modulo"], opciones_modulos_display, key=f"f_mod_{st.session_state.reset_todo}")
                 modulo_codigo_actual = modulo_seleccionado_full.split(" - ")[0] if " - " in modulo_seleccionado_full else modulo_seleccionado_full
 
@@ -4494,12 +4011,7 @@ elif opcion == "eval":
                 else:
                     alumno = c5.text_input(T["alumno"], key=f"f_alu_{st.session_state.alumno_key}")
 
-            curso_seleccionado_datos = next(
-                (c for c in cursos_permitidos if c.get("codigo_curso") == curso_codigo_actual),
-                None,
-            ) if curso_codigo_actual is not None else None
-
-            if curso_codigo_actual is not None and curso_seleccionado_datos and curso_tiene_sello_m0(curso_seleccionado_datos):
+            if curso_codigo_actual is not None:
                 criterios = [
                     "1. Tasa de eficiencia", "2. Precisión geométrica y mecánica", "3. Autonomía ejecutiva",
                     "4. Índice de mermas", "5. Mantenimiento de utillaje y entorno", "6. Factor de desempeño temporal",
@@ -4558,7 +4070,7 @@ elif opcion == "eval":
                                         "que_se_mide": "Informació detallada en desenvolupament." if lang == "ca" else "Información detallada en desarrollo.",
                                         "nivel_rubrica": "Pendent de definir la rúbrica." if lang == "ca" else "Pendiente de definir rúbrica."
                                     })
-                                    with st.popover("ℹ️", help=T["ver_rubrica"]):
+                                    with st.popover("ℹ️", help="Ver rúbrica"):
                                         st.markdown(
                                             f"**{T['que_se_mide']}**\n\n"
                                             f"{info_crit['que_se_mide']}"
@@ -4594,9 +4106,12 @@ elif opcion == "eval":
 
                 if guardar_evaluacion:
                     if nota_final is None:
-                        st.warning(T["aviso_puntuaciones_evaluacion"])
+                        st.warning(
+                            "Debes seleccionar una puntuación del 1 al 5 "
+                            "en los 13 criterios antes de guardar."
+                        )
                     elif not alumno:
-                        st.warning(T["aviso_selecciona_alumno"])
+                        st.warning("Debes seleccionar un alumno antes de guardar.")
                     else:
                         registro = {
                             "Alumno": alumno,
@@ -4657,8 +4172,7 @@ elif opcion == "eval":
                                 alumnos_evaluados = {str(r.get("Alumno", "")).strip() for r in st.session_state.lista_alumnos if r.get("EditionId") == edition_id_actual}
                                 faltan = sorted(alumnos_clase - alumnos_evaluados)
                                 if faltan:
-                                    st.warning(T["aviso_faltan_evaluaciones"].format(alumnos=", ".join(faltan)))
-                                    renderizar_pie_pagina()
+                                    st.warning("No se puede cerrar el curso todavía. Faltan por evaluar: " + ", ".join(faltan))
                                     st.stop()
 
                             filas_supabase = []
@@ -4702,7 +4216,3 @@ elif opcion == "eval":
                         except Exception as e:
                             st.session_state.envio_resultado = ("error", f"Error al guardar en la base de datos: {e}")
                             st.rerun()
-
-
-# --- PIE DE PÁGINA (siempre al final de la pantalla) ---
-renderizar_pie_pagina()
