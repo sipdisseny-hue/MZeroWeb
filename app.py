@@ -143,7 +143,7 @@ st.markdown(
     """
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&family=Bricolage+Grotesque:wght@700;800&display=swap" rel="stylesheet">
     <style>
     :root {
         --mz-graphite: #151B23;
@@ -448,7 +448,7 @@ TEXTOS = {
         "estado_activo": "activo",
         "plan_basic": "BASIC",
         "plan_standard": "STANDARD",
-        "plan_basic_precio": "70 €/curso",
+        "plan_basic_precio": "50 €/curso",
         "plan_standard_precio": "38 €/mes",
         "plan_promocion": "PROMOCIÓN (Uso gratuito)",
         "plan_uso_app": "Uso indefinido de la app",
@@ -555,6 +555,20 @@ TEXTOS = {
         "tarjeta_desc_asociado": "Perfiles ya validados, filtrando por sector y subsector.",
         "tarjeta_desc_colaborador": "Da de alta tus cursos y forma parte de la red del sello M0.",
         "tarjeta_desc_candidato": "Fórmate, consigue el sello M0 y solicita participar en cursos.",
+        "hero_titulo": "La plataforma que une empresas, centros formativos y candidatos",
+        "hero_sello_tag": "SELLO M-ZERO",
+        "hero_solucion": "La solución a la falta de mano de obra cualificada",
+        "banner_asoc_tag": "PARA ASOCIADOS · EMPRESAS",
+        "banner_asoc_titulo": "Encuentra el talento y la formación que tu empresa necesita",
+        "banner_asoc_texto": "Pide las características de los candidatos que buscas y solicita formación adaptada, con una etiqueta publicitaria que lleva directamente a tu web.",
+        "banner_colab_tag": "PARA COLABORADORES · CENTROS",
+        "banner_colab_titulo": "Tus cursos, delante de quienes la industria necesita",
+        "banner_colab_texto": "Sube tus cursos y recibe peticiones de candidatos y de empresas asociadas, con una etiqueta publicitaria que lleva directamente a tu web.",
+        "banner_cand_tag": "PARA CANDIDATOS",
+        "banner_cand_titulo": "Encuentra el curso que te abre las puertas de la industria",
+        "banner_cand_texto": "Explora los cursos disponibles por sector y localidad y envía tu solicitud para participar en el que te interese.",
+        "flow_paso_label": "PASO",
+        "nav_acceso_docente": "acceso docente",
         "sectores_industriales_cubiertos": "Sectores industriales cubiertos",
         "formas_acceso": "Formas de acceso: asociados, colaboradores, candidatos",
         "un_sello_nivel_minimo": "Un sello, un nivel mínimo exigido",
@@ -766,7 +780,7 @@ TEXTOS = {
         "estado_activo": "actiu",
         "plan_basic": "BASIC",
         "plan_standard": "STANDARD",
-        "plan_basic_precio": "70 €/curs",
+        "plan_basic_precio": "50 €/curs",
         "plan_standard_precio": "38 €/mes",
         "plan_promocion": "PROMOCIÓ (Ús gratuït)",
         "plan_uso_app": "Ús indefinit de l'app",
@@ -870,6 +884,20 @@ TEXTOS = {
         "tarjeta_desc_asociado": "Perfils ja validats, filtrant per sector i subsector.",
         "tarjeta_desc_colaborador": "Dona d'alta els teus cursos i forma part de la xarxa del segell M0.",
         "tarjeta_desc_candidato": "Forma't, aconsegueix el segell M0 i sol·licita participar en cursos.",
+        "hero_titulo": "La plataforma que uneix empreses, centres formatius i candidats",
+        "hero_sello_tag": "SEGELL M-ZERO",
+        "hero_solucion": "La solució a la manca de mà d'obra qualificada",
+        "banner_asoc_tag": "PER A ASSOCIATS · EMPRESES",
+        "banner_asoc_titulo": "Troba el talent i la formació que la teva empresa necessita",
+        "banner_asoc_texto": "Demana les característiques dels candidats que busques i sol·licita formació adaptada, amb una etiqueta publicitària que du directament al teu web.",
+        "banner_colab_tag": "PER A COL·LABORADORS · CENTRES",
+        "banner_colab_titulo": "Els teus cursos, davant de qui necessita la indústria",
+        "banner_colab_texto": "Puja els teus cursos i rep peticions de candidats i d'empreses associades, amb una etiqueta publicitària que du directament al teu web.",
+        "banner_cand_tag": "PER A CANDIDATS",
+        "banner_cand_titulo": "Troba el curs que t'obre les portes de la indústria",
+        "banner_cand_texto": "Explora els cursos disponibles per sector i localitat i envia la teva sol·licitud per participar en el que t'interessi.",
+        "flow_paso_label": "PAS",
+        "nav_acceso_docente": "accés docent",
         "sectores_industriales_cubiertos": "Sectors industrials coberts",
         "formas_acceso": "Formes d'accés: associats, col·laboradors, candidats",
         "un_sello_nivel_minimo": "Un segell, un nivell mínim exigit",
@@ -1348,28 +1376,34 @@ def mostrar_olvide_contrasena(tipo_texto, key_prefix):
                 st.warning(T["olvide_contrasena_vacio"])
 
 
-def mostrar_pestanas_principales(opcion_actual):
+def mostrar_pestanas_principales(opcion_actual, columnas=None):
     """Pestañas destacadas de navegación en la pantalla principal
     (Documentación / Evaluaciones), sustituyen al antiguo selector del
     sidebar. 'Evaluaciones' se resalta como acceso directo para docentes."""
     st.markdown(
         """<style>
-        .st-key-mz_navpill_doc button {
-            background: var(--mz-graphite) !important;
-            color: #ffffff !important;
-            border: none !important;
+        .st-key-mz_navpill_doc button, .st-key-mz_navpill_doc button p {
+            background: #FFB020 !important;
+            color: #0B1016 !important;
+            border: 2px solid #FFB020 !important;
+            border-radius: 8px !important;
             font-weight: 600 !important;
         }
-        .st-key-mz_navpill_eval button {
-            background: var(--mz-offwhite) !important;
-            color: var(--mz-ink) !important;
-            border: 1px solid #D9DAD6 !important;
+        .st-key-mz_navpill_eval button, .st-key-mz_navpill_eval button p {
+            background: transparent !important;
+            color: #EDEEF0 !important;
+            border: 2px solid #3DDC84 !important;
+            border-radius: 999px !important;
             font-weight: 600 !important;
         }
+        .st-key-mz_navpill_doc button:hover, .st-key-mz_navpill_eval button:hover { filter: brightness(1.2); }
         </style>""",
         unsafe_allow_html=True,
     )
-    col_doc, col_eval, col_resto = st.columns([1.3, 1.9, 5])
+    if columnas:
+        col_doc, col_eval = columnas
+    else:
+        col_doc, col_eval, col_resto = st.columns([1.3, 1.9, 5])
     with col_doc:
         with st.container(key="mz_navpill_doc"):
             if st.button(f"📄 {T['menu_docs']}", key="nav_pill_doc", use_container_width=True):
@@ -1378,7 +1412,7 @@ def mostrar_pestanas_principales(opcion_actual):
                 st.rerun()
     with col_eval:
         with st.container(key="mz_navpill_eval"):
-            if st.button(f"🟢 {T['menu_eval']} · acceso docente", key="nav_pill_eval", use_container_width=True):
+            if st.button(f"🟢 {T['menu_eval']} · {T['nav_acceso_docente']}", key="nav_pill_eval", use_container_width=True):
                 st.session_state["navegacion"] = "eval"
                 st.session_state["acceso_panel"] = None
                 st.rerun()
@@ -1635,6 +1669,48 @@ def obtener_ficha_aprobada_curso(codigo_curso):
         return None
 
 
+def _completar_url_storage(url):
+    """Algunas versiones de supabase-py devuelven la URL firmada relativa."""
+    if url and url.startswith("/"):
+        return st.secrets["SUPABASE_URL"].rstrip("/") + "/storage/v1" + url
+    return url
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def obtener_urls_fichas_aprobadas(codigos):
+    """{codigo_curso: url_firmada} solo de fichas aprobadas (la más reciente de cada código)."""
+    codigos = [str(c).strip() for c in codigos if c]
+    if not SUPABASE_DISPONIBLE or not codigos:
+        return {}
+    try:
+        cliente = obtener_cliente_supabase()
+        filas = (cliente.table(TABLA_FICHAS_CURSOS)
+                 .select("codigo_curso, ruta_storage")
+                 .in_("codigo_curso", codigos)
+                 .eq("estado", "aprobada")
+                 .order("subido_en", desc=True)
+                 .execute().data)
+        ruta_por_codigo = {}
+        for f in filas:
+            ruta_por_codigo.setdefault(f["codigo_curso"], f["ruta_storage"])
+        if not ruta_por_codigo:
+            return {}
+
+        firmadas = cliente.storage.from_(BUCKET_FICHAS_CURSOS).create_signed_urls(
+            list(ruta_por_codigo.values()), 3600
+        )
+        url_por_ruta = {}
+        for item in firmadas or []:
+            ruta = item.get("path")
+            url = item.get("signedURL") or item.get("signedUrl") or item.get("signed_url")
+            if ruta and url and not item.get("error"):
+                url_por_ruta[ruta] = _completar_url_storage(url)
+
+        return {c: url_por_ruta[r] for c, r in ruta_por_codigo.items() if r in url_por_ruta}
+    except Exception:
+        return {}
+
+
 def mostrar_revision_fichas_pdf():
     """Panel privado de revisión para el administrador autenticado."""
     if not st.session_state.get("autenticado"):
@@ -1671,6 +1747,7 @@ def mostrar_revision_fichas_pdf():
                             "revisado_en": datetime.now(timezone.utc).isoformat(), "motivo_rechazo": None,
                         }).eq("id", id_ficha).execute())
                         st.success(T["ficha_aprobada_ok"])
+                        obtener_urls_fichas_aprobadas.clear()
                         st.rerun()
                     except Exception as e:
                         st.error(f"No se pudo aprobar la ficha: {e}")
@@ -1688,6 +1765,7 @@ def mostrar_revision_fichas_pdf():
                             }).eq("id", id_ficha).execute())
                             st.session_state[f"ficha_rechazo_id_{id_ficha}"] = False
                             st.success(T["ficha_rechazada_ok"])
+                            obtener_urls_fichas_aprobadas.clear()
                             st.rerun()
                         except Exception as e:
                             st.error(f"No se pudo rechazar la ficha: {e}")
@@ -1962,115 +2040,71 @@ def guardar_en_sheets(titulo, nuevo_contenido, idioma=None):
     except Exception:
         return False
 
-# --- SIDEBAR: NAVEGACIÓN, IDIOMA Y ACCESO ---
-with st.sidebar:
-    st.markdown(
-        """<style>
-        section[data-testid="stSidebar"] {
-            background-color: var(--mz-graphite) !important;
-        }
-        section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
-        section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] *,
-        section[data-testid="stSidebar"] label,
-        section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
-        section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
-            color: var(--mz-offwhite) !important;
-        }
-        section[data-testid="stSidebar"] [data-testid="stAlert"],
-        section[data-testid="stSidebar"] [data-testid="stAlert"] * {
-            color: inherit !important;
-        }
-        section[data-testid="stSidebar"] hr {
-            border-color: #2A3340 !important;
-        }
-        section[data-testid="stSidebar"] [data-testid="stImage"] {
-            background: var(--mz-offwhite);
-            border-radius: 6px;
-            padding: 10px;
-        }
-        </style>""",
-        unsafe_allow_html=True,
-    )
-    st.image("logo_mzero.png")
-    st.markdown(
-        '<div style="font-size:22px; font-weight:700; letter-spacing:0.3px; margin: 6px 0 4px;">'
-        'M<span style="color: var(--mz-brass-light);">-Zero</span> '
-        '<span style="font-weight:400; color:#8B93A0; font-size:16px;">Pro</span>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """<style>
-        section[data-testid="stSidebar"] div[role="radiogroup"] {
-            display: inline-flex !important;
-            border: 1px solid #3C4552;
-            border-radius: 4px;
-            overflow: hidden;
-            gap: 0 !important;
-        }
-        section[data-testid="stSidebar"] div[role="radiogroup"] label {
-            padding: 5px 14px !important;
-            margin: 0 !important;
-            background: transparent;
-        }
-        section[data-testid="stSidebar"] div[role="radiogroup"] label > div:first-child {
-            display: none !important;
-        }
-        section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) {
-            background: var(--mz-brass) !important;
-        }
-        section[data-testid="stSidebar"] div[role="radiogroup"] label:has(input:checked) p {
-            color: var(--mz-graphite) !important;
-            font-weight: 600 !important;
-        }
-        </style>""",
-        unsafe_allow_html=True,
-    )
-    idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
+# --- BARRA SUPERIOR: LOGO, NAVEGACIÓN E IDIOMA (sustituye a la antigua barra lateral) ---
+st.markdown(
+    """<style>
+    .st-key-mz_topbar {
+        background: #0B1016;
+        border-radius: 8px;
+        padding: 14px 24px !important;
+        margin-bottom: 24px;
+    }
+    .st-key-mz_topbar [data-testid="stImage"] {
+        background: #EDEEF0;
+        border-radius: 6px;
+        padding: 6px 10px;
+        width: fit-content;
+    }
+    .st-key-mz_topbar div[role="radiogroup"] {
+        display: inline-flex !important;
+        border: 1px solid #2A3340;
+        border-radius: 8px;
+        overflow: hidden;
+        gap: 0 !important;
+    }
+    .st-key-mz_topbar div[role="radiogroup"] label {
+        padding: 6px 14px !important;
+        margin: 0 !important;
+        background: transparent;
+    }
+    .st-key-mz_topbar div[role="radiogroup"] label > div:first-child {
+        display: none !important;
+    }
+    .st-key-mz_topbar div[role="radiogroup"] label p {
+        color: #EDEEF0 !important;
+    }
+    .st-key-mz_topbar div[role="radiogroup"] label:has(input:checked) {
+        background: #EDEEF0 !important;
+    }
+    .st-key-mz_topbar div[role="radiogroup"] label:has(input:checked) p {
+        color: #151B23 !important;
+        font-weight: 600 !important;
+    }
+    </style>""",
+    unsafe_allow_html=True,
+)
+if "navegacion" not in st.session_state:
+    st.session_state["navegacion"] = "docs"
+with st.container(key="mz_topbar"):
+    barra_logo, barra_doc, barra_eval, barra_idioma = st.columns([1.5, 1.2, 2.3, 1.5], vertical_alignment="center")
+    with barra_logo:
+        st.image("logo_mzero.png", width=150)
+    with barra_idioma:
+        idioma_seleccionado = st.radio("Idioma", ["Castellano", "Català"], horizontal=True, label_visibility="collapsed")
     lang = "ca" if idioma_seleccionado == "Català" else "es"
     T = TEXTOS[lang]
-    
     def _abrir_acceso(tipo):
         # Callback ejecutado antes de que se creen los widgets del siguiente rerun.
         # Así evitamos modificar la session_state de un radio ya instanciado.
         st.session_state["navegacion"] = "docs"
         st.session_state["acceso_panel"] = tipo
-
     def _cambiar_navegacion():
         # Al navegar manualmente entre Documentación/Evaluaciones se cierra
         # cualquier pantalla de acceso independiente.
         st.session_state["acceso_panel"] = None
-
-    # La navegación Documentación/Evaluaciones ya no vive en el sidebar:
-    # se controla con las pestañas destacadas de la pantalla principal.
-    if "navegacion" not in st.session_state:
-        st.session_state["navegacion"] = "docs"
     opcion = st.session_state["navegacion"]
-
-    st.divider()
-    st.markdown(
-        """<style>
-        section[data-testid="stSidebar"] div[data-testid="stButton"] > button {
-            min-height: 46px;
-            border-radius: 10px;
-            font-weight: 600;
-            text-align: left;
-            padding-left: 16px;
-            margin-bottom: 8px;
-            background-color: var(--mz-graphite-2);
-            border: 1px solid #2A3340;
-            color: var(--mz-offwhite);
-        }
-        section[data-testid="stSidebar"] div[data-testid="stButton"] > button:hover {
-            border-color: var(--mz-brass);
-            color: var(--mz-brass-light);
-        }
-        </style>""",
-        unsafe_allow_html=True,
-    )
-
-
+    # Documentación / Evaluaciones (acceso docente) viven en la barra superior.
+    mostrar_pestanas_principales(opcion, columnas=(barra_doc, barra_eval))
 
 # --- AVISO LEGAL: CUADRO FLOTANTE AL INICIO (una vez por sesión de navegador) ---
 if "legal_modal_mostrado" not in st.session_state:
@@ -2107,10 +2141,20 @@ if not st.session_state["legal_modal_mostrado"]:
     _mostrar_aviso_legal()
 
 # Botón fijo y siempre visible para volver a consultar el aviso legal
-with st.sidebar:
-    st.divider()
+def mostrar_pie_pagina():
+    """Pie de página: información legal, Instagram y acceso de administración
+    (antes vivían en la barra lateral)."""
     st.markdown(
         """<style>
+        .st-key-mz_pie {
+            background: #0B1016;
+            border-radius: 8px;
+            padding: 24px 28px !important;
+            margin-top: 48px;
+        }
+        .st-key-mz_pie label p, .st-key-mz_pie [data-testid="stWidgetLabel"] p {
+            color: #EDEEF0 !important;
+        }
         .st-key-legal_btn_wrapper button {
             background-color: #172033 !important;
             color: #ffffff !important;
@@ -2139,23 +2183,35 @@ with st.sidebar:
             color: #ffffff !important;
         }
         .mzero-instagram-btn svg { flex-shrink: 0; }
+        .st-key-mz_pie a.mzero-instagram-btn {
+            background-color: transparent !important;
+            border: 2px solid #FFB020 !important;
+            color: #FFB020 !important;
+        }
+        .st-key-mz_pie a.mzero-instagram-btn:hover {
+            background-color: #FFB020 !important;
+            color: #0B1016 !important;
+        }
         </style>""",
         unsafe_allow_html=True,
     )
-    with st.container(key="legal_btn_wrapper"):
-        if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
-            _mostrar_aviso_legal()
-    st.markdown(
-        f'<a class="mzero-instagram-btn" href="https://www.instagram.com/mzero.pro/" '
-        f'target="_blank" rel="noopener noreferrer">'
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">'
-        f'<rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/>'
-        f'<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>'
-        f'<circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/>'
-        f'</svg>'
-        f'{T["instagram_texto"]}</a>',
-        unsafe_allow_html=True,
-    )
+    pie_legal, pie_instagram, pie_resto = st.columns([2.4, 2, 3], vertical_alignment="center")
+    with pie_legal:
+        with st.container(key="legal_btn_wrapper"):
+            if st.button(T["legal_titulo"], key="btn_ver_legal", use_container_width=True):
+                _mostrar_aviso_legal()
+    with pie_instagram:
+        st.markdown(
+            f'<a class="mzero-instagram-btn" href="https://www.instagram.com/mzero.pro/" '
+            f'target="_blank" rel="noopener noreferrer">'
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none">'
+            f'<rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="2"/>'
+            f'<circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>'
+            f'<circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/>'
+            f'</svg>'
+            f'{T["instagram_texto"]}</a>',
+            unsafe_allow_html=True,
+        )
 
     # Acceso de administración: discreto a propósito, para que pase
     # desapercibido para el resto de usuarios. Valida contra la tabla
@@ -2167,25 +2223,31 @@ with st.sidebar:
 
     st.markdown(
         """<style>
+        .st-key-mz_admin_toggle button, .st-key-mz_admin_toggle button p {
+            background: transparent !important;
+            color: #8B93A0 !important;
+            font-size: 18px !important;
+        }
         .st-key-mz_admin_toggle button {
-            background: var(--mz-graphite) !important;
-            color: #4A5262 !important;
-            border: none !important;
-            font-size: 11px !important;
-            padding: 2px 10px !important;
+            border: 1px solid #2A3340 !important;
+            border-radius: 8px !important;
+            padding: 2px 12px !important;
             min-height: 0 !important;
-            height: 22px !important;
+            height: 36px !important;
             box-shadow: none !important;
         }
-        .st-key-mz_admin_toggle button:hover {
-            color: #8B93A0 !important;
+        .st-key-mz_admin_toggle button:hover, .st-key-mz_admin_toggle button:hover p {
+            color: #FFB020 !important;
+            border-color: #FFB020 !important;
         }
         </style>""",
         unsafe_allow_html=True,
     )
-    with st.container(key="mz_admin_toggle"):
-        if st.button("⚙", key="admin_toggle_btn"):
-            st.session_state["mz_admin_abierto"] = not st.session_state["mz_admin_abierto"]
+    _pie_espacio, pie_admin = st.columns([8, 1], vertical_alignment="center")
+    with pie_admin:
+        with st.container(key="mz_admin_toggle"):
+            if st.button("⚙", key="admin_toggle_btn"):
+                st.session_state["mz_admin_abierto"] = not st.session_state["mz_admin_abierto"]
 
     if st.session_state["mz_admin_abierto"]:
         if st.session_state.autenticado:
@@ -2216,6 +2278,11 @@ with st.sidebar:
                             st.error(T["error_login"])
                     except Exception as e:
                         st.error(f"Error de acceso: {e}")
+
+
+def renderizar_pie_pagina():
+    with st.container(key="mz_pie"):
+        mostrar_pie_pagina()
 
 
 # --- LÓGICA DE PANTALLAS ---
@@ -3127,15 +3194,15 @@ def bloque_seleccion_plan_asociado(key_prefix):
 
     st.markdown(
         """<style>
-        .asoc-plan-card { border:1px solid #d0d5dd; border-radius:12px; overflow:hidden; background:white; min-height:355px; box-shadow:0 2px 8px rgba(16,24,40,.08); }
-        .asoc-plan-head-basic { background:#252525; color:white; padding:10px; text-align:center; font-weight:700; }
-        .asoc-plan-head-standard { background:#e6b800; color:white; padding:10px; text-align:center; font-weight:700; }
-        .asoc-plan-price { font-size:26px; font-weight:800; text-align:center; padding:14px 8px 8px; color:#111827; }
-        .asoc-plan-divider { border-top:2px solid #d0d5dd; margin:4px 20px 10px; }
-        .asoc-plan-promo { text-align:center; color:red; font-weight:700; font-size:14px; padding:0 8px 4px; }
-        .asoc-plan-list { padding:4px 20px 14px 34px; color:#111827; line-height:1.55; }
+        .asoc-plan-card { border:2px solid #4F8CC4; border-radius:8px; overflow:hidden; background:#0B1016; color:#E8EDF3; min-height:355px; }
+        .asoc-plan-head-basic { background:#4F8CC4; color:#0B1016; padding:12px; text-align:center; font-weight:700; letter-spacing:2px; }
+        .asoc-plan-head-standard { background:#1E2936; color:#9AA7B6; padding:12px; text-align:center; font-weight:700; letter-spacing:2px; }
+        .asoc-plan-price { font-size:clamp(30px,4.5vw,42px); font-weight:800; text-align:center; padding:18px 8px 8px; color:#E8EDF3; }
+        .asoc-plan-divider { border-top:1px solid #1E2936; margin:8px 20px 12px; }
+        .asoc-plan-promo { text-align:center; color:#4F8CC4; font-weight:700; font-size:14px; padding:0 8px 4px; }
+        .asoc-plan-list { padding:4px 20px 16px 34px; color:#E8EDF3; line-height:1.55; }
         .asoc-plan-list li { margin-bottom:6px; }
-        .asoc-plan-disabled { opacity:.78; }
+        .asoc-plan-disabled { opacity:.75; border-color:#1E2936; }
         </style>""", unsafe_allow_html=True,
     )
 
@@ -3186,15 +3253,15 @@ def bloque_seleccion_plan_colaborador(key_prefix):
 
     st.markdown(
         """<style>
-        .plan-card { border:1px solid #d0d5dd; border-radius:12px; overflow:hidden; background:white; min-height:315px; box-shadow:0 2px 8px rgba(16,24,40,.08); }
-        .plan-head-basic { background:#252525; color:white; padding:10px; text-align:center; font-weight:700; }
-        .plan-head-standard { background:#e6b800; color:white; padding:10px; text-align:center; font-weight:700; }
-        .plan-price { font-size:26px; font-weight:800; text-align:center; padding:14px 8px 4px; color:#111827; }
-        .plan-divider { border-top:2px solid #d0d5dd; margin:4px 20px 10px; }
-        .plan-promo { text-align:center; color:red; font-weight:700; font-size:14px; padding-bottom:6px; }
-        .plan-list { padding:4px 20px 14px 34px; color:#111827; line-height:1.6; }
+        .plan-card { border:2px solid #FFB020; border-radius:8px; overflow:hidden; background:#0B1016; color:#E8EDF3; min-height:315px; }
+        .plan-head-basic { background:#FFB020; color:#0B1016; padding:12px; text-align:center; font-weight:700; letter-spacing:2px; }
+        .plan-head-standard { background:#1E2936; color:#9AA7B6; padding:12px; text-align:center; font-weight:700; letter-spacing:2px; }
+        .plan-price { font-size:clamp(30px,4.5vw,42px); font-weight:800; text-align:center; padding:18px 8px 6px; color:#E8EDF3; }
+        .plan-divider { border-top:1px solid #1E2936; margin:8px 20px 12px; }
+        .plan-promo { text-align:center; color:#FFB020; font-weight:700; font-size:14px; padding-bottom:6px; }
+        .plan-list { padding:4px 20px 16px 34px; color:#E8EDF3; line-height:1.6; }
         .plan-list li { margin-bottom:5px; }
-        .plan-disabled { opacity:.78; }
+        .plan-disabled { opacity:.75; border-color:#1E2936; }
         </style>""", unsafe_allow_html=True,
     )
 
@@ -3576,15 +3643,16 @@ if st.session_state.get("acceso_panel"):
                 if not cursos_encontrados_cand:
                     st.info(T["sin_cursos_ubicacion"])
                 else:
+                    urls_fichas = obtener_urls_fichas_aprobadas(
+                        tuple(c.get("codigo_curso") for c in cursos_encontrados_cand)
+                    )
                     for curso_cand in cursos_encontrados_cand:
                         tiene_sello_m0 = curso_tiene_sello_m0(curso_cand)
                         with st.container(border=True):
                             st.markdown(f"**{curso_cand['nombre_curso']}**")
-                            ficha_aprobada = obtener_ficha_aprobada_curso(curso_cand.get("codigo_curso"))
-                            if ficha_aprobada:
-                                url_ficha_cand = obtener_url_firmada_ficha(ficha_aprobada.get("ruta_storage"))
-                                if url_ficha_cand:
-                                    st.link_button(T["ficha_candidatos_pdf"], url_ficha_cand, use_container_width=False)
+                            url_ficha_cand = urls_fichas.get(str(curso_cand.get("codigo_curso") or "").strip())
+                            if url_ficha_cand:
+                                st.link_button(T["ficha_candidatos_pdf"], url_ficha_cand, use_container_width=False)
                             if tiene_sello_m0:
                                 st.markdown(
                                     f"<span style='background:var(--mz-brass); color:var(--mz-graphite); "
@@ -3647,7 +3715,6 @@ if st.session_state.get("acceso_panel"):
 
 
 elif opcion == "docs":
-    mostrar_pestanas_principales(opcion)
 
     # La revisión de fichas PDF solo se muestra a un administrador con sesión iniciada.
     mostrar_revision_fichas_pdf()
@@ -3675,45 +3742,47 @@ elif opcion == "docs":
         <div style="font-size:13px; letter-spacing:1.5px; color:var(--mz-ink-soft); margin-bottom:10px; text-transform:uppercase;">
             {T['area_docs']}
         </div>
-        <div style="background:var(--mz-graphite);
-                    background-image:linear-gradient(#1D2530 1px, transparent 1px),
-                                      linear-gradient(90deg, #1D2530 1px, transparent 1px);
-                    background-size:42px 42px; background-position:center;
-                    border-radius:8px; padding:56px 48px 40px;
-                    margin:0 0 4px; display:flex; align-items:center; gap:48px; flex-wrap:wrap;">
-            <div style="flex:2; min-width:280px;">
-                <h1 style="color:var(--mz-offwhite); font-size:38px; font-weight:600; line-height:1.22; margin:0 0 16px; letter-spacing:-0.3px;">
-                    {T['eslogan']}
+        <style>
+        [data-testid="stAppViewContainer"] .mz-display.mz-display.mz-display {{
+            font-family: 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif !important;
+        }}
+        [data-testid="stAppViewContainer"] .mz-mono2.mz-mono2.mz-mono2 {{
+            font-family: 'IBM Plex Mono', monospace !important;
+        }}
+        </style>
+        <div style="background:#0B1016;
+                    background-image:linear-gradient(#131C27 1px, transparent 1px),
+                                      linear-gradient(90deg, #131C27 1px, transparent 1px);
+                    background-size:48px 48px;
+                    border:2px solid #FFB020; border-radius:8px;
+                    padding:clamp(24px,5vw,64px); margin:0 0 12px;
+                    display:flex; align-items:center; gap:clamp(24px,4vw,56px); flex-wrap:wrap;">
+            <div class="mz-display" style="flex:none; font-weight:800; font-size:clamp(110px,20vw,220px);
+                        line-height:1; color:transparent; -webkit-text-stroke:3px #FFB020;">M0</div>
+            <div style="flex:1; min-width:240px;">
+                <div class="mz-mono2" style="font-size:13px; color:#FFB020; letter-spacing:3px; margin-bottom:20px;">{T['hero_sello_tag']}</div>
+                <h1 class="mz-display" style="color:#E8EDF3; font-weight:800; font-size:clamp(28px,4.6vw,58px); line-height:1.08; margin:0 0 22px; padding:0; letter-spacing:-1px;">
+                    {T['hero_titulo']}
                 </h1>
-                <p style="color:#B6BEC9; font-size:15px; line-height:1.65; max-width:52ch; margin:0;">
-                    {T['asoc_colab']}
-                </p>
-            </div>
-            <div style="flex-shrink:0; margin:0 auto;">
-                <div style="width:170px; height:170px; border-radius:50%; border:2px solid var(--mz-brass);
-                            display:flex; align-items:center; justify-content:center; position:relative;">
-                    <div style="position:absolute; inset:12px; border-radius:50%;
-                                border:1px dashed rgba(214,181,99,0.45);"></div>
-                    <div style="text-align:center;">
-                        <div style="font-size:34px; font-weight:700; color:var(--mz-brass-light);">M0</div>
-                        <div style="font-size:10px; color:#8B93A0; letter-spacing:1.4px; margin-top:5px;">{T["sello_nivel_corto"]}</div>
-                    </div>
+                <div class="mz-display" style="color:#FFB020; font-weight:700; font-size:clamp(19px,2.3vw,28px); line-height:1.25; margin-bottom:14px;">
+                    {T['hero_solucion']}
                 </div>
+                <div style="color:#9AA7B6; font-size:clamp(14px,1.5vw,17px);">{T['eslogan']}</div>
             </div>
         </div>
-        <div style="background:var(--mz-graphite); border-radius:0 0 8px 8px; margin:0 0 40px;
-                    display:flex; border-top:1px solid #2A3340; padding:22px 48px;">
-            <div style="flex:1; border-right:1px solid #2A3340;">
-                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">{len(SECTORES_ASOCIADOS)}</div>
-                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">{T["sectores_industriales_cubiertos"]}</div>
+        <div style="background:#0B1016; border:1px solid #1E2936; border-radius:8px; margin:0 0 40px;
+                    display:flex; flex-wrap:wrap; gap:16px 0; padding:22px clamp(20px,4vw,48px);">
+            <div style="flex:1; min-width:180px;">
+                <div style="font-size:22px; font-weight:600; color:#FFB020;">{len(SECTORES_ASOCIADOS)}</div>
+                <div style="font-size:12.5px; color:#9AA7B6; margin-top:3px;">{T["sectores_industriales_cubiertos"]}</div>
             </div>
-            <div style="flex:1; border-right:1px solid #2A3340; padding-left:28px;">
-                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">3</div>
-                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">{T["formas_acceso"]}</div>
+            <div style="flex:1; min-width:180px;">
+                <div style="font-size:22px; font-weight:600; color:#FFB020;">3</div>
+                <div style="font-size:12.5px; color:#9AA7B6; margin-top:3px;">{T["formas_acceso"]}</div>
             </div>
-            <div style="flex:1; padding-left:28px;">
-                <div style="font-size:22px; font-weight:600; color:var(--mz-offwhite);">M0</div>
-                <div style="font-size:12.5px; color:#8B93A0; margin-top:3px;">{T["un_sello_nivel_minimo"]}</div>
+            <div style="flex:1; min-width:180px;">
+                <div style="font-size:22px; font-weight:600; color:#FFB020;">M0</div>
+                <div style="font-size:12.5px; color:#9AA7B6; margin-top:3px;">{T["un_sello_nivel_minimo"]}</div>
             </div>
         </div>
         """,
@@ -3727,91 +3796,78 @@ elif opcion == "docs":
     st.markdown(
         """<style>
         .st-key-card_asociado, .st-key-card_colaborador, .st-key-card_candidato {
-            background: var(--mz-paper);
-            padding: 0 2px 2px;
-            margin-bottom: 40px;
+            border-radius: 8px;
+            padding: clamp(24px, 4vw, 56px) !important;
+            margin-bottom: 24px;
         }
-        .st-key-card_asociado { border-left: 3px solid var(--mz-steel); }
-        .st-key-card_colaborador { border-left: 3px solid var(--mz-brass); }
-        .st-key-card_candidato { border-left: 3px solid var(--mz-steel); }
+        .st-key-card_asociado { background: #4F8CC4; }
+        .st-key-card_colaborador { background: #FFB020; }
+        .st-key-card_candidato { background: #0B1016; }
         .st-key-card_asociado button, .st-key-card_colaborador button, .st-key-card_candidato button {
-            background: var(--mz-graphite) !important;
-            color: #ffffff !important;
             border: none !important;
             border-radius: 4px !important;
+            min-height: 52px;
+            padding: 0 32px !important;
+            font-weight: 600 !important;
         }
+        .st-key-card_asociado button, .st-key-card_asociado button p { background: #0B1016 !important; color: #E8EDF3 !important; }
+        .st-key-card_colaborador button, .st-key-card_colaborador button p { background: #0B1016 !important; color: #FFB020 !important; }
+        .st-key-card_candidato button, .st-key-card_candidato button p { background: #FFB020 !important; color: #0B1016 !important; }
         .st-key-card_asociado button:hover, .st-key-card_colaborador button:hover, .st-key-card_candidato button:hover {
-            background: var(--mz-brass) !important;
-            color: var(--mz-graphite) !important;
+            filter: brightness(1.15);
         }
         </style>""",
         unsafe_allow_html=True,
     )
 
+    # (tipo, clave del contenedor, clave de textos, color de texto, color de la etiqueta)
     tarjetas_acceso = [
-        ("asociado", "🏭", T["acceso_asociados"], T["tarjeta_desc_asociado"], "card_asociado"),
-        ("colaborador", "🎓", T["acceso_colaboradores"], T["tarjeta_desc_colaborador"], "card_colaborador"),
-        ("candidato", "👷", T["acceso_candidatos"], T["tarjeta_desc_candidato"], "card_candidato"),
+        ("asociado", "card_asociado", "asoc", "#0B1016", "#0B1016", "acceso_asociados"),
+        ("colaborador", "card_colaborador", "colab", "#0B1016", "#0B1016", "acceso_colaboradores"),
+        ("candidato", "card_candidato", "cand", "#E8EDF3", "#FFB020", "acceso_candidatos"),
     ]
-    cols_acceso = st.columns(3)
-    for col, (tipo_acc, icono_acc, titulo_acc, desc_acc, key_acc) in zip(cols_acceso, tarjetas_acceso):
-        with col:
-            with st.container(key=key_acc):
-                st.markdown(
-                    f"""
-                    <div style="padding:22px 18px 4px;">
-                        <div style="width:34px; height:34px; border-radius:50%; background:var(--mz-offwhite);
-                                    display:flex; align-items:center; justify-content:center; font-size:15px; margin-bottom:14px;">{icono_acc}</div>
-                        <div style="font-size:16px; font-weight:600; margin-bottom:8px; color:var(--mz-ink);">{titulo_acc}</div>
-                        <div style="font-size:13.5px; color:var(--mz-ink-soft); line-height:1.55; margin-bottom:14px;">{desc_acc}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                st.button(
-                    T["btn_acceder_tarjeta"],
-                    key=f"btn_{key_acc}",
-                    on_click=_abrir_acceso_directo,
-                    args=(tipo_acc,),
-                    use_container_width=True,
-                )
+    for tipo_acc, key_acc, clave_txt, color_txt, color_tag, clave_boton in tarjetas_acceso:
+        with st.container(key=key_acc):
+            st.markdown(
+                f"""
+                <div class="mz-mono2" style="font-size:13px; color:{color_tag}; letter-spacing:3px; margin-bottom:20px;">{T['banner_' + clave_txt + '_tag']}</div>
+                <div class="mz-display" style="font-weight:800; font-size:clamp(28px,5vw,52px); line-height:1.08; letter-spacing:-1px; color:{color_txt}; margin-bottom:20px;">{T['banner_' + clave_txt + '_titulo']}</div>
+                <div style="font-size:clamp(15px,1.6vw,17px); line-height:1.6; max-width:56ch; color:{color_txt}; margin-bottom:12px;">{T['banner_' + clave_txt + '_texto']}</div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.button(
+                T[clave_boton],
+                key=f"btn_{key_acc}",
+                on_click=_abrir_acceso_directo,
+                args=(tipo_acc,),
+            )
 
     st.markdown(
         f"""
-        <div style="background:var(--mz-offwhite); border-radius:8px; padding:36px 40px; margin-bottom:40px;">
-            <div style="font-size:20px; font-weight:600; color:var(--mz-ink); margin-bottom:8px;">{T['flow_titulo']}</div>
-            <div style="font-size:14px; color:var(--mz-ink-soft); line-height:1.6; max-width:62ch; margin-bottom:28px;">{T['flow_subtitulo']}</div>
-            <div style="display:flex; align-items:stretch; gap:0;">
-                <div style="flex:1; position:relative; padding-right:24px;">
-                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
-                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">01</div>
-                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso1_t']}</div>
-                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso1_d']}</div>
-                    </div>
-                    <div style="position:absolute; top:50%; right:-1px; width:24px; height:0; border-top:1px dashed #B7BCC2;"></div>
+        <div style="background:#0B1016; border-radius:8px; padding:clamp(24px,4vw,56px); margin-bottom:40px;">
+            <div class="mz-display" style="font-weight:800; font-size:clamp(26px,3.6vw,44px); color:#E8EDF3; letter-spacing:-1px; margin-bottom:12px;">{T['flow_titulo']}</div>
+            <div style="font-size:15px; color:#9AA7B6; line-height:1.6; max-width:62ch; margin-bottom:36px;">{T['flow_subtitulo']}</div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:28px;">
+                <div style="border-left:3px solid #FFB020; padding:4px 0 4px 22px;">
+                    <div class="mz-mono2" style="font-size:13px; color:#FFB020; margin-bottom:8px;">{T['flow_paso_label']} 01</div>
+                    <div class="mz-display" style="font-weight:700; font-size:clamp(22px,2.4vw,28px); color:#E8EDF3; margin-bottom:8px;">{T['flow_paso1_t']}</div>
+                    <div style="font-size:14.5px; color:#9AA7B6; line-height:1.5;">{T['flow_paso1_d']}</div>
                 </div>
-                <div style="flex:1; position:relative; padding-right:24px;">
-                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
-                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">02</div>
-                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso2_t']}</div>
-                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso2_d']}</div>
-                    </div>
-                    <div style="position:absolute; top:50%; right:-1px; width:24px; height:0; border-top:1px dashed #B7BCC2;"></div>
+                <div style="border-left:3px solid #FFB020; padding:4px 0 4px 22px;">
+                    <div class="mz-mono2" style="font-size:13px; color:#FFB020; margin-bottom:8px;">{T['flow_paso_label']} 02</div>
+                    <div class="mz-display" style="font-weight:700; font-size:clamp(22px,2.4vw,28px); color:#E8EDF3; margin-bottom:8px;">{T['flow_paso2_t']}</div>
+                    <div style="font-size:14.5px; color:#9AA7B6; line-height:1.5;">{T['flow_paso2_d']}</div>
                 </div>
-                <div style="flex:1; position:relative; padding-right:24px;">
-                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
-                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">03</div>
-                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso3_t']}</div>
-                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso3_d']}</div>
-                    </div>
-                    <div style="position:absolute; top:50%; right:-1px; width:24px; height:0; border-top:1px dashed #B7BCC2;"></div>
+                <div style="border-left:3px solid #FFB020; padding:4px 0 4px 22px;">
+                    <div class="mz-mono2" style="font-size:13px; color:#FFB020; margin-bottom:8px;">{T['flow_paso_label']} 03</div>
+                    <div class="mz-display" style="font-weight:700; font-size:clamp(22px,2.4vw,28px); color:#E8EDF3; margin-bottom:8px;">{T['flow_paso3_t']}</div>
+                    <div style="font-size:14.5px; color:#9AA7B6; line-height:1.5;">{T['flow_paso3_d']}</div>
                 </div>
-                <div style="flex:1;">
-                    <div style="background:var(--mz-paper); border:1px solid #D9DAD6; border-radius:3px; padding:18px 16px; height:100%;">
-                        <div style="font-size:11px; color:var(--mz-brass); font-weight:600; font-family:'IBM Plex Mono', monospace; margin-bottom:8px;">04</div>
-                        <div style="font-size:15px; font-weight:600; color:var(--mz-ink); margin-bottom:6px;">{T['flow_paso4_t']}</div>
-                        <div style="font-size:12.5px; color:var(--mz-ink-soft); line-height:1.5;">{T['flow_paso4_d']}</div>
-                    </div>
+                <div style="border-left:3px solid #FFB020; padding:4px 0 4px 22px;">
+                    <div class="mz-mono2" style="font-size:13px; color:#FFB020; margin-bottom:8px;">{T['flow_paso_label']} 04</div>
+                    <div class="mz-display" style="font-weight:700; font-size:clamp(22px,2.4vw,28px); color:#E8EDF3; margin-bottom:8px;">{T['flow_paso4_t']}</div>
+                    <div style="font-size:14.5px; color:#9AA7B6; line-height:1.5;">{T['flow_paso4_d']}</div>
                 </div>
             </div>
         </div>
@@ -3819,8 +3875,72 @@ elif opcion == "docs":
         unsafe_allow_html=True,
     )
 
-    with st.container(border=True):
-        st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['asoc_colab']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(
+        """<style>
+        .st-key-mz_directorio {
+            background: #0B1016;
+            border-radius: 8px;
+            padding: clamp(24px, 4vw, 56px) !important;
+            margin-bottom: 40px;
+        }
+        .st-key-mz_directorio [data-testid="stImage"] {
+            background: #EDEEF0;
+            border-radius: 6px;
+            padding: 8px 12px;
+            width: fit-content;
+        }
+        .st-key-mz_directorio hr { border-color: #1E2936 !important; }
+        .st-key-mz_directorio label p,
+        .st-key-mz_directorio [data-testid="stWidgetLabel"] p { color: #151B23 !important; }
+        .st-key-mz_directorio [data-testid="stExpander"] {
+            border: 1px solid #2A3340 !important;
+            border-radius: 8px !important;
+            background: #EDEEF0 !important;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] summary {
+            background: #151B23 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] summary:hover {
+            background: #1E2936 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] summary p,
+        .st-key-mz_directorio [data-testid="stExpander"] summary span {
+            color: #E8EDF3 !important;
+            font-weight: 600 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] summary:hover p {
+            color: #FFB020 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] {
+            background: #EDEEF0 !important;
+            border-top: 3px solid #FFB020;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] p,
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] div,
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] li,
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] a {
+            color: #151B23 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] [data-testid="stExpander"] {
+            background: #FFFFFF !important;
+            border: 1px solid #D9DAD6 !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] [data-testid="stExpander"] summary {
+            background: #FFFFFF !important;
+        }
+        .st-key-mz_directorio [data-testid="stExpander"] [data-testid="stExpanderDetails"] [data-testid="stExpander"] summary:hover {
+            background: #F5F5F5 !important;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    with st.container(key="mz_directorio"):
+        st.markdown(
+            f"<div class='mz-display' style='font-weight:800; font-size:clamp(26px,3.6vw,44px); letter-spacing:-1px; color:#E8EDF3; margin:0 0 20px;'>{T['asoc_colab']}</div>",
+            unsafe_allow_html=True,
+        )
         st.image("Asociados y colaboradores.png", width=300)
 
         asociados_db, colaboradores_db = cargar_asociados_colaboradores()
@@ -3941,7 +4061,7 @@ elif opcion == "docs":
             background: #f5f5f5 !important;
         }
         </style>""", unsafe_allow_html=True)
-        st.markdown(f"<h4 style='color: var(--mz-ink); margin-top: 20px;'>{T['asociados']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<div class='mz-display' style='font-weight:800; font-size:clamp(22px,2.6vw,30px); color:#4F8CC4; margin:28px 0 12px;'>{T['asociados']}</div>", unsafe_allow_html=True)
 
         titulos_asociados = [
             ["Mecanizado", "Climatización", "Fontanería", "Empresas de trabajo temporal"],
@@ -3963,7 +4083,7 @@ elif opcion == "docs":
                     resumenes.forEach(function (resumen) {
                         var texto = (resumen.textContent || '').trim();
                         if (objetivos.indexOf(texto) === -1) { return; }
-                        resumen.style.setProperty('background', '#1d4ed8', 'important');
+                        resumen.style.setProperty('background', '#1F4E79', 'important');
                         resumen.style.setProperty('color', '#ffffff', 'important');
                     });
                 }
@@ -3978,7 +4098,7 @@ elif opcion == "docs":
         st.divider()
 
         # --- BLOQUE 2: COLABORADORES ---
-        st.markdown(f"<h4 style='color: var(--mz-ink);'>{T['colaboradores']}</h4>", unsafe_allow_html=True)
+        st.markdown(f"<div class='mz-display' style='font-weight:800; font-size:clamp(22px,2.6vw,30px); color:#FFB020; margin:8px 0 12px;'>{T['colaboradores']}</div>", unsafe_allow_html=True)
 
         titulos_colaboradores = [
             ["Centros de formación"],
@@ -4017,7 +4137,47 @@ elif opcion == "docs":
     if 'contenido_funcionalidad' not in st.session_state or not st.session_state.contenido_funcionalidad:
         st.session_state.contenido_funcionalidad = cargar_datos_de_google()
 
-    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['funcionalidad']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(
+        """<style>
+        .st-key-mz_funcionalidad [data-baseweb="tab-list"] { gap: 6px; }
+        .st-key-mz_funcionalidad button[role="tab"],
+        .st-key-mz_funcionalidad button[role="tab"] p {
+            background: #0B1016 !important;
+            color: #9AA7B6 !important;
+            font-weight: 600 !important;
+        }
+        .st-key-mz_funcionalidad button[role="tab"] {
+            border: 1px solid #1E2936 !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+        .st-key-mz_funcionalidad button[role="tab"][aria-selected="true"],
+        .st-key-mz_funcionalidad button[role="tab"][aria-selected="true"] p {
+            background: #FFB020 !important;
+            color: #0B1016 !important;
+        }
+        .st-key-mz_funcionalidad button[role="tab"][aria-selected="true"] {
+            border-color: #FFB020 !important;
+        }
+        .st-key-mz_funcionalidad [data-baseweb="tab-highlight"] {
+            background-color: #FFB020 !important;
+            height: 3px !important;
+        }
+        .st-key-mz_funcionalidad [data-baseweb="tab-border"] { background-color: #FFB020 !important; }
+        .st-key-mz_funcionalidad [role="tabpanel"] {
+            background: #FFFFFF;
+            border: 1px solid #D9DAD6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: clamp(16px, 3vw, 40px) !important;
+            margin-bottom: 40px;
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        f"<div class='mz-display' style='font-weight:800; font-size:clamp(26px,3.6vw,44px); letter-spacing:-1px; color:var(--mz-ink); margin:8px 0 16px;'>{T['funcionalidad']}</div>",
+        unsafe_allow_html=True,
+    )
     components.html(
         f"""
         <script>
@@ -4038,9 +4198,6 @@ elif opcion == "docs":
                     tab.style.setProperty('border-radius', '6px 6px 0 0', 'important');
                     tab.style.setProperty('padding', '10px 18px', 'important');
                     tab.style.setProperty('margin-right', '6px', 'important');
-                    tab.style.setProperty('border', '1px solid #D9DAD6', 'important');
-                    tab.style.setProperty('background', '#EDEEF0', 'important');
-                    tab.style.setProperty('color', '#5B6472', 'important');
                     tab.style.setProperty('cursor', 'pointer', 'important');
                 }});
             }}
@@ -4053,47 +4210,51 @@ elif opcion == "docs":
     )
     titulos_func = T["titulos_func"]
 
-    pestanas_func = st.tabs(titulos_func)
-    for pestana, titulo in zip(pestanas_func, titulos_func):
-        with pestana:
-            if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
-                tipos_admitidos = (["docx"] if MAMMOTH_DISPONIBLE else []) + ["odt"]
-                docx_version_key = f"docx_version_{titulo}"
-                version_docx = st.session_state.get(docx_version_key, 0)
-                docx_subido = st.file_uploader(
-                    "📄 O sube un Word (.docx) o un documento de OpenOffice/LibreOffice (.odt) con el texto ya formateado",
-                    type=tipos_admitidos,
-                    key=f"docx_{titulo}_{version_docx}",
-                )
-                if docx_subido is not None:
-                    try:
-                        if docx_subido.name.lower().endswith(".odt"):
-                            html_convertido = convertir_odt_a_html(docx_subido)
-                        else:
-                            html_convertido = mammoth.convert_to_html(docx_subido).value
-                        st.session_state[f"input_{titulo}"] = html_convertido
-                        st.session_state[docx_version_key] = version_docx + 1
-                        st.success(T["documento_convertido"])
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"No se pudo leer el documento: {e}")
+    with st.container(key="mz_funcionalidad"):
+        pestanas_func = st.tabs(titulos_func)
+        for pestana, titulo in zip(pestanas_func, titulos_func):
+            with pestana:
+                if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
+                    tipos_admitidos = (["docx"] if MAMMOTH_DISPONIBLE else []) + ["odt"]
+                    docx_version_key = f"docx_version_{titulo}"
+                    version_docx = st.session_state.get(docx_version_key, 0)
+                    docx_subido = st.file_uploader(
+                        "📄 O sube un Word (.docx) o un documento de OpenOffice/LibreOffice (.odt) con el texto ya formateado",
+                        type=tipos_admitidos,
+                        key=f"docx_{titulo}_{version_docx}",
+                    )
+                    if docx_subido is not None:
+                        try:
+                            if docx_subido.name.lower().endswith(".odt"):
+                                html_convertido = convertir_odt_a_html(docx_subido)
+                            else:
+                                html_convertido = mammoth.convert_to_html(docx_subido).value
+                            st.session_state[f"input_{titulo}"] = html_convertido
+                            st.session_state[docx_version_key] = version_docx + 1
+                            st.success(T["documento_convertido"])
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"No se pudo leer el documento: {e}")
 
-                temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
+                    temp_text = st.text_area(f"Editar {titulo}:", value=st.session_state.contenido_funcionalidad.get(titulo, ""), height=150, key=f"input_{titulo}")
             
-                if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
-                    st.session_state.contenido_funcionalidad[titulo] = temp_text
+                    if st.button(f"Guardar {titulo}", key=f"btn_save_{titulo}"):
+                        st.session_state.contenido_funcionalidad[titulo] = temp_text
                 
-                    if guardar_en_sheets(titulo, temp_text):
-                        st.success(T["guardado_google_local"])
-                    else:
-                        st.warning(T["guardado_solo_local"])
+                        if guardar_en_sheets(titulo, temp_text):
+                            st.success(T["guardado_google_local"])
+                        else:
+                            st.warning(T["guardado_solo_local"])
                 
-                    st.rerun()
+                        st.rerun()
 
-            st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
+                st.markdown(st.session_state.contenido_funcionalidad.get(titulo, ""), unsafe_allow_html=True)
 
     # --- BLOQUE 3: CONTACTO ---
-    st.markdown(f"<h3 style='color: var(--mz-ink);'><b>{T['contacto']}</b></h3>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div class='mz-display' style='font-weight:800; font-size:clamp(26px,3.6vw,44px); letter-spacing:-1px; color:var(--mz-ink); margin:8px 0 16px;'>{T['contacto']}</div>",
+        unsafe_allow_html=True,
+    )
     titulos_cont = ["Móvil / WhatsApp", "Email"]
 
     if st.session_state.autenticado and st.session_state.usuario_actual == "mzerojc":
@@ -4111,7 +4272,7 @@ elif opcion == "docs":
         with col_cont:
             st.markdown(
                 f"""
-                <div style="background:var(--mz-offwhite); border-left:3px solid var(--mz-brass);
+                <div style="background:var(--mz-offwhite); border-left:4px solid #FFB020;
                             border-radius:3px; padding:18px 20px; margin-bottom:28px;">
                     <div style="font-size:12px; color:var(--mz-ink-soft); letter-spacing:0.5px; margin-bottom:6px;">
                         {iconos_cont.get(titulo, '')} {titulo}
@@ -4134,7 +4295,6 @@ elif opcion == "docs":
 
 
 elif opcion == "eval":
-    mostrar_pestanas_principales(opcion)
 
     # Aviso visible para docentes y usuarios antes de iniciar sesión.
     st.info(T["aviso_solo_cursos_m0_evaluables"])
@@ -4487,6 +4647,7 @@ elif opcion == "eval":
                                 faltan = sorted(alumnos_clase - alumnos_evaluados)
                                 if faltan:
                                     st.warning(T["aviso_faltan_evaluaciones"].format(alumnos=", ".join(faltan)))
+                                    renderizar_pie_pagina()
                                     st.stop()
 
                             filas_supabase = []
@@ -4530,3 +4691,7 @@ elif opcion == "eval":
                         except Exception as e:
                             st.session_state.envio_resultado = ("error", f"Error al guardar en la base de datos: {e}")
                             st.rerun()
+
+
+# --- PIE DE PÁGINA (siempre al final de la pantalla) ---
+renderizar_pie_pagina()
