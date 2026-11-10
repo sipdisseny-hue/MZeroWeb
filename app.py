@@ -540,7 +540,7 @@ TEXTOS = {
         "mis_cursos_candidato_vacio": "Todavía no tienes cursos vinculados a tu cuenta.",
         "curso_sin_evaluacion": "Todavía no hay calificaciones registradas para este curso.",
         "curso_nota_final": "Nota final",
-        "curso_informe_pdf": "📄 Ver / descargar informe PDF",
+        "curso_informe_pdf": "📄 Descargar informe PDF",
         "curso_estado_en_curso_cand": "En curso",
         "curso_estado_finalizado_cand": "Finalizado",
         "legal_titulo": "Información legal y protección de datos",
@@ -877,7 +877,7 @@ TEXTOS = {
         "mis_cursos_candidato_vacio": "Encara no tens cursos vinculats al teu compte.",
         "curso_sin_evaluacion": "Encara no hi ha qualificacions registrades per a aquest curs.",
         "curso_nota_final": "Nota final",
-        "curso_informe_pdf": "📄 Veure / descarregar informe PDF",
+        "curso_informe_pdf": "📄 Descarregar informe PDF",
         "curso_estado_en_curso_cand": "En curs",
         "curso_estado_finalizado_cand": "Finalitzat",
         "legal_titulo": "Informació legal i protecció de dades",
@@ -3810,24 +3810,8 @@ if st.session_state.get("acceso_panel"):
                                     registro_cand, cand_nombre_mostrar
                                 )
                                 if pdf_notas:
-                                    # Mostrar el PDF directamente en el documento principal de
-                                    # Streamlit. Se usa <embed> y no un iframe anidado dentro de
-                                    # components.html, porque el sandbox del componente podía
-                                    # impedir que el navegador cargase el visor PDF.
-                                    st.markdown("**📄 Informe de evaluación**")
-                                    pdf_b64 = base64.b64encode(pdf_notas).decode("ascii")
-                                    visor_pdf = f"""
-                                        <div style="width:100%; margin:6px 0 10px 0;">
-                                            <embed
-                                                src="data:application/pdf;base64,{pdf_b64}"
-                                                type="application/pdf"
-                                                width="100%"
-                                                height="780px"
-                                                style="display:block; border:1px solid #d1d5db; border-radius:8px;"
-                                            />
-                                        </div>
-                                    """
-                                    st.markdown(visor_pdf, unsafe_allow_html=True)
+                                    # El candidato descarga el informe PDF; no se muestra
+                                    # ninguna vista previa en pantalla.
                                     st.download_button(
                                         T["curso_informe_pdf"],
                                         data=pdf_notas,
