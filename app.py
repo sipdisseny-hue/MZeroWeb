@@ -5,6 +5,7 @@ import pandas as pd
 import requests
 import re
 import hashlib
+import base64
 import zipfile
 import xml.etree.ElementTree as ET
 from datetime import date
@@ -534,6 +535,14 @@ TEXTOS = {
         "error_anadir_alumno": 'No se pudo añadir el alumno: {error}',
         "edicion_cerrada": '🔒 Esta edición está cerrada porque el docente ya ha enviado las evaluaciones. Ya no se pueden añadir docentes ni alumnos.',
         "codigo_curso_nuevo": 'Si el código ya existe, se reutilizará su ficha.',
+        "mis_cursos_candidato": "📚 Mis cursos",
+        "mis_cursos_candidato_desc": "Consulta tus cursos en curso o finalizados y revisa tus calificaciones.",
+        "mis_cursos_candidato_vacio": "Todavía no tienes cursos vinculados a tu cuenta.",
+        "curso_sin_evaluacion": "Todavía no hay calificaciones registradas para este curso.",
+        "curso_nota_final": "Nota final",
+        "curso_informe_pdf": "📄 Ver / descargar informe PDF",
+        "curso_estado_en_curso_cand": "En curso",
+        "curso_estado_finalizado_cand": "Finalizado",
         "legal_titulo": "Información legal y protección de datos",
         "aviso_legal": "Aviso legal",
         "politica_privacidad": "Política de privacidad",
@@ -863,6 +872,14 @@ TEXTOS = {
         "error_anadir_alumno": 'No s’ha pogut afegir l’alumne: {error}',
         "edicion_cerrada": '🔒 Aquesta edició està tancada perquè el docent ja ha enviat les avaluacions. Ja no es poden afegir docents ni alumnes.',
         "codigo_curso_nuevo": 'Si el codi ja existeix, se’n reutilitzarà la fitxa.',
+        "mis_cursos_candidato": "📚 Els meus cursos",
+        "mis_cursos_candidato_desc": "Consulta els teus cursos en curs o finalitzats i revisa les teves qualificacions.",
+        "mis_cursos_candidato_vacio": "Encara no tens cursos vinculats al teu compte.",
+        "curso_sin_evaluacion": "Encara no hi ha qualificacions registrades per a aquest curs.",
+        "curso_nota_final": "Nota final",
+        "curso_informe_pdf": "📄 Veure / descarregar informe PDF",
+        "curso_estado_en_curso_cand": "En curs",
+        "curso_estado_finalizado_cand": "Finalitzat",
         "legal_titulo": "Informació legal i protecció de dades",
         "aviso_legal": "Avís legal",
         "politica_privacidad": "Política de privacitat",
@@ -1495,6 +1512,114 @@ def verificar_credencial_candidato_supabase(usuario, contrasena):
     except Exception:
         pass
     return None
+
+
+
+def _texto_normalizado_persona(valor):
+    return " ".join(str(valor or "").strip().casefold().split())
+
+
+def _cargar_mis_cursos_candidato(email_candidato):
+    """Devuelve solo las ediciones y notas vinculadas al email del candidato autenticado."""
+    if not SUPABASE_DISPONIBLE or not str(email_candidato or "").strip():
+        return []
+    cliente = obtener_cliente_supabase()
+    try:
+        alumnos = (
+            cliente.table("curso_alumnos").select("*")
+            .ilike("email", str(email_candidato).strip())
+            .order("created_at", desc=True).execute().data
+        )
+    except Exception:
+        return []
+
+    resultado = []
+    vistos = set()
+    for alumno_reg in alumnos or []:
+        edition_id = alumno_reg.get("id_edicion")
+        if not edition_id or edition_id in vistos:
+            continue
+        vistos.add(edition_id)
+        try:
+            ediciones = (
+                cliente.table("curso_ediciones").select("*")
+                .eq("id", edition_id).limit(1).execute().data
+            )
+            if not ediciones:
+                continue
+            edicion = ediciones[0]
+            codigo = edicion.get("codigo_curso") or ""
+            cursos = (
+                cliente.table("cursos").select("*")
+                .eq("codigo_curso", codigo).limit(1).execute().data
+            )
+            curso = cursos[0] if cursos else {}
+            try:
+                evaluaciones = (
+                    cliente.table("evaluaciones").select("*")
+                    .eq("edition_id", edition_id)
+                    .execute().data
+                )
+            except Exception:
+                # Compatibilidad con evaluaciones antiguas guardadas sin edition_id.
+                evaluaciones = (
+                    cliente.table("evaluaciones").select("*")
+                    .eq("codigo_curso", codigo)
+                    .execute().data
+                )
+            nombre_alumno = f"{alumno_reg.get('nombre', '')} {alumno_reg.get('apellidos', '')}".strip()
+            eval_alumno = [
+                ev for ev in (evaluaciones or [])
+                if _texto_normalizado_persona(ev.get("alumno")) == _texto_normalizado_persona(nombre_alumno)
+            ]
+            resultado.append({
+                "alumno": alumno_reg,
+                "edicion": edicion,
+                "curso": curso,
+                "evaluaciones": eval_alumno,
+            })
+        except Exception:
+            continue
+    return resultado
+
+
+def _crear_pdf_notas_candidato(registro, nombre_candidato):
+    """Genera un informe PDF sencillo con las calificaciones del candidato en una edición."""
+    if not FPDF_DISPONIBLE:
+        return None
+    curso = registro.get("curso") or {}
+    edicion = registro.get("edicion") or {}
+    alumno = registro.get("alumno") or {}
+    evaluaciones = registro.get("evaluaciones") or []
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, "M-ZERO | INFORME DE FORMACION", ln=True)
+    pdf.ln(3)
+    pdf.set_font("Arial", "", 11)
+    nombre_curso = curso.get("nombre_es") or edicion.get("nombre_curso") or edicion.get("codigo_curso") or "Curso"
+    pdf.multi_cell(0, 7, f"Curso: {nombre_curso}")
+    pdf.multi_cell(0, 7, f"Referencia: {edicion.get('codigo_curso', '')}")
+    pdf.multi_cell(0, 7, f"Candidato: {nombre_candidato}")
+    pdf.multi_cell(0, 7, f"Centro: {curso.get('nombre_centro', '') or curso.get('empresa_nombre', '')}")
+    pdf.multi_cell(0, 7, f"Estado: {'Finalizado' if str(edicion.get('estado', '')).lower() == 'cerrado' else 'En curso'}")
+    pdf.ln(4)
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 8, "Calificaciones", ln=True)
+    pdf.set_font("Arial", "", 10)
+    if evaluaciones:
+        for ev in evaluaciones:
+            pdf.multi_cell(0, 7, f"Modulo: {ev.get('subcodigo', '')} | Nivel: {ev.get('nivel', '')}")
+            pdf.multi_cell(0, 7, f"Fecha: {ev.get('fecha', '')} | Nota: {ev.get('nota', '')} | Estado: {ev.get('estado', '')}")
+            pdf.ln(2)
+    else:
+        pdf.multi_cell(0, 7, "Todavia no hay calificaciones registradas para esta edicion.")
+    pdf.ln(5)
+    pdf.set_font("Arial", "I", 8)
+    pdf.multi_cell(0, 5, "Este informe refleja las calificaciones registradas en la plataforma M-Zero.")
+    salida = pdf.output(dest="S")
+    return salida.encode("latin-1") if isinstance(salida, str) else bytes(salida)
 
 
 def obtener_ubicaciones_cursos_sector(sector, subsector):
@@ -3590,6 +3715,57 @@ if st.session_state.get("acceso_panel"):
         else:
             cand_nombre_mostrar = st.session_state.get(cand_nombre_key, "")
             st.success(f"{T['acceso_concedido']} {cand_nombre_mostrar}")
+
+            # Área personal del candidato: cursos en curso/finalizados y notas.
+            with st.expander(T["mis_cursos_candidato"], expanded=False):
+                st.caption(T["mis_cursos_candidato_desc"])
+                cursos_personales = _cargar_mis_cursos_candidato(
+                    st.session_state.get("cand_email", "")
+                )
+                if not cursos_personales:
+                    st.info(T["mis_cursos_candidato_vacio"])
+                else:
+                    for idx_cand, registro_cand in enumerate(cursos_personales):
+                        curso_personal = registro_cand.get("curso") or {}
+                        edicion_personal = registro_cand.get("edicion") or {}
+                        notas_personal = registro_cand.get("evaluaciones") or []
+                        nombre_personal = (
+                            curso_personal.get("nombre_es")
+                            or edicion_personal.get("nombre_curso")
+                            or edicion_personal.get("codigo_curso")
+                            or "Curso"
+                        )
+                        finalizado = str(edicion_personal.get("estado", "")).strip().lower() == "cerrado"
+                        estado_personal = T["curso_estado_finalizado_cand"] if finalizado else T["curso_estado_en_curso"]
+                        with st.container(border=True):
+                            st.markdown(f"**{nombre_personal}**")
+                            st.write(f"**{T['estado']}** {estado_personal}")
+                            st.caption(f"{edicion_personal.get('codigo_curso', '')}")
+                            if curso_tiene_sello_m0(curso_personal):
+                                st.markdown(f"**{T['sello_m0_badge']}**")
+                            else:
+                                st.markdown(f"**{T['sin_sello_m0_badge']}**")
+                                st.caption(T["curso_sin_sello_aviso"])
+                            if notas_personal:
+                                for nota_reg in notas_personal:
+                                    st.write(
+                                        f"**{nota_reg.get('subcodigo', '')}** · "
+                                        f"{T['curso_nota_final']}: **{nota_reg.get('nota', '—')}** · "
+                                        f"{nota_reg.get('estado', '')}"
+                                    )
+                                pdf_notas = _crear_pdf_notas_candidato(
+                                    registro_cand, cand_nombre_mostrar
+                                )
+                                if pdf_notas:
+                                    st.download_button(
+                                        T["curso_informe_pdf"],
+                                        data=pdf_notas,
+                                        file_name=f"MZero_{edicion_personal.get('codigo_curso', 'curso')}_notas.pdf",
+                                        mime="application/pdf",
+                                        key=f"cand_pdf_notas_{idx_cand}_{edicion_personal.get('id')}",
+                                    )
+                            else:
+                                st.info(T["curso_sin_evaluacion"])
 
             cand_sector_actual = st.session_state.get(cand_sector_key)
             cand_subsector_actual = st.session_state.get(cand_subsector_key)
