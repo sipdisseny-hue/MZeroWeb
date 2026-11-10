@@ -3810,22 +3810,24 @@ if st.session_state.get("acceso_panel"):
                                     registro_cand, cand_nombre_mostrar
                                 )
                                 if pdf_notas:
-                                    # Mostrar el informe directamente en la ficha del curso,
-                                    # sin una pestaña/desplegable independiente. El PDF se
-                                    # incrusta como data URI y conserva los controles del visor
-                                    # del navegador (incluida su opción de descarga).
+                                    # Mostrar el PDF directamente en el documento principal de
+                                    # Streamlit. Se usa <embed> y no un iframe anidado dentro de
+                                    # components.html, porque el sandbox del componente podía
+                                    # impedir que el navegador cargase el visor PDF.
                                     st.markdown("**📄 Informe de evaluación**")
                                     pdf_b64 = base64.b64encode(pdf_notas).decode("ascii")
                                     visor_pdf = f"""
-                                        <div style="width:100%; margin: 6px 0 10px 0;">
-                                            <iframe
-                                                title="Informe de evaluación del candidato"
+                                        <div style="width:100%; margin:6px 0 10px 0;">
+                                            <embed
                                                 src="data:application/pdf;base64,{pdf_b64}"
-                                                style="width:100%; height:780px; border:1px solid #d1d5db; border-radius:8px;"
-                                            ></iframe>
+                                                type="application/pdf"
+                                                width="100%"
+                                                height="780px"
+                                                style="display:block; border:1px solid #d1d5db; border-radius:8px;"
+                                            />
                                         </div>
                                     """
-                                    components.html(visor_pdf, height=800, scrolling=False)
+                                    st.markdown(visor_pdf, unsafe_allow_html=True)
                                     st.download_button(
                                         T["curso_informe_pdf"],
                                         data=pdf_notas,
