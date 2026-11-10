@@ -1519,67 +1519,97 @@ def _texto_normalizado_persona(valor):
     return " ".join(str(valor or "").strip().casefold().split())
 
 
+@st.cache_data(ttl=30, show_spinner=False)
 def _cargar_mis_cursos_candidato(email_candidato):
-    """Devuelve solo las ediciones y notas vinculadas al email del candidato autenticado."""
-    if not SUPABASE_DISPONIBLE or not str(email_candidato or "").strip():
+    """Carga en bloque los cursos y notas del candidato autenticado.
+
+    La caché breve evita repetir consultas en cada interacción de Streamlit,
+    mientras que las consultas agrupadas reducen los viajes a Supabase.
+    """
+    email = str(email_candidato or "").strip()
+    if not SUPABASE_DISPONIBLE or not email:
         return []
     cliente = obtener_cliente_supabase()
     try:
         alumnos = (
             cliente.table("curso_alumnos").select("*")
-            .ilike("email", str(email_candidato).strip())
+            .ilike("email", email)
             .order("created_at", desc=True).execute().data
-        )
+        ) or []
     except Exception:
         return []
 
-    resultado = []
-    vistos = set()
-    for alumno_reg in alumnos or []:
+    alumnos_por_edicion = {}
+    for alumno_reg in alumnos:
         edition_id = alumno_reg.get("id_edicion")
-        if not edition_id or edition_id in vistos:
-            continue
-        vistos.add(edition_id)
+        if edition_id and edition_id not in alumnos_por_edicion:
+            alumnos_por_edicion[edition_id] = alumno_reg
+    if not alumnos_por_edicion:
+        return []
+
+    edition_ids = list(alumnos_por_edicion.keys())
+    try:
+        ediciones = (
+            cliente.table("curso_ediciones").select("*")
+            .in_("id", edition_ids).execute().data
+        ) or []
+    except Exception:
+        return []
+
+    ediciones_por_id = {e.get("id"): e for e in ediciones}
+    codigos = list({str(e.get("codigo_curso")) for e in ediciones if e.get("codigo_curso")})
+    cursos_por_codigo = {}
+    if codigos:
         try:
-            ediciones = (
-                cliente.table("curso_ediciones").select("*")
-                .eq("id", edition_id).limit(1).execute().data
-            )
-            if not ediciones:
-                continue
-            edicion = ediciones[0]
-            codigo = edicion.get("codigo_curso") or ""
             cursos = (
                 cliente.table("cursos").select("*")
-                .eq("codigo_curso", codigo).limit(1).execute().data
-            )
-            curso = cursos[0] if cursos else {}
-            try:
-                evaluaciones = (
-                    cliente.table("evaluaciones").select("*")
-                    .eq("edition_id", edition_id)
-                    .execute().data
-                )
-            except Exception:
-                # Compatibilidad con evaluaciones antiguas guardadas sin edition_id.
-                evaluaciones = (
-                    cliente.table("evaluaciones").select("*")
-                    .eq("codigo_curso", codigo)
-                    .execute().data
-                )
-            nombre_alumno = f"{alumno_reg.get('nombre', '')} {alumno_reg.get('apellidos', '')}".strip()
-            eval_alumno = [
-                ev for ev in (evaluaciones or [])
-                if _texto_normalizado_persona(ev.get("alumno")) == _texto_normalizado_persona(nombre_alumno)
-            ]
-            resultado.append({
-                "alumno": alumno_reg,
-                "edicion": edicion,
-                "curso": curso,
-                "evaluaciones": eval_alumno,
-            })
+                .in_("codigo_curso", codigos).execute().data
+            ) or []
+            cursos_por_codigo = {str(c.get("codigo_curso")): c for c in cursos}
         except Exception:
+            cursos_por_codigo = {}
+
+    evaluaciones_por_edicion = {}
+    try:
+        evaluaciones = (
+            cliente.table("evaluaciones").select("*")
+            .in_("edition_id", edition_ids).execute().data
+        ) or []
+        for ev in evaluaciones:
+            evaluaciones_por_edicion.setdefault(ev.get("edition_id"), []).append(ev)
+    except Exception:
+        # Compatibilidad con instalaciones antiguas que aún no tienen edition_id.
+        evaluaciones_por_codigo = {}
+        for codigo in codigos:
+            try:
+                filas = (cliente.table("evaluaciones").select("*")
+                         .eq("codigo_curso", codigo).execute().data) or []
+                evaluaciones_por_codigo[codigo] = filas
+            except Exception:
+                evaluaciones_por_codigo[codigo] = []
+        for edition_id, edicion in ediciones_por_id.items():
+            evaluaciones_por_edicion[edition_id] = evaluaciones_por_codigo.get(
+                str(edicion.get("codigo_curso") or ""), []
+            )
+
+    resultado = []
+    for edition_id, alumno_reg in alumnos_por_edicion.items():
+        edicion = ediciones_por_id.get(edition_id)
+        if not edicion:
             continue
+        codigo = str(edicion.get("codigo_curso") or "")
+        curso = cursos_por_codigo.get(codigo, {})
+        nombre_alumno = f"{alumno_reg.get('nombre', '')} {alumno_reg.get('apellidos', '')}".strip()
+        eval_alumno = [
+            ev for ev in evaluaciones_por_edicion.get(edition_id, [])
+            if _texto_normalizado_persona(ev.get("alumno")) == _texto_normalizado_persona(nombre_alumno)
+        ]
+        resultado.append({
+            "alumno": alumno_reg,
+            "edicion": edicion,
+            "curso": curso,
+            "evaluaciones": eval_alumno,
+        })
     return resultado
 
 
@@ -1622,6 +1652,7 @@ def _crear_pdf_notas_candidato(registro, nombre_candidato):
     return salida.encode("latin-1") if isinstance(salida, str) else bytes(salida)
 
 
+@st.cache_data(ttl=300, show_spinner=False)
 def obtener_ubicaciones_cursos_sector(sector, subsector):
     """Provincia/población de los centros (colaboradores activos) que
     imparten cursos de ese sector/subsector, sin duplicados."""
@@ -1660,10 +1691,9 @@ def obtener_ubicaciones_cursos_sector(sector, subsector):
         return []
 
 
+@st.cache_data(ttl=120, show_spinner=False)
 def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
-    """Cursos del sector/subsector impartidos por centros de esa
-    provincia/población. No incluye docentes ni alumnos: solo el nombre
-    del centro y los datos del curso disponibles en el sistema."""
+    """Cursos de una ubicación; ediciones y módulos se consultan en bloque."""
     if not SUPABASE_DISPONIBLE:
         return []
     try:
@@ -1675,8 +1705,11 @@ def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
             .eq("tipo", "colaborador")
             .eq("estado", "activo")
             .execute().data
-        )
-        mapa_empresas = {e["id"]: (e.get("nombre_centro") or e.get("nombre_empresa") or "") for e in empresas}
+        ) or []
+        mapa_empresas = {
+            e["id"]: (e.get("nombre_centro") or e.get("nombre_empresa") or "")
+            for e in empresas if e.get("id") is not None
+        }
         if not mapa_empresas:
             return []
 
@@ -1685,33 +1718,47 @@ def obtener_cursos_candidato(sector, subsector, provincia, poblacion):
             .eq("sector", sector).eq("subsector", subsector)
             .in_("empresa_id", list(mapa_empresas.keys()))
             .execute().data
-        )
+        ) or []
+        codigos = list({str(c.get("codigo_curso")) for c in cursos if c.get("codigo_curso")})
+        if not codigos:
+            return []
+
+        ediciones_por_codigo = {}
+        try:
+            ediciones = (cliente.table("curso_ediciones").select("codigo_curso, estado")
+                         .in_("codigo_curso", codigos).execute().data) or []
+            for ed in ediciones:
+                ediciones_por_codigo.setdefault(str(ed.get("codigo_curso") or ""), []).append(
+                    str(ed.get("estado", "")).strip().lower()
+                )
+        except Exception:
+            ediciones_por_codigo = {}
+
+        modulos_por_codigo = {}
+        try:
+            modulos = (cliente.table("modulos").select("codigo_curso, descripcion_es, nivel_bloque")
+                       .in_("codigo_curso", codigos).execute().data) or []
+            for modulo in modulos:
+                modulos_por_codigo.setdefault(str(modulo.get("codigo_curso") or ""), []).append({
+                    "descripcion_es": modulo.get("descripcion_es"),
+                    "nivel_bloque": modulo.get("nivel_bloque"),
+                })
+        except Exception:
+            modulos_por_codigo = {}
 
         resultado = []
         for curso in cursos:
-            codigo = curso.get("codigo_curso")
-            ediciones = (
-                cliente.table("curso_ediciones").select("estado")
-                .eq("codigo_curso", codigo)
-                .execute().data
-            )
-            estados = [str(e.get("estado", "")).strip().lower() for e in ediciones]
+            codigo = str(curso.get("codigo_curso") or "")
+            estados = ediciones_por_codigo.get(codigo, [])
             estado_visible = "cursado" if estados and all(e == "cerrado" for e in estados) else "en_curso"
-
-            modulos = (
-                cliente.table("modulos").select("descripcion_es, nivel_bloque")
-                .eq("codigo_curso", codigo)
-                .execute().data
-            )
-
             resultado.append({
                 "nombre_centro": mapa_empresas.get(curso.get("empresa_id"), ""),
                 "nombre_curso": curso.get("nombre_es") or codigo,
-                "codigo_curso": codigo,
+                "codigo_curso": curso.get("codigo_curso"),
                 "horas_totales": curso.get("horas_totales"),
                 "competencias": curso.get("competencias"),
                 "estado": estado_visible,
-                "modulos": modulos,
+                "modulos": modulos_por_codigo.get(codigo, []),
                 "sello_m0": curso.get("sello_m0", True),
             })
         return resultado
