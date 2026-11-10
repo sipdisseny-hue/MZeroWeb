@@ -1619,35 +1619,41 @@ def _crear_pdf_notas_candidato(registro, nombre_candidato):
         return None
     curso = registro.get("curso") or {}
     edicion = registro.get("edicion") or {}
-    alumno = registro.get("alumno") or {}
     evaluaciones = registro.get("evaluaciones") or []
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
+
+    # Usar siempre el ancho imprimible completo y volver al margen izquierdo
+    # después de cada celda evita que FPDF2 intente escribir con ancho cero.
+    ancho = pdf.epw
+    def linea(texto, alto=7):
+        pdf.multi_cell(ancho, alto, str(texto), new_x="LMARGIN", new_y="NEXT")
+
     pdf.set_font("Arial", "B", 16)
-    pdf.cell(0, 10, "M-ZERO | INFORME DE FORMACION", ln=True)
+    pdf.cell(ancho, 10, "M-ZERO | INFORME DE FORMACION", new_x="LMARGIN", new_y="NEXT")
     pdf.ln(3)
     pdf.set_font("Arial", "", 11)
     nombre_curso = curso.get("nombre_es") or edicion.get("nombre_curso") or edicion.get("codigo_curso") or "Curso"
-    pdf.multi_cell(0, 7, f"Curso: {nombre_curso}")
-    pdf.multi_cell(0, 7, f"Referencia: {edicion.get('codigo_curso', '')}")
-    pdf.multi_cell(0, 7, f"Candidato: {nombre_candidato}")
-    pdf.multi_cell(0, 7, f"Centro: {curso.get('nombre_centro', '') or curso.get('empresa_nombre', '')}")
-    pdf.multi_cell(0, 7, f"Estado: {'Finalizado' if str(edicion.get('estado', '')).lower() == 'cerrado' else 'En curso'}")
+    linea(f"Curso: {nombre_curso}")
+    linea(f"Referencia: {edicion.get('codigo_curso', '')}")
+    linea(f"Candidato: {nombre_candidato}")
+    linea(f"Centro: {curso.get('nombre_centro', '') or curso.get('empresa_nombre', '')}")
+    linea(f"Estado: {'Finalizado' if str(edicion.get('estado', '')).lower() == 'cerrado' else 'En curso'}")
     pdf.ln(4)
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 8, "Calificaciones", ln=True)
+    pdf.cell(ancho, 8, "Calificaciones", new_x="LMARGIN", new_y="NEXT")
     pdf.set_font("Arial", "", 10)
     if evaluaciones:
         for ev in evaluaciones:
-            pdf.multi_cell(0, 7, f"Modulo: {ev.get('subcodigo', '')} | Nivel: {ev.get('nivel', '')}")
-            pdf.multi_cell(0, 7, f"Fecha: {ev.get('fecha', '')} | Nota: {ev.get('nota', '')} | Estado: {ev.get('estado', '')}")
+            linea(f"Modulo: {ev.get('subcodigo', '')} | Nivel: {ev.get('nivel', '')}")
+            linea(f"Fecha: {ev.get('fecha', '')} | Nota: {ev.get('nota', '')} | Estado: {ev.get('estado', '')}")
             pdf.ln(2)
     else:
-        pdf.multi_cell(0, 7, "Todavia no hay calificaciones registradas para esta edicion.")
+        linea("Todavia no hay calificaciones registradas para esta edicion.")
     pdf.ln(5)
     pdf.set_font("Arial", "I", 8)
-    pdf.multi_cell(0, 5, "Este informe refleja las calificaciones registradas en la plataforma M-Zero.")
+    linea("Este informe refleja las calificaciones registradas en la plataforma M-Zero.", 5)
     salida = pdf.output(dest="S")
     return salida.encode("latin-1") if isinstance(salida, str) else bytes(salida)
 
