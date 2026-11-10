@@ -3810,19 +3810,35 @@ if st.session_state.get("acceso_panel"):
                                     registro_cand, cand_nombre_mostrar
                                 )
                                 if pdf_notas:
-                                    # Vista previa del informe en pantalla antes de descargarlo.
+                                    # Vista previa del PDF mediante Blob para evitar que
+                                    # el navegador bloquee el visor cuando recibe un data URI.
                                     with st.expander("👁️ Visualizar informe PDF", expanded=False):
                                         pdf_b64 = base64.b64encode(pdf_notas).decode("utf-8")
                                         visor_pdf = f"""
-                                            <iframe
-                                                src="data:application/pdf;base64,{pdf_b64}"
-                                                width="100%"
-                                                height="650"
-                                                type="application/pdf"
-                                                style="border: 1px solid #d1d5db; border-radius: 8px;">
-                                            </iframe>
+                                            <div style="width:100%;">
+                                                <iframe id="visor_pdf_candidato"
+                                                    title="Informe de evaluación del candidato"
+                                                    style="width:100%; height:780px; border:1px solid #d1d5db; border-radius:8px;"
+                                                ></iframe>
+                                                <div id="aviso_pdf_candidato" style="display:none; padding:12px; font-family:Arial,sans-serif; color:#444;">
+                                                    El navegador no permite mostrar el PDF incrustado. Puedes utilizar el botón de descarga que aparece debajo.
+                                                </div>
+                                            </div>
+                                            <script>
+                                                (function() {{
+                                                    const b64 = "{pdf_b64}";
+                                                    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+                                                    const blob = new Blob([bytes], {{type: "application/pdf"}});
+                                                    const url = URL.createObjectURL(blob);
+                                                    const visor = document.getElementById("visor_pdf_candidato");
+                                                    visor.src = url;
+                                                    visor.onerror = function() {{
+                                                        document.getElementById("aviso_pdf_candidato").style.display = "block";
+                                                    }};
+                                                }})();
+                                            </script>
                                         """
-                                        components.html(visor_pdf, height=670, scrolling=True)
+                                        components.html(visor_pdf, height=810, scrolling=True)
                                     st.download_button(
                                         T["curso_informe_pdf"],
                                         data=pdf_notas,
