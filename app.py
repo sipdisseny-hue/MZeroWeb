@@ -3810,6 +3810,19 @@ if st.session_state.get("acceso_panel"):
                                     registro_cand, cand_nombre_mostrar
                                 )
                                 if pdf_notas:
+                                    # Vista previa del informe en pantalla antes de descargarlo.
+                                    with st.expander("👁️ Visualizar informe PDF", expanded=False):
+                                        pdf_b64 = base64.b64encode(pdf_notas).decode("utf-8")
+                                        visor_pdf = f"""
+                                            <iframe
+                                                src="data:application/pdf;base64,{pdf_b64}"
+                                                width="100%"
+                                                height="650"
+                                                type="application/pdf"
+                                                style="border: 1px solid #d1d5db; border-radius: 8px;">
+                                            </iframe>
+                                        """
+                                        components.html(visor_pdf, height=670, scrolling=True)
                                     st.download_button(
                                         T["curso_informe_pdf"],
                                         data=pdf_notas,
